@@ -1,304 +1,125 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Bảng nhập 1 ký tự</title>
+    <meta charset="UTF-8">
+    <title>Quản Lý Số Theo Hàng Chục</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
+        .input-section { text-align: center; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 700px; margin-left: auto; margin-right: auto; }
+        
+        input, select, button { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ddd; outline: none; margin: 5px; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; padding: 12px 30px; }
+        button:hover { background-color: #0056b3; }
 
-<style>
-* {
-    box-sizing: border-box;
-}
-
-/* NỀN */
-body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: radial-gradient(
-        1200px 600px at 20% 10%,
-        #3b1d5a,
-        #1f1237 60%,
-        #0f0a1f 100%
-    );
-    padding: 40px;
-    display: flex;
-    justify-content: center;
-}
-
-/* HỘP CHÍNH */
-.box {
-    background: linear-gradient(180deg, #1f2937, #111827);
-    border: 2px solid #334155;
-    border-radius: 18px;
-    padding: 24px 26px 28px;
-    box-shadow:
-        0 18px 36px rgba(0,0,0,0.55),
-        inset 0 1px 0 rgba(255,255,255,0.04);
-}
-
-/* ĐIỀU KHIỂN */
-.controls {
-    text-align: center;
-    margin-bottom: 18px;
-}
-
-.controls input {
-    width: 78px;
-    padding: 8px;
-    margin: 0 6px;
-    text-align: center;
-    font-size: 15px;
-    border-radius: 8px;
-    border: 1px solid #c7d2fe;
-}
-
-.controls button {
-    padding: 8px 18px;
-    margin: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 10px;
-    border: none;
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    color: #fff;
-    cursor: pointer;
-    box-shadow: 0 6px 14px rgba(79,70,229,0.35);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.controls button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 20px rgba(79,70,229,0.45);
-}
-
-/* GRID */
-.grid {
-    display: grid;
-    gap: 6px;
-}
-
-/* HEADER HÀNG / CỘT */
-.header {
-    width: 44px;
-    height: 44px;
-    line-height: 44px;
-    text-align: center;
-
-    background: linear-gradient(180deg, #1e293b, #0f172a); /* xanh đậm */
-    color: #c7d2fe; /* tím nhạt */
-
-    border: 2px solid #334155;
-    border-radius: 10px;
-
-    font-size: 14px;
-    font-weight: 600;
-
-    user-select: none;   /* khỏi bôi đen cho đỡ ngứa tay */
-}
-
-/* Ô NHẬP */
-.cell {
-    width: 44px;
-    height: 44px;
-    line-height: 44px;
-    padding: 0;
-    text-align: center;
-
-    background: linear-gradient(180deg, #1e293b, #0f172a); /* xanh đậm */
-    color: #e5e7eb; /* chữ sáng vừa đủ */
-
-    border: 2px solid #4f46e5; /* tím-xanh dịu */
-    border-radius: 10px;
-
-    font-size: 20px;
-    font-weight: 600;
-
-    box-shadow:
-        inset 0 1px 2px rgba(255,255,255,0.06),
-        0 4px 10px rgba(0,0,0,0.35);
-}
-/* HOVER Ô */
-.cell:hover {
-    border-color: #6366f1;
-    box-shadow:
-        0 6px 14px rgba(99,102,241,0.35);
-    transform: translateY(-1px);
-    background: #ffffff;
-}
-
-/* FOCUS Ô */
-.cell:focus {
-    border-color: #4f46e5;
-    box-shadow:
-        0 0 0 2px rgba(99,102,241,0.35),
-        0 8px 18px rgba(79,70,229,0.45);
-    background: #ffffff;
-    transform: scale(1.06);
-}
-
-
-
-</style>
+        .container { display: flex; gap: 20px; max-width: 1000px; margin: 0 auto; align-items: flex-start; }
+        .column { flex: 1; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { padding: 15px; text-align: center; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        .bg-large { background-color: #e74c3c; }
+        .bg-small { background-color: #27ae60; }
+        
+        .group-row { padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; }
+        .group-row:last-child { border-bottom: none; }
+        .tens-label { background: #f0f2f5; color: #666; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 15px; min-width: 40px; text-align: center; font-weight: bold; }
+        .numbers-list { font-size: 18px; font-weight: 600; color: #2c3e50; letter-spacing: 1px; }
+    </style>
 </head>
 <body>
 
-<div class="box">
-    <div class="controls">
-        Hàng:
-        <input type="number" id="rows" value="20" min="1">
-        Cột:
-        <input type="number" id="cols" value="10" min="1">
-        <br><br>
-        <button onclick="buildGrid()">Tạo bảng</button>
-        <button onclick="saveGrid()">Lưu</button>
-        <button onclick="clearGrid()">Xóa bảng</button>
-        <button onclick="exportExcel()">Xuất Excel</button>
+<div class="input-section">
+    <h2>HỆ THỐNG PHÂN LOẠI SỐ</h2>
+    <input type="number" id="numInput" placeholder="Nhập số...">
+    <select id="typeSelect">
+        <option value="small">Phân loại NHỎ</option>
+        <option value="large">Phân loại LỚN</option>
+    </select>
+    <button onclick="addData()">LƯU & SẮP XẾP</button>
+</div>
+
+<div class="container">
+    <div class="column">
+        <div class="header bg-large">Cột Lớn</div>
+        <div id="largeList"></div>
     </div>
 
-    <div id="grid" class="grid"></div>
+    <div class="column">
+        <div class="header bg-small">Cột Nhỏ</div>
+        <div id="smallList"></div>
+    </div>
 </div>
 
 <script>
-const rowsInput = document.getElementById("rows");
-const colsInput = document.getElementById("cols");
-const grid = document.getElementById("grid");
+    // Dữ liệu ban đầu từ danh sách của bạn
+    let smallNumbers = [0, 2, 14, 21, 22, 30, 32, 33, 40, 44, 56, 57, 65, 66, 70, 75, 86, 89, 95, 98, 210, 390, 480, 490, 891, 993];
+    let largeNumbers = [10, 11, 20, 50, 55, 60, 62, 77, 80, 84, 85, 88, 90, 99, 570, 610];
 
-/* ================= BUILD GRID ================= */
-function buildGrid(data = null) {
-    const rows = +rowsInput.value;
-    const cols = +colsInput.value;
-
-    grid.innerHTML = "";
-    grid.style.gridTemplateColumns = `48px repeat(${cols}, 44px)`;
-
-    // ô góc trên trái
-    grid.appendChild(document.createElement("div"));
-
-    // header cột (0 → cols-1)
-    for (let c = 0; c < cols; c++) {
-        const h = document.createElement("div");
-        h.className = "header";
-        h.textContent = c;
-        grid.appendChild(h);
+    function render() {
+        renderColumn('smallList', smallNumbers);
+        renderColumn('largeList', largeNumbers);
     }
 
-    // từng hàng
-    for (let r = 0; r < rows; r++) {
+    function renderColumn(elementId, numberArray) {
+        const container = document.getElementById(elementId);
+        container.innerHTML = '';
 
-        // header hàng
-        const rowHeader = document.createElement("div");
-        rowHeader.className = "header";
-        rowHeader.textContent = r;
-        grid.appendChild(rowHeader);
+        // 1. Sắp xếp mảng từ nhỏ đến lớn
+        numberArray.sort((a, b) => a - b);
 
-        for (let c = 0; c < cols; c++) {
-            const input = document.createElement("input");
-            input.className = "cell";
-            input.type = "text";
-            input.maxLength = 1;
-            input.dataset.row = r;
-            input.dataset.col = c;
-
-            if (data?.[r]?.[c] !== undefined) {
-                input.value = data[r][c];
+        // 2. Gom nhóm theo hàng chục (hoặc hàng trăm nếu số lớn)
+        const groups = {};
+        numberArray.forEach(num => {
+            // Chia cho 10 và làm tròn xuống để lấy định danh hàng chục (0, 1, 2...)
+            const groupKey = Math.floor(num / 10); 
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
             }
+            if (!groups[groupKey].includes(num)) {
+                groups[groupKey].push(num);
+            }
+        });
 
-            // tự nhảy ô
-            input.addEventListener("input", () => {
-                input.value = input.value.slice(0, 1);
-                if (input.value) focusNextCell(input);
-            });
+        // 3. Hiển thị từng nhóm trên 1 hàng
+        Object.keys(groups).sort((a, b) => a - b).forEach(key => {
+            const row = document.createElement('div');
+            row.className = 'group-row';
+            
+            // Nhãn hàng (ví dụ: Đầu 1, Đầu 2...)
+            const label = document.createElement('span');
+            label.className = 'tens-label';
+            label.innerText = key + 'x'; 
 
-            grid.appendChild(input);
+            const nums = document.createElement('span');
+            nums.className = 'numbers-list';
+            nums.innerText = groups[key].join(', ');
+
+            row.appendChild(label);
+            row.appendChild(nums);
+            container.appendChild(row);
+        });
+    }
+
+    function addData() {
+        const input = document.getElementById('numInput');
+        const type = document.getElementById('typeSelect').value;
+        const value = parseInt(input.value);
+
+        if (isNaN(value)) {
+            alert("Hãy nhập một số hợp lệ!");
+            return;
         }
+
+        if (type === 'small') {
+            smallNumbers.push(value);
+        } else {
+            largeNumbers.push(value);
+        }
+
+        input.value = '';
+        render();
     }
 
-    focusFirstCell();
-}
-
-/* ================= FOCUS ================= */
-function focusFirstCell() {
-    requestAnimationFrame(() => {
-        document.querySelector(
-            '.cell[data-row="0"][data-col="0"]'
-        )?.focus();
-    });
-}
-
-function focusNextCell(current) {
-    const r = +current.dataset.row;
-    const c = +current.dataset.col;
-    const rows = +rowsInput.value;
-    const cols = +colsInput.value;
-
-    let nextR = r;
-    let nextC = c + 1;
-
-    if (nextC >= cols) {
-        nextC = 0;
-        nextR++;
-    }
-
-    if (nextR >= rows) return;
-
-    document.querySelector(
-        `.cell[data-row="${nextR}"][data-col="${nextC}"]`
-    )?.focus();
-}
-
-/* ================= DATA ================= */
-function getGridData() {
-    const rows = +rowsInput.value;
-    const cols = +colsInput.value;
-    const data = Array.from({ length: rows }, () => Array(cols).fill(""));
-
-    document.querySelectorAll(".cell").forEach(cell => {
-        data[cell.dataset.row][cell.dataset.col] = cell.value;
-    });
-
-    return data;
-}
-
-/* ================= ACTIONS ================= */
-function saveGrid() {
-    localStorage.setItem("gridData", JSON.stringify({
-        rows: +rowsInput.value,
-        cols: +colsInput.value,
-        data: getGridData()
-    }));
-    alert("Đã lưu bảng");
-}
-
-function clearGrid() {
-    document.querySelectorAll(".cell").forEach(cell => cell.value = "");
-    focusFirstCell();
-}
-
-function exportExcel() {
-    const csv = getGridData()
-        .map(row => row.map(v => `"${v}"`).join(","))
-        .join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "bang_du_lieu.csv";
-    a.click();
-}
-
-/* ================= INIT ================= */
-(function init() {
-    const saved = localStorage.getItem("gridData");
-    if (!saved) {
-        buildGrid();
-        return;
-    }
-
-    const payload = JSON.parse(saved);
-    rowsInput.value = payload.rows;
-    colsInput.value = payload.cols;
-    buildGrid(payload.data);
-})();
+    // Chạy khởi tạo
+    render();
 </script>
 
 </body>
 </html>
-
