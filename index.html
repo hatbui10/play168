@@ -2,98 +2,124 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản Lý Số</title>
+    <title>Quản Lý Số - Dark Mode Bảo Mật</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
-        
-        /* Thanh bảo mật PIN */
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-card: #161616;
+            --text-main: #e0e0e0;
+            --border-color: #2a2a2a;
+            --accent-small: #00ff88;
+            --accent-large: #ff4d4d;
+            --input-bg: #222;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-body); 
+            padding: 20px; 
+            color: var(--text-main); 
+        }
+
         .security-section {
-            max-width: 700px; margin: 0 auto 15px; background: #333; color: white;
-            padding: 15px; border-radius: 12px; text-align: center; display: flex;
-            justify-content: center; align-items: center; gap: 10px;
+            max-width: 700px; margin: 0 auto 15px; 
+            background: #1a1a1a; color: white;
+            padding: 15px; border-radius: 12px; text-align: center; 
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            border: 1px solid var(--border-color);
         }
 
         .input-section { 
-            text-align: center; margin-bottom: 25px; background: white; padding: 20px; 
-            border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 700px; 
-            margin-left: auto; margin-right: auto;
+            text-align: center; margin-bottom: 25px; 
+            background: var(--bg-card); padding: 20px; 
+            border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
+            max-width: 700px; margin-left: auto; margin-right: auto;
+            border: 1px solid var(--border-color);
         }
         
-        input, select, button { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ddd; outline: none; margin: 5px; }
+        input, select, button { 
+            padding: 12px; font-size: 16px; border-radius: 6px; 
+            border: 1px solid var(--border-color); 
+            outline: none; margin: 5px; 
+            background: var(--input-bg); color: white;
+        }
         
-        /* Nút Lưu */
         .btn-save { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; padding: 12px 30px; }
-        .btn-save:disabled { background-color: #ccc; cursor: not-allowed; }
-        .btn-save:hover:not(:disabled) { background-color: #0056b3; }
-
-        /* Nút Undo */
-        .btn-undo { background-color: #6c757d; color: white; border: none; cursor: pointer; font-weight: bold; }
-        .btn-undo:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-save:disabled { background-color: #333; color: #666; cursor: not-allowed; }
+        .btn-undo { background-color: #444; color: #ffcc00; border: none; cursor: pointer; font-weight: bold; }
+        .btn-undo:disabled { background-color: #333; color: #666; cursor: not-allowed; }
 
         .container { display: flex; gap: 20px; max-width: 1000px; margin: 0 auto; align-items: flex-start; }
-        .column { flex: 1; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { padding: 15px; text-align: center; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 1px; }
-        .bg-large { background-color: #e74c3c; }
-        .bg-small { background-color: #27ae60; }
+        .column { 
+            flex: 1; background: var(--bg-card); 
+            border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            overflow: hidden; border: 1px solid var(--border-color);
+        }
         
-        .group-row { padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; }
+        .header { padding: 15px; text-align: center; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid var(--border-color); }
+        .bg-large { color: var(--accent-large); }
+        .bg-small { color: var(--accent-small); }
+        
+        .group-row { padding: 12px 15px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; }
         .group-row:last-child { border-bottom: none; }
-        .tens-label { background: #f0f2f5; color: #666; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 15px; min-width: 40px; text-align: center; font-weight: bold; }
-        .numbers-list { font-size: 18px; font-weight: 600; color: #2c3e50; letter-spacing: 1px; }
+        
+        .tens-label { 
+            background: #2a2a2a; color: #888; 
+            padding: 4px 8px; border-radius: 4px; font-size: 12px; 
+            margin-right: 15px; min-width: 40px; text-align: center; font-weight: bold; 
+        }
+        .numbers-list { font-size: 20px; font-weight: 600; color: #fff; letter-spacing: 1px; }
         
         #lock-status { font-weight: bold; margin-right: 10px; }
-        .status-locked { color: #ff4d4d; }
-        .status-unlocked { color: #00ff88; }
+        .status-locked { color: var(--accent-large); }
+        .status-unlocked { color: var(--accent-small); }
     </style>
 </head>
 <body>
 
 <div class="security-section">
-    <span id="lock-status" class="status-locked">🔒 ĐANG KHÓA</span>
-    <input type="password" id="pinInput" placeholder="Nhập mã 6 số..." maxlength="6" style="width: 130px; background: white; color: black;">
-    <button onclick="unlockApp()" style="background: #555;">XÁC THỰC</button>
-    <button onclick="lockApp()" style="background: #222; font-size: 12px;">KHÓA LẠI</button>
+    <span id="lock-status" class="status-locked">🔒 ĐANG KHÓA (CHỈ XEM)</span>
+    <input type="password" id="pinInput" placeholder="Mã PIN 6 số..." maxlength="6" style="width: 130px;">
+    <button onclick="unlockApp()" style="background: #333;">XÁC THỰC</button>
+    <button onclick="lockApp()" style="background: #000; font-size: 11px;">KHÓA LẠI</button>
 </div>
 
 <div class="input-section">
-    <h2>HỆ THỐNG PHÂN LOẠI SỐ</h2>
-    <input type="number" id="numInput" placeholder="Nhập số..." disabled>
+    <h2 style="color: #fff; margin-top: 0;">HỆ THỐNG PHÂN LOẠI SỐ</h2>
+    <input type="number" id="numInput" placeholder="Nhập số mới..." disabled>
     <select id="typeSelect" disabled>
-        <option value="small">Phân loại NHỎ</option>
-        <option value="large">Phân loại LỚN</option>
+        <option value="small">Cột NHỎ</option>
+        <option value="large">Cột LỚN</option>
     </select>
-    <button class="btn-save" id="saveBtn" onclick="addData()" disabled>LƯU & SẮP XẾP</button>
+    <button class="btn-save" id="saveBtn" onclick="addData()" disabled>LƯU</button>
     <button class="btn-undo" id="undoBtn" onclick="undo()" disabled>HOÀN TÁC (UNDO)</button>
 </div>
 
 <div class="container">
     <div class="column">
-        <div class="header bg-large">Cột Lớn</div>
+        <div class="header bg-large">Nhóm Lớn</div>
         <div id="largeList"></div>
     </div>
-
     <div class="column">
-        <div class="header bg-small">Cột Nhỏ</div>
+        <div class="header bg-small">Nhóm Nhỏ</div>
         <div id="smallList"></div>
     </div>
 </div>
 
 <script>
-    // --- CẤU HÌNH MÃ PIN TẠI ĐÂY ---
-    const MY_PIN = "123456";
+    const MY_PIN = "123456"; // Mật mã của bạn
 
-    // Khôi phục dữ liệu từ LocalStorage hoặc dùng mặc định
-    let smallNumbers = JSON.parse(localStorage.getItem('smallData')) || [00, 02, 14, 21, 22, 30, 32, 33, 40, 44, 56, 57, 65, 66, 70, 75, 86, 89, 95, 98, 210, 390, 480, 490, 891, 993];
-    let largeNumbers = JSON.parse(localStorage.getItem('largeData')) || [10, 11, 20, 50, 55, 60, 62, 77, 80, 84, 85, 88, 90, 99, 570, 610];
-    
-    // Mảng lưu lịch sử để Undo
+    // KHÔI PHỤC DANH SÁCH SỐ CỦA BẠN
+    let defaultSmall = [0, 2, 14, 21, 22, 30, 32, 33, 40, 44, 56, 57, 65, 66, 70, 75, 86, 89, 95, 98, 210, 390, 480, 490, 891, 993];
+    let defaultLarge = [10, 11, 20, 50, 55, 60, 62, 77, 80, 84, 85, 88, 90, 99, 570, 610];
+
+    let smallNumbers = JSON.parse(localStorage.getItem('smallData')) || defaultSmall;
+    let largeNumbers = JSON.parse(localStorage.getItem('largeData')) || defaultLarge;
     let historyStack = [];
 
-    // Hàm mở khóa
     function unlockApp() {
-        const pin = document.getElementById('pinInput').value;
-        if(pin === MY_PIN) {
-            document.getElementById('lock-status').innerText = "🔓 ĐÃ MỞ";
+        if(document.getElementById('pinInput').value === MY_PIN) {
+            document.getElementById('lock-status').innerText = "🔓 ĐÃ MỞ QUYỀN SỬA";
             document.getElementById('lock-status').className = "status-unlocked";
             document.getElementById('numInput').disabled = false;
             document.getElementById('typeSelect').disabled = false;
@@ -101,19 +127,15 @@
             document.getElementById('undoBtn').disabled = false;
             document.getElementById('pinInput').style.display = 'none';
         } else {
-            alert("Mật khẩu sai!");
+            alert("Sai mã PIN!");
         }
     }
 
-    function lockApp() {
-        location.reload();
-    }
+    function lockApp() { location.reload(); }
 
     function render() {
-        // Lưu vào LocalStorage
         localStorage.setItem('smallData', JSON.stringify(smallNumbers));
         localStorage.setItem('largeData', JSON.stringify(largeNumbers));
-
         renderColumn('smallList', smallNumbers);
         renderColumn('largeList', largeNumbers);
     }
@@ -122,14 +144,12 @@
         const container = document.getElementById(elementId);
         container.innerHTML = '';
         numberArray.sort((a, b) => a - b);
-
         const groups = {};
         numberArray.forEach(num => {
-            const groupKey = Math.floor(num / 10); 
-            if (!groups[groupKey]) groups[groupKey] = [];
-            if (!groups[groupKey].includes(num)) groups[groupKey].push(num);
+            const key = Math.floor(num / 10); 
+            if (!groups[key]) groups[key] = [];
+            if (!groups[key].includes(num)) groups[key].push(num);
         });
-
         Object.keys(groups).sort((a, b) => a - b).forEach(key => {
             const row = document.createElement('div');
             row.className = 'group-row';
@@ -140,43 +160,28 @@
 
     function addData() {
         const input = document.getElementById('numInput');
-        const type = document.getElementById('typeSelect').value;
         const value = parseInt(input.value);
+        if (isNaN(value)) return;
 
-        if (isNaN(value)) {
-            alert("Hãy nhập một số hợp lệ!");
-            return;
-        }
-
-        // Lưu trạng thái hiện tại vào lịch sử trước khi thêm
         historyStack.push({ s: [...smallNumbers], l: [...largeNumbers] });
-        if(historyStack.length > 20) historyStack.shift();
+        if(historyStack.length > 30) historyStack.shift();
 
-        if (type === 'small') {
-            smallNumbers.push(value);
-        } else {
-            largeNumbers.push(value);
-        }
+        if (document.getElementById('typeSelect').value === 'small') smallNumbers.push(value);
+        else largeNumbers.push(value);
 
         input.value = '';
         render();
     }
 
-    // Hàm Hoàn tác
     function undo() {
         if(historyStack.length > 0) {
-            let lastState = historyStack.pop();
-            smallNumbers = lastState.s;
-            largeNumbers = lastState.l;
+            let last = historyStack.pop();
+            smallNumbers = last.s; largeNumbers = last.l;
             render();
-        } else {
-            alert("Không có gì để hoàn tác!");
         }
     }
 
-    // Chạy khởi tạo
     render();
 </script>
-
 </body>
 </html>
