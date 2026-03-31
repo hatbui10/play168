@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản Lý Số - Dark Mode Bảo Mật</title>
+    <title>Quản Lý Số - Bảo Mật & Lưu Trữ</title>
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -66,9 +66,9 @@
         .tens-label { 
             background: #2a2a2a; color: #888; 
             padding: 4px 8px; border-radius: 4px; font-size: 12px; 
-            margin-right: 15px; min-width: 40px; text-align: center; font-weight: bold; 
+            margin-right: 15px; min-width: 45px; text-align: center; font-weight: bold; 
         }
-        .numbers-list { font-size: 20px; font-weight: 600; color: #fff; letter-spacing: 1px; }
+        .numbers-list { font-size: 20px; font-weight: 600; color: #fff; letter-spacing: 1px; line-height: 1.5; }
         
         #lock-status { font-weight: bold; margin-right: 10px; }
         .status-locked { color: var(--accent-large); }
@@ -79,20 +79,20 @@
 
 <div class="security-section">
     <span id="lock-status" class="status-locked">🔒 ĐANG KHÓA (CHỈ XEM)</span>
-    <input type="password" id="pinInput" placeholder="Mã PIN 6 số..." maxlength="6" style="width: 130px;">
+    <input type="password" id="pinInput" placeholder="Mã PIN..." maxlength="6" style="width: 110px;">
     <button onclick="unlockApp()" style="background: #333;">XÁC THỰC</button>
     <button onclick="lockApp()" style="background: #000; font-size: 11px;">KHÓA LẠI</button>
 </div>
 
 <div class="input-section">
     <h2 style="color: #fff; margin-top: 0;">HỆ THỐNG PHÂN LOẠI SỐ</h2>
-    <input type="text" id="numInput" placeholder="Nhập số mới..." disabled>
+    <input type="text" id="numInput" placeholder="Nhập số..." disabled>
     <select id="typeSelect" disabled>
         <option value="small">Cột NHỎ</option>
         <option value="large">Cột LỚN</option>
     </select>
     <button class="btn-save" id="saveBtn" onclick="addData()" disabled>LƯU</button>
-    <button class="btn-undo" id="undoBtn" onclick="undo()" disabled>HOÀN TÁC (UNDO)</button>
+    <button class="btn-undo" id="undoBtn" onclick="undo()" disabled>HOÀN TÁC</button>
 </div>
 
 <div class="container">
@@ -107,15 +107,23 @@
 </div>
 
 <script>
-localStorage.clear(); 
     const MY_PIN = "123456"; 
 
-    // CHUYỂN DỮ LIỆU SANG DẠNG CHUỖI "" ĐỂ GIỮ SỐ 0
+    // 1. Định nghĩa dữ liệu gốc
     let defaultSmall = ["00", "02", "14", "21", "22", "30", "32", "33", "40", "44", "56", "57", "65", "66", "70", "75", "86", "89", "95", "98", "210", "390", "480", "490", "891", "993"];
     let defaultLarge = ["10", "11", "20", "50", "55", "60", "62", "77", "80", "84", "85", "88", "90", "99", "570", "610"];
 
-    let  smallNumbers = JSON.parse(localStorage.getItem('smallData')) || defaultSmall;
-    let largeNumbers = JSON.parse(localStorage.getItem('largeData')) || defaultLarge;
+    // 2. Kiểm tra xem có dữ liệu đã lưu chưa, nếu CHƯA có thì mới nạp dữ liệu gốc
+    if (!localStorage.getItem('smallData')) {
+        localStorage.setItem('smallData', JSON.stringify(defaultSmall));
+    }
+    if (!localStorage.getItem('largeData')) {
+        localStorage.setItem('largeData', JSON.stringify(defaultLarge));
+    }
+
+    // 3. Đọc dữ liệu từ bộ nhớ máy (LocalStorage)
+    let smallNumbers = JSON.parse(localStorage.getItem('smallData'));
+    let largeNumbers = JSON.parse(localStorage.getItem('largeData'));
     let historyStack = [];
 
     function unlockApp() {
@@ -132,11 +140,23 @@ localStorage.clear();
         }
     }
 
-    function lockApp() { location.reload(); }
+    // SỬA LỖI: Khóa lại không làm load lại trang để tránh mất đồng bộ
+    function lockApp() {
+        document.getElementById('lock-status').innerText = "🔒 ĐANG KHÓA (CHỈ XEM)";
+        document.getElementById('lock-status').className = "status-locked";
+        document.getElementById('numInput').disabled = true;
+        document.getElementById('typeSelect').disabled = true;
+        document.getElementById('saveBtn').disabled = true;
+        document.getElementById('undoBtn').disabled = true;
+        document.getElementById('pinInput').style.display = 'inline-block';
+        document.getElementById('pinInput').value = "";
+    }
 
     function render() {
+        // Cập nhật vào bộ nhớ trình duyệt
         localStorage.setItem('smallData', JSON.stringify(smallNumbers));
         localStorage.setItem('largeData', JSON.stringify(largeNumbers));
+        
         renderColumn('smallList', smallNumbers);
         renderColumn('largeList', largeNumbers);
     }
@@ -144,27 +164,20 @@ localStorage.clear();
     function renderColumn(elementId, numberArray) {
         const container = document.getElementById(elementId);
         container.innerHTML = '';
-
-        numberArray.sort((a, b) => parseInt(a) - parseInt(b));
-
+        const sortedArray = [...numberArray].sort((a, b) => parseInt(a) - parseInt(b));
         const groups = {};
-        numberArray.forEach(num => {
-            const numeric = parseInt(num, 10);
-            const key = isNaN(numeric) ? "?" : Math.floor(numeric / 10);
-
+        sortedArray.forEach(num => {
+            const val = parseInt(num, 10);
+            const key = isNaN(val) ? "?" : Math.floor(val / 10);
             if (!groups[key]) groups[key] = [];
-
-            // 👉 GIỮ NGUYÊN num, KHÔNG SỬA FORMAT
-            if (!groups[key].includes(num)) {
-                groups[key].push(num);
-            }
+            groups[key].push(num);
         });
 
-        Object.keys(groups).sort((a, b) => a - b).forEach(key => {
+        Object.keys(groups).sort((a, b) => parseInt(a) - parseInt(b)).forEach(key => {
             const row = document.createElement('div');
             row.className = 'group-row';
             row.innerHTML = `<span class="tens-label">${key}x</span>
-                             <span class="numbers-list">${groups[key].join(', ')}</span>`;
+                             <span class="numbers-list">${groups[key].join(' - ')}</span>`;
             container.appendChild(row);
         });
     }
@@ -185,7 +198,7 @@ localStorage.clear();
         }
 
         input.value = '';
-        render();
+        render(); // Gọi render để lưu ngay vào localStorage
     }
 
     function undo() {
@@ -197,6 +210,7 @@ localStorage.clear();
         }
     }
 
+    // Chạy lần đầu khi mở trang
     render();
 </script>
 </body>
