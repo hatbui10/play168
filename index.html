@@ -107,13 +107,14 @@
 </div>
 
 <script>
+
     const MY_PIN = "123456"; 
 
     // CHUYỂN DỮ LIỆU SANG DẠNG CHUỖI "" ĐỂ GIỮ SỐ 0
     let defaultSmall = ["00", "02", "14", "21", "22", "30", "32", "33", "40", "44", "56", "57", "65", "66", "70", "75", "86", "89", "95", "98", "210", "390", "480", "490", "891", "993"];
     let defaultLarge = ["10", "11", "20", "50", "55", "60", "62", "77", "80", "84", "85", "88", "90", "99", "570", "610"];
 
-    let smallNumbers = JSON.parse(localStorage.getItem('smallData')) || defaultSmall;
+    let  smallNumbers = JSON.parse(localStorage.getItem('smallData')) || defaultSmall;
     let largeNumbers = JSON.parse(localStorage.getItem('largeData')) || defaultLarge;
     let historyStack = [];
 
@@ -143,37 +144,45 @@
     function renderColumn(elementId, numberArray) {
         const container = document.getElementById(elementId);
         container.innerHTML = '';
-        
-        // Sắp xếp chuỗi theo giá trị số
+
         numberArray.sort((a, b) => parseInt(a) - parseInt(b));
-        
+
         const groups = {};
         numberArray.forEach(num => {
-            // Lấy hàng chục để chia nhóm (ví dụ 00, 02 -> nhóm 0)
-            const key = Math.floor(parseInt(num) / 10); 
+            const numeric = parseInt(num, 10);
+            const key = isNaN(numeric) ? "?" : Math.floor(numeric / 10);
+
             if (!groups[key]) groups[key] = [];
-            if (!groups[key].includes(num)) groups[key].push(num);
+
+            // 👉 GIỮ NGUYÊN num, KHÔNG SỬA FORMAT
+            if (!groups[key].includes(num)) {
+                groups[key].push(num);
+            }
         });
 
         Object.keys(groups).sort((a, b) => a - b).forEach(key => {
             const row = document.createElement('div');
             row.className = 'group-row';
-            row.innerHTML = `<span class="tens-label">${key}x</span><span class="numbers-list">${groups[key].join(', ')}</span>`;
+            row.innerHTML = `<span class="tens-label">${key}x</span>
+                             <span class="numbers-list">${groups[key].join(', ')}</span>`;
             container.appendChild(row);
         });
     }
 
     function addData() {
         const input = document.getElementById('numInput');
-        const value = input.value.trim(); // Lấy nguyên văn chuỗi bạn nhập
-        
+        const value = input.value.trim();
+
         if (value === "" || isNaN(value)) return;
 
         historyStack.push({ s: [...smallNumbers], l: [...largeNumbers] });
         if(historyStack.length > 30) historyStack.shift();
 
-        if (document.getElementById('typeSelect').value === 'small') smallNumbers.push(value);
-        else largeNumbers.push(value);
+        if (document.getElementById('typeSelect').value === 'small') {
+            smallNumbers.push(value);
+        } else {
+            largeNumbers.push(value);
+        }
 
         input.value = '';
         render();
@@ -182,7 +191,8 @@
     function undo() {
         if(historyStack.length > 0) {
             let last = historyStack.pop();
-            smallNumbers = last.s; largeNumbers = last.l;
+            smallNumbers = last.s; 
+            largeNumbers = last.l;
             render();
         }
     }
