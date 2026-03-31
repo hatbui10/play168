@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Neon Glass Scanner v11.0</title>
+    <title>Neon Glass Scanner v11.0 - Fixed Font</title>
     <style>
         :root {
             --bg: #05070a;
@@ -67,6 +67,12 @@
         }
         .btn-main:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 25px var(--neon-green); }
 
+        .btn-export {
+            background: transparent; border: 1px solid var(--neon-gold); color: var(--neon-gold);
+            padding: 12px 35px; cursor: pointer; border-radius: 30px; font-weight: bold; transition: 0.3s;
+        }
+        .btn-export:hover { background: var(--neon-gold); color: #000; box-shadow: 0 0 25px var(--neon-gold); }
+
         .results { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
         .box { 
             background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); 
@@ -101,13 +107,14 @@
     <div class="upload-section">
         <label for="fileInput" class="btn-upload">Nạp dữ liệu .txt</label>
         <input type="file" id="fileInput" accept=".txt">
-        <div id="fileName" style="margin-top: 12px; font-size: 0.8rem; color: #555;">Kéo thả hoặc chọn file để bắt đầu</div>
+        <div id="fileName" style="margin-top: 12px; font-size: 0.8rem; color: #555;">File xuất ra đã được sửa lỗi font tiếng Việt</div>
     </div>
 
-    <textarea id="input" placeholder="Dữ liệu được lưu an toàn tại LocalStorage..."></textarea>
+    <textarea id="input" placeholder="Dữ liệu thô..."></textarea>
     
     <div class="toolbar">
         <button class="btn-main" onclick="runAnalysis()">BẮT ĐẦU PHÂN TÍCH</button>
+        <button class="btn-export" onclick="exportFullFile()">XUẤT FILE TỔNG HỢP</button>
         <button style="border-color: #444; color: #888;" class="btn-main" onclick="clearData()">XÓA TẤT CẢ</button>
     </div>
 
@@ -160,7 +167,7 @@
     function runAnalysis() {
         const raw = document.getElementById('input').value.replace(/\D/g, '');
         if (!raw) return;
-        localStorage.setItem('lastInput', raw);
+        localStorage.setItem('lastInput', document.getElementById('input').value);
 
         finalL = []; finalN = []; finalTG = [];
 
@@ -199,6 +206,24 @@
         navigator.clipboard.writeText(arr.join(', ')).then(() => {
             alert("Đã copy danh sách vào bộ nhớ tạm!");
         });
+    }
+
+    function exportFullFile() {
+        if (finalL.length === 0 && finalN.length === 0) return alert("Không có dữ liệu để xuất!");
+        
+        // Tạo nội dung file
+        const content = `tệp nhỏ \n${finalN.join(', ')}\n\n\ntệp lớn \n${finalL.join(', ')}`;
+        
+        // Thêm mã BOM (Byte Order Mark) cho UTF-8 để chống lỗi font tiếng Việt
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + content], { type: 'text/plain;charset=utf-8' });
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ket_qua_chuan_font_${new Date().getTime()}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     function clearData() {
