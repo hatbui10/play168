@@ -86,7 +86,7 @@
 
 <div class="input-section">
     <h2 style="color: #fff; margin-top: 0;">HỆ THỐNG PHÂN LOẠI SỐ</h2>
-    <input type="number" id="numInput" placeholder="Nhập số mới..." disabled>
+    <input type="text" id="numInput" placeholder="Nhập số mới..." disabled>
     <select id="typeSelect" disabled>
         <option value="small">Cột NHỎ</option>
         <option value="large">Cột LỚN</option>
@@ -107,11 +107,11 @@
 </div>
 
 <script>
-    const MY_PIN = "123456"; // Mật mã của bạn
+    const MY_PIN = "123456"; 
 
-    // KHÔI PHỤC DANH SÁCH SỐ CỦA BẠN
-    let defaultSmall = [00, 02, 14, 21, 22, 30, 32, 33, 40, 44, 56, 57, 65, 66, 70, 75, 86, 89, 95, 98, 210, 390, 480, 490, 891, 993];
-    let defaultLarge = [10, 11, 20, 50, 55, 60, 62, 77, 80, 84, 85, 88, 90, 99, 570, 610];
+    // CHUYỂN DỮ LIỆU SANG DẠNG CHUỖI "" ĐỂ GIỮ SỐ 0
+    let defaultSmall = ["00", "02", "14", "21", "22", "30", "32", "33", "40", "44", "56", "57", "65", "66", "70", "75", "86", "89", "95", "98", "210", "390", "480", "490", "891", "993"];
+    let defaultLarge = ["10", "11", "20", "50", "55", "60", "62", "77", "80", "84", "85", "88", "90", "99", "570", "610"];
 
     let smallNumbers = JSON.parse(localStorage.getItem('smallData')) || defaultSmall;
     let largeNumbers = JSON.parse(localStorage.getItem('largeData')) || defaultLarge;
@@ -143,13 +143,18 @@
     function renderColumn(elementId, numberArray) {
         const container = document.getElementById(elementId);
         container.innerHTML = '';
-        numberArray.sort((a, b) => a - b);
+        
+        // Sắp xếp chuỗi theo giá trị số
+        numberArray.sort((a, b) => parseInt(a) - parseInt(b));
+        
         const groups = {};
         numberArray.forEach(num => {
-            const key = Math.floor(num / 10); 
+            // Lấy hàng chục để chia nhóm (ví dụ 00, 02 -> nhóm 0)
+            const key = Math.floor(parseInt(num) / 10); 
             if (!groups[key]) groups[key] = [];
             if (!groups[key].includes(num)) groups[key].push(num);
         });
+
         Object.keys(groups).sort((a, b) => a - b).forEach(key => {
             const row = document.createElement('div');
             row.className = 'group-row';
@@ -160,8 +165,9 @@
 
     function addData() {
         const input = document.getElementById('numInput');
-        const value = parseInt(input.value);
-        if (isNaN(value)) return;
+        const value = input.value.trim(); // Lấy nguyên văn chuỗi bạn nhập
+        
+        if (value === "" || isNaN(value)) return;
 
         historyStack.push({ s: [...smallNumbers], l: [...largeNumbers] });
         if(historyStack.length > 30) historyStack.shift();
