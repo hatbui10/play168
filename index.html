@@ -2,14 +2,33 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản Lý Số Theo Hàng Chục</title>
+    <title>Quản Lý Số</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
-        .input-section { text-align: center; margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 700px; margin-left: auto; margin-right: auto; }
+        
+        /* Thanh bảo mật PIN */
+        .security-section {
+            max-width: 700px; margin: 0 auto 15px; background: #333; color: white;
+            padding: 15px; border-radius: 12px; text-align: center; display: flex;
+            justify-content: center; align-items: center; gap: 10px;
+        }
+
+        .input-section { 
+            text-align: center; margin-bottom: 25px; background: white; padding: 20px; 
+            border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 700px; 
+            margin-left: auto; margin-right: auto;
+        }
         
         input, select, button { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ddd; outline: none; margin: 5px; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; padding: 12px 30px; }
-        button:hover { background-color: #0056b3; }
+        
+        /* Nút Lưu */
+        .btn-save { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; padding: 12px 30px; }
+        .btn-save:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-save:hover:not(:disabled) { background-color: #0056b3; }
+
+        /* Nút Undo */
+        .btn-undo { background-color: #6c757d; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .btn-undo:disabled { background-color: #ccc; cursor: not-allowed; }
 
         .container { display: flex; gap: 20px; max-width: 1000px; margin: 0 auto; align-items: flex-start; }
         .column { flex: 1; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
@@ -21,18 +40,30 @@
         .group-row:last-child { border-bottom: none; }
         .tens-label { background: #f0f2f5; color: #666; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 15px; min-width: 40px; text-align: center; font-weight: bold; }
         .numbers-list { font-size: 18px; font-weight: 600; color: #2c3e50; letter-spacing: 1px; }
+        
+        #lock-status { font-weight: bold; margin-right: 10px; }
+        .status-locked { color: #ff4d4d; }
+        .status-unlocked { color: #00ff88; }
     </style>
 </head>
 <body>
 
+<div class="security-section">
+    <span id="lock-status" class="status-locked">🔒 ĐANG KHÓA</span>
+    <input type="password" id="pinInput" placeholder="Nhập mã 6 số..." maxlength="6" style="width: 130px; background: white; color: black;">
+    <button onclick="unlockApp()" style="background: #555;">XÁC THỰC</button>
+    <button onclick="lockApp()" style="background: #222; font-size: 12px;">KHÓA LẠI</button>
+</div>
+
 <div class="input-section">
     <h2>HỆ THỐNG PHÂN LOẠI SỐ</h2>
-    <input type="number" id="numInput" placeholder="Nhập số...">
-    <select id="typeSelect">
+    <input type="number" id="numInput" placeholder="Nhập số..." disabled>
+    <select id="typeSelect" disabled>
         <option value="small">Phân loại NHỎ</option>
         <option value="large">Phân loại LỚN</option>
     </select>
-    <button onclick="addData()">LƯU & SẮP XẾP</button>
+    <button class="btn-save" id="saveBtn" onclick="addData()" disabled>LƯU & SẮP XẾP</button>
+    <button class="btn-undo" id="undoBtn" onclick="undo()" disabled>HOÀN TÁC (UNDO)</button>
 </div>
 
 <div class="container">
@@ -48,11 +79,41 @@
 </div>
 
 <script>
-    // Dữ liệu ban đầu từ danh sách của bạn
-    let smallNumbers = [0, 2, 14, 21, 22, 30, 32, 33, 40, 44, 56, 57, 65, 66, 70, 75, 86, 89, 95, 98, 210, 390, 480, 490, 891, 993];
-    let largeNumbers = [10, 11, 20, 50, 55, 60, 62, 77, 80, 84, 85, 88, 90, 99, 570, 610];
+    // --- CẤU HÌNH MÃ PIN TẠI ĐÂY ---
+    const MY_PIN = "123456";
+
+    // Khôi phục dữ liệu từ LocalStorage hoặc dùng mặc định
+    let smallNumbers = JSON.parse(localStorage.getItem('smallData')) || [00, 02, 14, 21, 22, 30, 32, 33, 40, 44, 56, 57, 65, 66, 70, 75, 86, 89, 95, 98, 210, 390, 480, 490, 891, 993];
+    let largeNumbers = JSON.parse(localStorage.getItem('largeData')) || [10, 11, 20, 50, 55, 60, 62, 77, 80, 84, 85, 88, 90, 99, 570, 610];
+    
+    // Mảng lưu lịch sử để Undo
+    let historyStack = [];
+
+    // Hàm mở khóa
+    function unlockApp() {
+        const pin = document.getElementById('pinInput').value;
+        if(pin === MY_PIN) {
+            document.getElementById('lock-status').innerText = "🔓 ĐÃ MỞ";
+            document.getElementById('lock-status').className = "status-unlocked";
+            document.getElementById('numInput').disabled = false;
+            document.getElementById('typeSelect').disabled = false;
+            document.getElementById('saveBtn').disabled = false;
+            document.getElementById('undoBtn').disabled = false;
+            document.getElementById('pinInput').style.display = 'none';
+        } else {
+            alert("Mật khẩu sai!");
+        }
+    }
+
+    function lockApp() {
+        location.reload();
+    }
 
     function render() {
+        // Lưu vào LocalStorage
+        localStorage.setItem('smallData', JSON.stringify(smallNumbers));
+        localStorage.setItem('largeData', JSON.stringify(largeNumbers));
+
         renderColumn('smallList', smallNumbers);
         renderColumn('largeList', largeNumbers);
     }
@@ -60,39 +121,19 @@
     function renderColumn(elementId, numberArray) {
         const container = document.getElementById(elementId);
         container.innerHTML = '';
-
-        // 1. Sắp xếp mảng từ nhỏ đến lớn
         numberArray.sort((a, b) => a - b);
 
-        // 2. Gom nhóm theo hàng chục (hoặc hàng trăm nếu số lớn)
         const groups = {};
         numberArray.forEach(num => {
-            // Chia cho 10 và làm tròn xuống để lấy định danh hàng chục (0, 1, 2...)
             const groupKey = Math.floor(num / 10); 
-            if (!groups[groupKey]) {
-                groups[groupKey] = [];
-            }
-            if (!groups[groupKey].includes(num)) {
-                groups[groupKey].push(num);
-            }
+            if (!groups[groupKey]) groups[groupKey] = [];
+            if (!groups[groupKey].includes(num)) groups[groupKey].push(num);
         });
 
-        // 3. Hiển thị từng nhóm trên 1 hàng
         Object.keys(groups).sort((a, b) => a - b).forEach(key => {
             const row = document.createElement('div');
             row.className = 'group-row';
-            
-            // Nhãn hàng (ví dụ: Đầu 1, Đầu 2...)
-            const label = document.createElement('span');
-            label.className = 'tens-label';
-            label.innerText = key + 'x'; 
-
-            const nums = document.createElement('span');
-            nums.className = 'numbers-list';
-            nums.innerText = groups[key].join(', ');
-
-            row.appendChild(label);
-            row.appendChild(nums);
+            row.innerHTML = `<span class="tens-label">${key}x</span><span class="numbers-list">${groups[key].join(', ')}</span>`;
             container.appendChild(row);
         });
     }
@@ -107,6 +148,10 @@
             return;
         }
 
+        // Lưu trạng thái hiện tại vào lịch sử trước khi thêm
+        historyStack.push({ s: [...smallNumbers], l: [...largeNumbers] });
+        if(historyStack.length > 20) historyStack.shift();
+
         if (type === 'small') {
             smallNumbers.push(value);
         } else {
@@ -115,6 +160,18 @@
 
         input.value = '';
         render();
+    }
+
+    // Hàm Hoàn tác
+    function undo() {
+        if(historyStack.length > 0) {
+            let lastState = historyStack.pop();
+            smallNumbers = lastState.s;
+            largeNumbers = lastState.l;
+            render();
+        } else {
+            alert("Không có gì để hoàn tác!");
+        }
     }
 
     // Chạy khởi tạo
