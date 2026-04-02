@@ -161,38 +161,79 @@
         runAnalysis();
     });
 
-    function runAnalysis() {
+        function runAnalysis() {
         const raw = document.getElementById('input').value.replace(/\D/g, '');
         if (!raw || raw.length < 10) return;
 
-        // Sử dụng Set để tự động loại bỏ các chuỗi trùng lặp
         let setL = new Set();
         let setN = new Set();
         let setTG = new Set();
 
         for (let i = 0; i <= raw.length - 10; i++) {
-            let full10 = raw.substring(i, i + 10);
-            let A = full10.substring(0, 5);
-            let B = full10.substring(5, 10);
+            let A = raw.substring(i, i + 5);
+            let remain = raw.substring(i + 5); // Phần còn lại từ sau 5 số đầu
             
-            let digitsB = B.split('').map(n => parseInt(n));
+            // Lấy 5 số tiếp theo để phân loại Lớn/Nhỏ như cũ
+            let B_standard = raw.substring(i + 5, i + 10);
+            let digitsB = B_standard.split('').map(n => parseInt(n));
             let isAllSmall = digitsB.every(d => d < 5);
-            let isAllLarge = digitsB.every(d => d > 5);
+            let isAllLarge = digitsB.every(d => d >= 5);
 
-            let resultString = `${A}-${B}`;
+            if (isAllSmall) {
+                setN.add(`${A}-${B_standard}`);
+            } else if (isAllLarge) {
+                setL.add(`${A}-${B_standard}`);
+            } else {
+                // LOGIC TRUNG GIAN MỚI: Xây dựng chuỗi abab...
+                let ababStr = "";
+                for (let j = 0; j < remain.length; j++) {
+                    let current = parseInt(remain[j]);
+                    let next = (j + 1 < remain.length) ? parseInt(remain[j+1]) : null;
+                    let afterNext = (j + 2 < remain.length) ? parseInt(remain[j+2]) : null;
 
-            if (isAllSmall) setN.add(resultString);
-            else if (isAllLarge) setL.add(resultString);
-            else setTG.add(resultString);
+                    // Kiểm tra điều kiện dừng: baa (L-N-N) hoặc abb (N-L-L)
+                    if (next !== null && afterNext !== null) {
+                        let cL = current >= 5;
+                        let nL = next >= 5;
+                        let aL = afterNext >= 5;
+                        
+                        if ((cL && !nL && !aL) || (!cL && nL && aL)) {
+                            ababStr += current; // Lấy nốt số hiện tại rồi dừng
+                            break;
+                        }
+                    }
+
+                    // Kiểm tra tính chất abab (số sau phải ngược tính chất số trước)
+                    if (ababStr.length > 0) {
+                        let prev = parseInt(ababStr[ababStr.length - 1]);
+                        let prevIsLarge = prev >= 5;
+                        let currIsLarge = current >= 5;
+
+                        if (prevIsLarge === currIsLarge) break; // Nếu cùng tính chất thì dừng
+                    }
+
+                    ababStr += current;
+                }
+
+                if (ababStr.length >= 2) { // Chỉ lấy nếu tạo được chuỗi ab ít nhất 2 ký tự
+                    setTG.add(`${A}-${ababStr}`);
+                }
+            }
         }
 
-        // Chuyển Set ngược lại thành Array để hiển thị
         finalL = Array.from(setL);
         finalN = Array.from(setN);
         finalTG = Array.from(setTG);
 
         updateUI();
     }
+
+
+
+
+
+
+    
 
     function updateUI() {
         const draw = (id, arr, cId) => {
