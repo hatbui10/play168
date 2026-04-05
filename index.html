@@ -3,290 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Master Pro - Auto Scan</title>
+    <title>Number Scan Pro - Intelligence</title>
     <style>
         :root { 
-            --neon: #00f3ff; 
-            --pink: #ff00ff; 
-            --bg: #030305;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
+            --neon: #00f3ff; --pink: #ff00ff; --bg: #030305;
+            --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1);
+            --yellow: #ffff00;
         }
 
         body { 
-            background: var(--bg); 
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(0, 243, 255, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 90% 80%, rgba(255, 0, 255, 0.05) 0%, transparent 50%);
-            color: #fff; 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            margin: 30px 3px 0 3px; /* Rule: 30px top, 3px sides */
-            min-height: 100vh;
+            background: var(--bg); color: #fff; font-family: system-ui, sans-serif; 
+            margin: 20px 10px; min-height: 100vh;
         }
 
-        .box { 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            padding: 25px; 
-            border: 1px solid var(--border); 
-            border-radius: 20px; 
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+        .box { max-width: 900px; margin: 0 auto; background: var(--glass); backdrop-filter: blur(20px); padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
+
+        .controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; align-items: center; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; }
+
+        .count-row {
+            display: flex; gap: 10px; width: 100%; justify-content: center; margin: 5px 0;
         }
 
-        .status { 
-            color: var(--neon); 
-            font-size: 13px; 
-            text-align: center; 
-            margin-bottom: 20px; 
-            font-family: monospace;
-            text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
-            letter-spacing: 1px;
+        .count-mini-card {
+            flex: 1; max-width: 150px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 10px; padding: 5px; text-align: center;
         }
 
-        .controls { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 15px; 
-            margin-bottom: 25px; 
-            justify-content: center; 
-            align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 15px;
+        .count-label { font-size: 9px; color: #aaa; text-transform: uppercase; margin-bottom: 2px; }
+        .count-value { 
+            font-size: 48px; font-weight: 900; font-family: 'Courier New', monospace; 
+            line-height: 1; text-shadow: 0 0 15px currentColor;
         }
 
-        .input-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .c-small { border-color: var(--neon); color: var(--neon); }
+        .c-large { border-color: var(--pink); color: var(--pink); }
 
-        input { 
-            background: rgba(0, 0, 0, 0.5); 
-            border: 1px solid var(--border); 
-            color: #fff; 
-            padding: 12px; 
-            border-radius: 8px; 
-            outline: none; 
-            transition: 0.3s;
-            font-weight: bold;
-        }
-
-        /* Ô nhập chính N */
-        #numN { 
-            width: 100px; 
-            text-align: center; 
-            font-size: 1.5em; 
-            border-color: var(--neon);
-            color: var(--neon);
-            letter-spacing: 5px;
-        }
-
-        /* Ô nhập phụ M */
-        #numM { 
-            width: 60px; 
-            text-align: center; 
-            font-size: 1.5em; 
-            border-color: var(--pink);
-            color: var(--pink);
-            box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
-        }
-
-        #numM:focus {
-            box-shadow: 0 0 15px var(--pink);
-            border-color: var(--pink);
-        }
-
-        button { 
-            background: transparent;
-            border: 1px solid #ff4444; 
-            color: #ff4444; 
-            padding: 12px 20px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            text-transform: uppercase;
-            transition: 0.3s;
-        }
-
-        button:hover { 
-            background: #ff4444; 
-            color: #fff; 
-            box-shadow: 0 0 20px rgba(255, 68, 68, 0.4);
-        }
-
-        .grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 20px; 
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
+        /* Ô thông báo PP nhấp nháy */
+        #alertBox {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            margin-top: 10px;
+            background: rgba(255, 255, 0, 0.1);
+            border: 2px solid var(--yellow);
+            border-radius: 10px;
+            color: var(--yellow);
             text-align: center;
-            letter-spacing: 1px;
+            font-weight: bold;
+            font-size: 18px;
+            display: none; /* Chỉ hiện khi có kết quả */
+            animation: blink 1s infinite;
         }
 
+        @keyframes blink {
+            0% { opacity: 1; border-color: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
+            50% { opacity: 0.5; border-color: transparent; box-shadow: none; }
+            100% { opacity: 1; border-color: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
+        }
+
+        .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 5px; }
+        input { background: #000; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; outline: none; }
+        #numN { width: 80px; text-align: center; font-size: 1.2em; border-color: var(--neon); color: var(--neon); letter-spacing: 3px; }
+        #numM { width: 50px; text-align: center; font-size: 1.2em; border-color: var(--pink); color: var(--pink); }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start; }
         textarea { 
-            width: 100%; 
-            height: 500px; 
-            background: rgba(0, 0, 0, 0.4); 
-            color: #00ff41; 
-            border: 1px solid var(--border); 
-            border-radius: 12px; 
-            padding: 15px; 
-            font-family: 'Consolas', monospace; 
-            font-size: 18px; 
-            resize: none; 
-            box-sizing: border-box; 
-            scrollbar-width: thin;
-            scrollbar-color: var(--neon) transparent;
-        }
-
-        .input-label {
-            font-size: 12px;
-            color: var(--neon);
-            margin-right: 5px;
+            width: 100%; min-height: 60px; background: rgba(0,0,0,0.4); 
+            color: #00ff41; border: 1px solid var(--border); border-radius: 10px; 
+            padding: 12px; font-family: monospace; font-size: 16px; 
+            resize: none; overflow: hidden; box-sizing: border-box;
+            display: block;
         }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <div id="msg" class="status">HỆ THỐNG SẴN SÀNG</div>
+    <div id="msg" style="text-align:center; font-size:11px; color:var(--neon); margin-bottom:10px; font-family:monospace;">HỆ THỐNG SẴN SÀNG</div>
     
     <div class="controls">
-        <input type="file" id="f" multiple style="width: 200px;">
-        
-        <div class="input-group">
-            <span class="input-label">Ô N:</span>
-            <input type="text" id="numN" placeholder="---" readonly>
-            
-            <span class="input-label" style="color: var(--pink);">Ô M:</span>
-            <input type="number" id="numM" placeholder="0" inputmode="numeric">
+        <div class="input-row">
+            <input type="file" id="f" multiple style="width: 150px; font-size: 10px;">
+            <input type="text" id="numN" placeholder="N" readonly tabindex="-1">
+            <input type="number" id="numM" placeholder="M" inputmode="numeric">
         </div>
-        
-        <button onclick="reset()">Xóa sạch</button>
+
+        <div class="count-row">
+            <div class="count-mini-card c-small">
+                <div class="count-label">MAX SL < 5</div>
+                <div id="valS" class="count-value">0</div>
+            </div>
+            <div class="count-mini-card c-large">
+                <div class="count-label">MAX SL ≥ 5</div>
+                <div id="valL" class="count-value">0</div>
+            </div>
+        </div>
+
+        <div id="alertBox"></div>
     </div>
 
     <div class="grid">
         <div class="col">
-            <label>Dãy Nhỏ (< 5)</label>
-            <textarea id="os" readonly></textarea>
+            <div style="font-size: 10px; color: #555; text-align: center; margin-bottom: 5px;">DÃY NHỎ (< 5)</div>
+            <textarea id="os" readonly placeholder="Trống..."></textarea>
         </div>
         <div class="col">
-            <label>Dãy Lớn (≥ 5)</label>
-            <textarea id="ol" readonly></textarea>
+            <div style="font-size: 10px; color: #555; text-align: center; margin-bottom: 5px;">DÃY LỚN (≥ 5)</div>
+            <textarea id="ol" readonly placeholder="Trống..."></textarea>
         </div>
     </div>
 </div>
 
 <script>
     let raw = localStorage.getItem('big_data') || "";
-    const inputN = document.getElementById('numN');
-    const inputM = document.getElementById('numM');
-    const outS = document.getElementById('os');
-    const outL = document.getElementById('ol');
+    const inputN = document.getElementById('numN'), inputM = document.getElementById('numM');
+    const outS = document.getElementById('os'), outL = document.getElementById('ol');
+    const valS = document.getElementById('valS'), valL = document.getElementById('valL');
+    const alertBox = document.getElementById('alertBox');
     const msg = document.getElementById('msg');
 
-    if (raw) msg.innerText = "ĐÃ KHÔI PHỤC " + raw.length + " KÝ TỰ";
+    window.onload = () => {
+        inputM.focus();
+        if (raw) msg.innerText = "DỮ LIỆU SẴN SÀNG: " + raw.length;
+    };
 
-    // Xử lý nạp file
+    function autoResize(el) {
+        el.style.height = 'auto'; 
+        el.style.height = el.scrollHeight + 'px';
+    }
+
     document.getElementById('f').onchange = async (e) => {
-        msg.innerText = "ĐANG NẠP DỮ LIỆU...";
         let newContent = "";
         for (let file of e.target.files) {
-            let t = await file.text();
-           
-
- newContent += t.replace(/\s+/g, '').replace(/[^0-9]/g, '');
-
- }
+            newContent += (await file.text()).replace(/\s+/g, '').replace(/[^0-9]/g, '');
+        }
         if (!raw.includes(newContent)) raw += newContent;
         localStorage.setItem('big_data', raw);
-        msg.innerText = "NẠP XONG! TỔNG: " + raw.length;
+        msg.innerText = "TỔNG DỮ LIỆU: " + raw.length;
         inputM.focus();
     };
 
-    // Logic dịch chuyển số từ M sang N
     inputM.addEventListener('input', (e) => {
         const val = e.target.value.trim();
-        if (val.length === 0) return;
-
-        // Lấy số cuối cùng vừa nhập vào M
-        const lastDigit = val.slice(-1);
+        if (!val) return;
         
-        // Cập nhật chuỗi trong ô N (Dịch trái)
         let currentN = inputN.value.replace(/[^0-9]/g, '');
-        currentN += lastDigit;
-        
-        // Giữ tối đa 3 số cuối
-        if (currentN.length > 3) {
-            currentN = currentN.slice(-3);
-        }
-        
+        currentN = (currentN + val.slice(-1)).slice(-3);
         inputN.value = currentN;
+        e.target.value = "";
         
-        // Xóa ô M để nhập tiếp
-        inputM.value = "";
-
-        // Tự động quét nếu đủ số (Bạn có thể chỉnh lại nế muốn quét cả khi có 1 hoặc 2 số)
-        if (currentN.length > 0) {
-            autoCalc(currentN);
-        }
+        autoCalc(currentN);
     });
 
-    function autoCalc(target) {
+
+
+   function autoCalc(target) {
         if (!raw) return;
-        
-        let resS = new Set();
-        let resL = new Set();
-        let i = raw.indexOf(target);
+        let resS = new Set(), resL = new Set(), i = raw.indexOf(target);
 
         while (i !== -1) {
-            let start = i + target.length;
-            
-            // Nhánh nhỏ < 5
-            let s = "";
+            let start = i + target.length, s = "", l = "";
             for (let k = start; k < raw.length; k++) {
                 let n = parseInt(raw[k]);
                 if (n < 5) s += n; else break;
             }
             if (s) resS.add(target + "-" + s);
-
-            // Nhánh lớn >= 5
-            let l = "";
             for (let k = start; k < raw.length; k++) {
                 let n = parseInt(raw[k]);
                 if (n >= 5) l += n; else break;
             }
             if (l) resL.add(target + "-" + l);
-
             i = raw.indexOf(target, i + 1);
         }
 
         const sortFn = (a, b) => b.length - a.length;
-        outS.value = Array.from(resS).sort(sortFn).join('\n');
-        outL.value = Array.from(resL).sort(sortFn).join('\n');
-        msg.innerText = "ĐANG QUÉT SỐ: " + target;
-    }
+        const sortedS = Array.from(resS).sort(sortFn);
+        const sortedL = Array.from(resL).sort(sortFn);
 
-    function reset() {
-        if (confirm("XÓA TOÀN BỘ DỮ LIỆU?")) {
-            localStorage.clear();
-            raw = "";
-            location.reload();
+        outS.value = sortedS.join('\n');
+        outL.value = sortedL.join('\n');
+
+        const lenS = sortedS.length > 0 ? sortedS[0].split('-')[1].length : 0;
+        const lenL = sortedL.length > 0 ? sortedL[0].split('-')[1].length : 0;
+
+        valS.innerText = lenS;
+        valL.innerText = lenL;
+
+        // CẬP NHẬT NỘI DUNG VỚI 5 DẤU CÁCH CHÍNH XÁC
+        if (lenS === 0 && lenL === 0) {
+            alertBox.style.display = "none";
+        } else {
+            alertBox.style.display = "block";
+            // Tạo chuỗi 5 dấu cách bằng cách lặp lại khoảng trắng đặc biệt
+            const spaces = "\u00A0".repeat(5); 
+            
+            if (lenS > lenL) {
+                alertBox.innerText = `Dùng   ${spaces}NHỎ  ${spaces} ${lenS}   lần`;
+            } else if (lenL > lenS) {
+                alertBox.innerText = `Dùng   ${spaces}LỚN  ${spaces} ${lenL}   lần`;
+            } else {
+                alertBox.innerText = `CÂN BẰNG${spaces}${lenS}   LẦN`;
+            }
         }
-    }
 
-    // Luôn giữ focus vào ô M
-    document.addEventListener('click', () => inputM.focus());
+        autoResize(outS);
+        autoResize(outL);
+    }
+    
+    
+    
+    
+    
+    // Giữ focus vào ô M
+    document.addEventListener('click', (e) => {
+        if(!['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+            inputM.focus();
+        }
+    });
 </script>
 </body>
 </html>
