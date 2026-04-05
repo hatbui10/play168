@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Scan Pro - Intelligence</title>
+    <title>MATRIX - PRO </title>
     <style>
         :root { 
             --neon: #00f3ff; --pink: #ff00ff; --bg: #030305;
@@ -20,9 +20,7 @@
 
         .controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; align-items: center; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; }
 
-        .count-row {
-            display: flex; gap: 10px; width: 100%; justify-content: center; margin: 5px 0;
-        }
+        .count-row { display: flex; gap: 10px; width: 100%; justify-content: center; margin: 5px 0; }
 
         .count-mini-card {
             flex: 1; max-width: 150px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 10px; padding: 5px; text-align: center;
@@ -37,31 +35,34 @@
         .c-small { border-color: var(--neon); color: var(--neon); }
         .c-large { border-color: var(--pink); color: var(--pink); }
 
-        /* Ô thông báo PP nhấp nháy */
         #alertBox {
             width: 100%;
-            max-width: 400px;
-            padding: 15px;
+            max-width: 650px;
+            padding: 20px;
             margin-top: 10px;
             background: rgba(255, 255, 0, 0.1);
             border: 2px solid var(--yellow);
-            border-radius: 10px;
+            border-radius: 15px;
             color: var(--yellow);
-            text-transform: none;
             text-align: center;
-            font-weight: bold;
-            font-size: 18px;
-            display: none; /* Chỉ hiện khi có kết quả */
+            font-weight: 900;
+            font-size: 24px;
+            display: none; 
             animation: blink 1s infinite;
+            letter-spacing: 2px; /* Chỉnh độ thưa ký tự vừa phải */
+            white-space: pre;    /* Giữ nguyên khoảng trắng nhập từ JS */
+            text-transform: none; /* Hiển thị đúng Hoa/Thường như đã nhập */
         }
 
         @keyframes blink {
-            0% { opacity: 1; border-color: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
-            50% { opacity: 0.5; border-color: transparent; box-shadow: none; }
-            100% { opacity: 1; border-color: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
+            0% { opacity: 1; box-shadow: 0 0 15px var(--yellow); }
+            50% { opacity: 0.5; box-shadow: none; }
+            100% { opacity: 1; box-shadow: 0 0 15px var(--yellow); }
         }
 
         .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 5px; }
+        
+        /* Input type tel sẽ không bao giờ có mũi tên */
         input { background: #000; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; outline: none; }
         #numN { width: 80px; text-align: center; font-size: 1.2em; border-color: var(--neon); color: var(--neon); letter-spacing: 3px; }
         #numM { width: 50px; text-align: center; font-size: 1.2em; border-color: var(--pink); color: var(--pink); }
@@ -70,7 +71,7 @@
         textarea { 
             width: 100%; min-height: 60px; background: rgba(0,0,0,0.4); 
             color: #00ff41; border: 1px solid var(--border); border-radius: 10px; 
-            padding: 12px; font-family: monospace; font-size: 16px; 
+            padding: 12px; font-family: monospace; font-size: 18px; 
             resize: none; overflow: hidden; box-sizing: border-box;
             display: block;
         }
@@ -85,7 +86,7 @@
         <div class="input-row">
             <input type="file" id="f" multiple style="width: 150px; font-size: 10px;">
             <input type="text" id="numN" placeholder="N" readonly tabindex="-1">
-            <input type="number" id="numM" placeholder="M" inputmode="numeric">
+            <input type="tel" id="numM" placeholder="M">
         </div>
 
         <div class="count-row">
@@ -145,19 +146,18 @@
 
     inputM.addEventListener('input', (e) => {
         const val = e.target.value.trim();
-        if (!val) return;
+        // Lọc chỉ cho phép nhập số vào ô tel
+        const cleanVal = val.replace(/[^0-9]/g, '');
+        if (!cleanVal) { e.target.value = ""; return; }
         
         let currentN = inputN.value.replace(/[^0-9]/g, '');
-        currentN = (currentN + val.slice(-1)).slice(-3);
+        currentN = (currentN + cleanVal.slice(-1)).slice(-3);
         inputN.value = currentN;
         e.target.value = "";
-        
         autoCalc(currentN);
     });
 
-
-
-   function autoCalc(target) {
+    function autoCalc(target) {
         if (!raw) return;
         let resS = new Set(), resL = new Set(), i = raw.indexOf(target);
 
@@ -189,32 +189,25 @@
         valS.innerText = lenS;
         valL.innerText = lenL;
 
-        // CẬP NHẬT NỘI DUNG VỚI 5 DẤU CÁCH CHÍNH XÁC
         if (lenS === 0 && lenL === 0) {
             alertBox.style.display = "none";
         } else {
             alertBox.style.display = "block";
-            // Tạo chuỗi 5 dấu cách bằng cách lặp lại khoảng trắng đặc biệt
-            const spaces = "\u00A0".repeat(5); 
+            // CHÍNH XÁC 5 DẤU CÁCH VÀ CHỮ THƯỜNG/HOA ĐÚNG Ý BẠN
+            const s5 = "     "; 
             
             if (lenS > lenL) {
-                alertBox.innerText = `Dùng   ${spaces}NHỎ  ${spaces} ${lenS}   lần`;
+                alertBox.innerText = `Dùng${s5}NHỎ   ${lenS}  lần`;
             } else if (lenL > lenS) {
-                alertBox.innerText = `Dùng   ${spaces}LỚN  ${spaces} ${lenL}   lần`;
+                alertBox.innerText = `Dùng${s5}LỚN   ${lenL}  lần`;
             } else {
-                alertBox.innerText = `CÂN BẰNG${spaces}${lenS}   LẦN`;
+                alertBox.innerText = `cân bằng${s5}${lenS}    lần`;
             }
         }
 
-        autoResize(outS);
-        autoResize(outL);
+        autoResize(outS); autoResize(outL);
     }
-    
-    
-    
-    
-    
-    // Giữ focus vào ô M
+
     document.addEventListener('click', (e) => {
         if(!['INPUT','TEXTAREA'].includes(e.target.tagName)) {
             inputM.focus();
