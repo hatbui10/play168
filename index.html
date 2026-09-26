@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tra đoạn số — OFFLINE (từ file txt)</title>
+<style>
+    /* ===== NỀN TỐI + KHUNG GIỐNG HỆT BẢN CHÍNH ===== */
+    body {
+        background: #191b24;
+        color: #f6f8fb;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+        padding: 14px 10px 40px 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        box-sizing: border-box;
+    }
+    .cell-history-panel {
+        --hp-cell: #5b6472;
+        --hp-cell-bd: #828d9c;
+        --hp-list: #343c47;
+        --hp-void: #454e5a;
+        background: #10131f;
+        border: 1px solid #a78bfa;
+        color: #f6f8fb;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+        width: 560px;
+        max-width: 98%;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+        padding: 8px 10px;
+    }
+    .cell-history-panel .ch-head { color: #a78bfa; }
+    .cell-history-panel .ch-count,
+    .cell-history-panel .ch-note,
+    .cell-history-panel .ch-empty { color: #dbe3ec; }
+    .cell-history-panel .ch-empty b { color: #ffe082; }
+    .cell-history-panel label { color: #e0d0ff; }
+    .ch-head {
+        font-size: 12px;
+        color: #ffeb3b;
+        font-weight: bold;
+        margin-bottom: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    .ch-count { color: #dbe3ec; font-weight: normal; font-size: 11px; }
+    .ch-empty { color: #6d8f86; text-align: center; padding: 6px 0; font-size: 11px; }
+
+    .btn-mini {
+        padding: 5px 10px; font-size: 12px; line-height: 1.2;
+        background: #334155; color: #e2e8f0;
+        border: 1px solid #64748b; border-radius: 6px; cursor: pointer;
+        font-family: inherit; white-space: nowrap;
+        transition: background .12s ease, border-color .12s ease, transform .06s ease;
+        -webkit-tap-highlight-color: transparent; user-select: none;
+    }
+    .btn-mini:hover { background: #475569; border-color: #94a3b8; color: #ffffff; }
+    .btn-mini:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(148,163,184,.55); }
+    .btn-mini:active { transform: translateY(1px); filter: brightness(.92); }
+
+    .seg-in {
+        width: 46px; height: 42px; box-sizing: border-box; text-align: center;
+        font-size: 20px; font-weight: bold; background: #0b1220; color: #f0abfc;
+        border: 2px solid #7e22ce; border-radius: 8px; padding: 0;
+        font-family: inherit; transition: border-color .12s ease, box-shadow .12s ease;
+    }
+    .seg-in::placeholder { color: #4c1d95; font-size: 13px; }
+    .seg-in:hover { border-color: #a855f7; }
+    .seg-in:focus { outline: none; border-color: #e879f9; box-shadow: 0 0 0 3px rgba(217,70,239,.28); }
+
+    .seg-mir {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 46px; height: 42px; box-sizing: border-box; border-radius: 8px;
+        font-size: 20px; font-weight: bold; background: #0b1220; color: #475569;
+        border: 2px dashed #334155;
+    }
+    .seg-mir.on { color: #f0abfc; border-style: solid; border-color: #7e22ce; background: #1e1b4b; }
+
+    .dt-head-row { display: flex; gap: 10px; padding: 3px 6px; background: #16163a; color: #a78bfa; font-weight: bold; }
+    .dt-row { display: flex; gap: 10px; padding: 2px 6px; border-bottom: 1px solid rgba(255,255,255,0.04); align-items: center; flex-wrap: wrap; }
+    .dt-row:nth-child(odd) { background: rgba(255,255,255,0.02); }
+    .dt-i { width: 112px; color: #c4b5fd; }
+    .dt-n { letter-spacing: 0; font-weight: bold; }
+    .dt-t { color: #64748b; margin-left: auto; padding-left: 8px; white-space: nowrap; }
+    .dt-hit { color: #f0abfc; }
+    .dt-rest { color: #4ade80; }
+    .dt-sum { background: #0b1220; border: 1px solid #4c1d95; border-radius: 6px; padding: 5px 7px; margin-bottom: 5px; font-size: 11px; color: #e0e0e0; line-height: 1.5; }
+
+    .dt-boxes { display: flex; gap: 4px; }
+    .dt-box {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 24px; height: 24px; border-radius: 4px; font-weight: bold; font-size: 13px;
+        border: 1px solid #334155; background: #0f172a; color: #94a3b8;
+    }
+    .dt-box.hit  { background: #4a1942; color: #f0abfc; border-color: #d946ef; }
+    .dt-box.rest { background: #052e16; color: #4ade80; border-color: #22c55e; }
+
+    #dataTableBody::-webkit-scrollbar { width: 8px; }
+    #dataTableBody::-webkit-scrollbar-track { background: #1a1a1a; border-radius: 4px; }
+    #dataTableBody::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 4px; }
+
+    .drop-hint { border: 2px dashed #475569; border-radius: 8px; padding: 10px; text-align: center;
+                 font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+    .drop-hint.over { border-color: #a855f7; color: #f0abfc; background: rgba(168,85,247,.08); }
+</style>
+</head>
+<body>
+
+<div id="dataTablePanel" class="cell-history-panel"
+     ondragover="event.preventDefault();this.querySelector('.drop-hint').classList.add('over')"
+     ondragleave="this.querySelector('.drop-hint').classList.remove('over')"
+     ondrop="onDropTxt(event)">
+    <div class="ch-head">
+        <span id="panelTitle">📋 Tra đoạn 7 số trong kho</span>
+        <span class="ch-count" id="dataTableCount">0 kỳ</span>
+    </div>
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0">
+        <button class="btn-mini" onclick="pickTxtFile()" style="background:#0c4a6e;border-color:#38bdf8;font-weight:bold">📂 Tải file txt</button>
+        <button class="btn-mini" onclick="exportDataTable()">📤 Xuất bảng</button>
+        <button class="btn-mini" onclick="clearSegInput()">🔄 Vẽ lại</button>
+    </div>
+
+    <div id="dropHint" class="drop-hint">Kéo thả file <b>.txt</b> vào đây (hoặc bấm “📂 Tải file txt”) — sau đó tra đoạn <b>hoàn toàn offline</b>, không cần mạng.</div>
+    <div id="fileInfo" style="font-size:10px;color:#94a3b8;margin-bottom:6px">Chưa có file nào. Định dạng mỗi dòng: <b>kỳ | số | giờ</b></div>
+
+    <!-- 🔎 Ô NHẬP (2-6 ô) + 5 số phía sau để tra -->
+    <div style="background:#0b1220;border:1px solid #4c1d95;border-radius:8px;padding:6px 8px;margin-bottom:6px">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:5px">
+            <label style="font-size:11px;color:#e9d5ff;font-weight:bold">Số ô nhập:</label>
+            <select id="segLen" onchange="onSegLenChange()" style="background:#0b1220;color:#f0abfc;border:2px solid #7e22ce;border-radius:6px;padding:5px 8px;font-weight:bold;font-size:13px;cursor:pointer;font-family:inherit">
+                <option value="2" selected>2 ô</option>
+                <option value="3">3 ô</option>
+                <option value="4">4 ô</option>
+                <option value="5">5 ô</option>
+                <option value="6">6 ô</option>
+            </select>
+            <span id="segLenInfo" style="font-size:10px;color:#94a3b8">→ đoạn 7 số (2 số đầu nhập + 5 số phía sau)</span>
+        </div>
+        <div style="font-size:11px;color:#e9d5ff;font-weight:bold;margin-bottom:4px">🔎 Nhập các số đầu:</div>
+        <div id="segInputs" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px">
+            <span style="font-size:11px;color:#94a3b8;font-weight:bold">⬇️ Copy xuống 4 ô:</span>
+            <span id="segMirror" style="display:flex;gap:6px"></span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:5px">
+            <button class="btn-mini" onclick="findSegmentsFromInput()" style="background:#4a1942;border-color:#d946ef;font-weight:bold">🔎 Tìm đoạn</button>
+            <button class="btn-mini" onclick="segTakeLast()" style="background:#065f46;border-color:#34d399;font-weight:bold">🧾 Lấy số</button>
+            <button class="btn-mini" onclick="clearSegInput()">✖ Xoá</button>
+        </div>
+        <div id="segInfo" style="font-size:10px;color:#94a3b8;margin-top:4px">Tải file txt kho game lên → chọn số ô nhập hoặc bấm “🧾 Lấy số”. Nhập xong ô cuối: copy xuống 4 ô, ô nhập tự trống, bàn phím tự tắt và tự cuộn xuống kết quả — bấm vào ô đầu để nhập tiếp.</div>
+    </div>
+
+    <div id="dataTableBody" style="max-height:340px;overflow-y:auto;background:#0d0d0d;border:1px solid #2a2a4a;border-radius:4px;font-family:monospace;font-size:11px"></div>
+</div>
+
+<input type="file" id="txtFile" accept=".txt,text/plain" style="display:none" onchange="onTxtPicked(this)">
+
+<script>
+/* ================= TRA ĐOẠN SỐ — HOÀN TOÀN OFFLINE =================
+   Không Firebase, không fetch, không mạng. Mọi dữ liệu nằm trong biến gameArchive
+   (nạp từ file txt).                                              */
+const SEG_TAIL = 5;              // hiện 5 số phía sau phần nhập
+const SEG_SCROLL_DELAY = 350;
+
+let gameArchive = [];            // [{i: kỳ, d: số, t: giờ}]  MỚI -> CŨ
+let fileName = '';
+let dataTableMode = 'latest';    // 'latest' | 'segments'
+let dataTableSeg = null;         // {prefix:[...], len}
+let dataTableLastLen = -1;
+
+/* ---------- tiện ích ---------- */
+function $(id) { return document.getElementById(id); }
+function fmtTime(ts) {
+    try { const d = new Date(ts); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+    catch (e) { return ''; }
+}
+function issueCmp(a, b) {
+    const x = String(a), y = String(b);
+    if (x.length !== y.length) return x.length - y.length;
+    return x < y ? -1 : (x > y ? 1 : 0);
+}
+
+/* ---------- đọc file txt kho game ---------- */
+function parseArchiveTxt(text) {
+    const out = [], seen = new Set();
+    const lines = String(text || '').split(/\r?\n/);
+    for (const ln of lines) {
+        const t = ln.trim();
+        if (!t) continue;
+        const p = t.split('|').map(function (x) { return x.trim(); });
+        if (p.length < 2) continue;
+        const id = p[0], dg = p[1];
+        if (!/^\d+$/.test(id)) continue;            // bỏ dòng tiêu đề
+        if (!/^[0-9]$/.test(dg)) continue;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        out.push({ i: id, n: dg, d: dg, t: Number(p[2]) || 0 });
+    }
+    // chuẩn hoá thành MỚI -> CŨ
+    if (out.length > 1 && issueCmp(out[0].i, out[out.length - 1].i) < 0) out.reverse();
+    return out;
+}
+function pickTxtFile() { const f = $('txtFile'); if (f) f.click(); }
+function onTxtPicked(inp) {
+    if (inp.files && inp.files[0]) loadTxtFile(inp.files[0]);
+    inp.value = '';
+}
+function onDropTxt(ev) {
+    try {
+        const h = document.querySelector('#dataTablePanel .drop-hint');
+        if (h) h.classList.remove('over');
+        ev.preventDefault();
+        const fl = ev.dataTransfer && ev.dataTransfer.files;
+        if (fl && fl[0]) loadTxtFile(fl[0]);
+    } catch (e) {}
+}
+function loadTxtFile(file) {
+    const info = $('fileInfo');
+    if (info) { info.style.color = '#94a3b8'; info.textContent = '📂 Đang đọc "' + file.name + '"…'; }
+    const rd = new FileReader();
+    rd.onload = function () {
+        try {
+            const arr = parseArchiveTxt(rd.result);
+            if (!arr.length) {
+                if (info) { info.style.color = '#f87171';
+                    info.textContent = '⚠️ Không đọc được kỳ nào trong "' + file.name + '" — mỗi dòng phải dạng: kỳ | số | giờ'; }
+                return;
+            }
+            gameArchive = arr;
+            fileName = file.name;
+            dataTableSeg = null;
+            renderDataTable('latest');
+            if (info) {
+                info.style.color = '#4ade80';
+                info.textContent = '📄 Đã nạp "' + fileName + '": ' + gameArchive.length.toLocaleString('vi-VN')
+                    + ' kỳ · tra đoạn OFFLINE, không cần mạng.';
+            }
+            segTakeLast();
+        } catch (e) {
+            if (info) { info.style.color = '#f87171'; info.textContent = '⚠️ Lỗi đọc file: ' + e.message; }
+        }
+    };
+    rd.onerror = function () {
+        if (info) { info.style.color = '#f87171'; info.textContent = '⚠️ Không đọc được file.'; }
+    };
+    rd.readAsText(file, 'UTF-8');
+}
+
+/* ---------- số ô nhập ---------- */
+function segPrefixLen() {
+    const el = $('segLen');
+    let n = parseInt(el && el.value, 10);
+    if (!(n >= 2 && n <= 6)) n = 2;
+    return n;
+}
+function segTotalLen() { return segPrefixLen() + SEG_TAIL; }
+function segInputIds() {
+    const a = [];
+    for (let i = 1; i <= segPrefixLen(); i++) a.push('segD' + i);
+    return a;
+}
+function segPrefixDigits() {
+    return segInputIds().map(function (id) {
+        const e = $(id);
+        return e ? String(e.value || '').replace(/\D/g, '') : '';
+    });
+}
+function renderSegInputs(keepValues) {
+    const box = $('segInputs');
+    if (!box) return;
+    const old = {};
+    if (keepValues) segInputIds().forEach(function (id) { const e = $(id); if (e) old[id] = e.value; });
+    const n = segPrefixLen();
+    let html = '';
+    for (let i = 1; i <= n; i++) {
+        html += '<input id="segD' + i + '" class="seg-in" maxlength="1" inputmode="numeric" placeholder="0-9"'
+            + ' oninput="onSegInput(this)" value="' + (old['segD' + i] || '') + '">';
+    }
+    box.innerHTML = html;
+    const info = $('segLenInfo');
+    if (info) info.textContent = '→ đoạn ' + segTotalLen() + ' số (' + n + ' số đầu nhập + ' + SEG_TAIL + ' số phía sau)';
+    const t = $('panelTitle');
+    if (t) t.textContent = '📋 Tra đoạn ' + segTotalLen() + ' số trong kho';
+    const mir = $('segMirror');
+    if (mir && !mir.innerHTML) renderSegMirror([]);
+}
+function renderSegMirror(vals) {
+    const box = $('segMirror');
+    if (!box) return;
+    const show = (vals || []).slice(-4);
+    let html = '';
+    for (let i = 0; i < 4; i++) {
+        const v = (i < show.length) ? show[i] : '';
+        html += '<span class="seg-mir' + (v ? ' on' : '') + '" id="segM' + (i + 1) + '">' + (v || '·') + '</span>';
+    }
+    box.innerHTML = html;
+}
+function segBlurAll() {
+    try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
+    segInputIds().forEach(function (id) {
+        const e = $(id);
+        if (e && e.blur) { try { e.blur(); } catch (e2) {} }
+    });
+}
+function segScrollToResults() {
+    try {
+        const body = $('dataTableBody');
+        const el = body || $('dataTablePanel');
+        if (!el) return;
+        if (body) body.scrollTop = 0;
+        if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {}
+}
+function onSegLenChange() {
+    try {
+        renderSegInputs(false);
+        dataTableSeg = null;
+        segTakeLast();
+    } catch (e) {}
+}
+function onSegInput(el) {
+    try {
+        el.value = String(el.value || '').replace(/\D/g, '').slice(0, 1);
+        const ids = segInputIds();
+        const idx = ids.indexOf(el.id);
+        if (idx >= 0 && idx < ids.length - 1 && /^[0-9]$/.test(el.value)) {
+            const nx = $(ids[idx + 1]);
+            if (nx) { try { nx.focus(); nx.select(); } catch (e2) {} }
+        }
+        const vals = segPrefixDigits();
+        const vuaGoOCuoi = (idx === ids.length - 1);
+        if (vuaGoOCuoi && vals.length && vals.every(function (v) { return /^[0-9]$/.test(v); })) {
+            findSegmentsFromInput();
+            renderSegMirror(vals);
+            segInputIds().forEach(function (id) { const e = $(id); if (e) e.value = ''; });
+            segBlurAll();
+            setTimeout(segScrollToResults, SEG_SCROLL_DELAY);
+        }
+    } catch (e) {}
+}
+function clearSegInput() {
+    segInputIds().forEach(function (id) { const e = $(id); if (e) e.value = ''; });
+    dataTableSeg = null;
+    renderSegMirror([]);
+    renderDataTable('latest');
+}
+function segTakeLast() {
+    const info = $('segInfo');
+    const n = segPrefixLen();
+    const arr = gameArchive.filter(function (e) { return /^[0-9]$/.test(String(e.d)); });
+    if (arr.length < n) {
+        dataTableSeg = null;
+        renderDataTable('latest');
+        if (info) {
+            info.style.color = '#f87171';
+            info.textContent = gameArchive.length
+                ? ('⚠️ File chỉ có ' + gameArchive.length + ' kỳ — chưa đủ ' + n + ' kỳ để lấy số.')
+                : '⚠️ Chưa có file txt — bấm “📂 Tải file txt” để nạp kho (định dạng mỗi dòng: kỳ | số | giờ).';
+        }
+        return false;
+    }
+    const ids = segInputIds();
+    for (let i = 0; i < n; i++) { const e = $(ids[i]); if (e) e.value = String(arr[i].d); }
+    findSegmentsFromInput();
+    return true;
+}
+
+/* ---------- tra đoạn ---------- */
+function archiveChrono() {
+    const out = [];
+    for (let i = gameArchive.length - 1; i >= 0; i--) {
+        if (/^[0-9]$/.test(String(gameArchive[i].d))) out.push(gameArchive[i]);
+    }
+    return out;
+}
+function findSegments(prefix) {
+    if (typeof prefix === 'string') prefix = [prefix];
+    const n = prefix.length;
+    const total = n + SEG_TAIL;
+    const arr = archiveChrono();
+    const out = [];
+    for (let i = 0; i + total - 1 < arr.length; i++) {
+        let ok = true;
+        for (let k = 0; k < n; k++) {
+            if (String(arr[i + k].d) !== String(prefix[k])) { ok = false; break; }
+        }
+        if (ok) {
+            const digits = [];
+            for (let k = 0; k < total; k++) digits.push(String(arr[i + k].d));
+            out.push({ start: arr[i], digits: digits, end: arr[i + total - 1] });
+        }
+    }
+    out.reverse();   // đoạn mới nhất lên đầu
+    return out;
+}
+function findSegmentsFromInput() {
+    const vals = segPrefixDigits();
+    const info = $('segInfo');
+    if (!vals.length || !vals.every(function (v) { return /^[0-9]$/.test(v); })) {
+        if (info) {
+            info.style.color = '#f87171';
+            info.textContent = '⚠️ Nhập đủ ' + segPrefixLen() + ' ô, mỗi ô một số từ 0 đến 9.';
+        }
+        return;
+    }
+    dataTableSeg = { prefix: vals, len: vals.length };
+    renderDataTable('segments');
+}
+
+/* ---------- vẽ bảng ---------- */
+function renderDataTable(mode) {
+    if (mode) dataTableMode = mode;
+    const body = $('dataTableBody');
+    const cnt = $('dataTableCount');
+    const info = $('segInfo');
+    if (!body) return;
+    if (cnt) cnt.textContent = gameArchive.length
+        ? (gameArchive.length.toLocaleString('vi-VN') + ' kỳ' + (fileName ? (' · ' + fileName) : ''))
+        : '0 kỳ';
+
+    if (dataTableMode === 'segments' && dataTableSeg) {
+        const prefix = dataTableSeg.prefix;
+        const n = prefix.length;
+        const total = n + SEG_TAIL;
+        const key = prefix.join('');
+        const segs = findSegments(prefix);
+        const stat = [];
+        for (let t = 0; t < SEG_TAIL; t++) stat.push({});
+        for (const s of segs) {
+            for (let t = 0; t < SEG_TAIL; t++) {
+                const dg = s.digits[n + t];
+                stat[t][dg] = (stat[t][dg] || 0) + 1;
+            }
+        }
+        const topOf = o => Object.keys(o).sort((x, y) => o[y] - o[x]).slice(0, 3);
+        let statLine = '';
+        for (let t = 0; t < SEG_TAIL; t++) {
+            statLine += ' · số thứ ' + (n + t + 1) + ': <b class="dt-rest">' + (topOf(stat[t]).join(', ') || '-') + '</b>';
+        }
+        if (info) {
+            info.style.color = segs.length ? '#4ade80' : '#f87171';
+            info.textContent = segs.length
+                ? ('Tìm thấy ' + segs.length + ' đoạn ' + total + ' số bắt đầu bằng ' + key + '.')
+                : ('Không có đoạn ' + total + ' số nào bắt đầu bằng ' + key + ' trong file đang có.');
+        }
+        let html = '<div class="dt-head-row"><span class="dt-i">Kỳ đầu đoạn</span><span class="dt-n">' + total + ' Ô SỐ</span><span class="dt-t">Kỳ cuối · giờ</span></div>';
+        if (!segs.length) {
+            html += '<div class="ch-empty">Không có đoạn nào — thử dãy số khác.</div>';
+        } else {
+            html += '<div class="dt-sum">Có <b>' + segs.length + '</b> đoạn bắt đầu bằng <b>' + key + '</b>'
+                + ' · số thứ ' + (n + 1) + ' hay ra: <b class="dt-rest">' + (topOf(stat[0]).join(', ') || '-') + '</b>'
+                + statLine + '</div>';
+            const LIMIT = 500;
+            for (let i = 0; i < segs.length && i < LIMIT; i++) {
+                const s = segs[i];
+                let boxes = '';
+                for (let k = 0; k < total; k++) {
+                    boxes += '<span class="dt-box ' + (k < n ? 'hit' : 'rest') + '">' + s.digits[k] + '</span>';
+                }
+                html += '<div class="dt-row"><span class="dt-i">' + s.start.i + '</span>'
+                    + '<span class="dt-n dt-boxes">' + boxes + '</span>'
+                    + '<span class="dt-t">' + s.end.i + ' · ' + (s.end.t ? fmtTime(s.end.t) : '') + '</span></div>';
+            }
+            if (segs.length > LIMIT) {
+                html += '<div class="ch-empty">… chỉ hiện ' + LIMIT + ' đoạn mới nhất / ' + segs.length + ' đoạn.</div>';
+            }
+        }
+        body.innerHTML = html;
+        dataTableLastLen = gameArchive.length;
+        return;
+    }
+
+    if (info) {
+        info.style.color = '#94a3b8';
+        info.textContent = 'Nhập ' + segPrefixLen() + ' số (0-9) — nhập xong ô cuối là hiện các đoạn '
+            + segTotalLen() + ' số bắt đầu bằng dãy đó, mới nhất ở trên.';
+    }
+    let html = '<div class="dt-head-row"><span class="dt-i">Kỳ đầu đoạn</span><span class="dt-n">' + segTotalLen() + ' Ô SỐ</span><span class="dt-t">Kỳ cuối · giờ</span></div>';
+    html += '<div class="ch-empty">'
+        + (gameArchive.length
+            ? ('File đang có <b>' + gameArchive.length.toLocaleString('vi-VN') + '</b> kỳ — nhập ' + segPrefixLen() + ' số ở trên để tra đoạn ' + segTotalLen() + ' số.')
+            : 'Chưa có file — bấm “📂 Tải file txt” (hoặc kéo thả file vào khung) để nạp kho, sau đó tra OFFLINE.')
+        + '</div>';
+    body.innerHTML = html;
+    dataTableLastLen = gameArchive.length;
+}
+function exportDataTable() {
+    let text = '';
+    const stamp = new Date().toLocaleString('vi-VN');
+    if (dataTableMode === 'segments' && dataTableSeg) {
+        const segs = findSegments(dataTableSeg.prefix);
+        if (!segs.length) { text = 'KHONG CO DOAN NAO BAT DAU BANG ' + dataTableSeg.prefix.join('') + ' | ' + stamp; }
+        else text = 'DOAN ' + segs[0].digits.length + ' SO BAT DAU BANG ' + dataTableSeg.prefix.join('')
+            + ' | ' + segs.length + ' doan | ' + stamp + '\n'
+            + 'ky_dau | ' + segs[0].digits.length + '_so | ky_cuoi\n'
+            + segs.map(s => s.start.i + ' | ' + s.digits.join('') + ' | ' + s.end.i).join('\n');
+    } else {
+        text = 'KHO GAME | ' + gameArchive.length + ' ky | ' + stamp + '\n'
+            + 'ky | so | gio\n'
+            + gameArchive.map(e => e.i + ' | ' + e.d + ' | ' + (e.t ? fmtTime(e.t) : '')).join('\n');
+    }
+    const ok = () => { const i = $('segInfo'); if (i) { i.style.color = '#4ade80'; i.textContent = '📋 Đã copy bảng ra clipboard (' + text.split('\n').length + ' dòng).'; } };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(ok).catch(() => { const i = $('segInfo'); if (i) { i.style.color = '#f87171'; i.textContent = '⚠️ Trình duyệt chặn clipboard.'; } });
+    } else { const i = $('segInfo'); if (i) { i.style.color = '#f87171'; i.textContent = '⚠️ Trình duyệt này không hỗ trợ clipboard API.'; } }
+}
+
+/* ---------- khởi động ---------- */
+renderSegInputs(false);
+renderSegMirror([]);
+renderDataTable('latest');
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415b9ea28860ee0',t:'MTc5MDQ2MTk2Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
