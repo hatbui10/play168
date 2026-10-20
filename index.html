@@ -1479,6 +1479,72 @@ body {
 #gonBox #betPlacePanel .bet-amount-row,
 #gonBox #betPlacePanel .bet-multiple-row { justify-content: center; }
 #gonBox #betPlacePanel .bet-amount-row { margin-top: 8px; }
+#history500Row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(251,191,36,.35);
+  border-radius: 12px;
+  background: rgba(69,26,3,.25);
+  box-sizing: border-box;
+}
+#history500Info {
+  color: #fde68a;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+}
+#dataTablePanel button#btnExportHistory500 {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid #b45309;
+  background: linear-gradient(180deg,#fef3c7,#fbbf24 65%,#f59e0b);
+  color: #451a03;
+  font-size: 12px;
+  font-weight: 900;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #92400e, 0 5px 14px rgba(251,191,36,.25), inset 0 1px 0 rgba(255,255,255,.55);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+#dataTablePanel button#btnExportHistory500:hover:not(:disabled) { filter: brightness(1.06); }
+#dataTablePanel button#btnExportHistory500:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 0 #92400e, 0 3px 8px rgba(251,191,36,.22); }
+#dataTablePanel button#btnExportHistory500:disabled { cursor: not-allowed; opacity: .55; filter: grayscale(.4); box-shadow: none; }
+#history500Status { min-height: 16px; margin-top: 5px; color: #94a3b8; font-size: 11px; line-height: 1.35; text-align: right; }
+#history500Status.ok { color: #4ade80; }
+#history500Status.err { color: #fda4af; }
+#dataTablePanel .seg-in[readonly] {
+  caret-color: transparent !important;
+  cursor: default !important;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#dataTablePanel .seg-in[readonly]:focus {
+  border-color: rgba(196,141,252,.80) !important;
+  background: linear-gradient(180deg, rgba(58,48,138,.66), rgba(13,20,44,.97));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.09),
+    inset 0 -10px 18px rgba(76,29,149,.18),
+    0 9px 20px rgba(0,0,0,.30);
+  transform: none;
+  outline: none !important;
+}
+@media (max-width: 520px) {
+  #history500Row { padding: 7px 8px; }
+  #history500Info { font-size: 11px; }
+  #dataTablePanel button#btnExportHistory500 { min-height: 32px; font-size: 11px; padding: 5px 9px; }
+}
 </style>
 </head>
 
@@ -1627,6 +1693,11 @@ body {
                     </div>
 
                     <div id="dataTableBody" style="max-height:340px;overflow-y:auto;background:#0d0d0d;border:1px solid #2a2a4a;border-radius:4px;font-family:monospace;font-size:11px"></div>
+                    <div id="history500Row">
+                        <span id="history500Info">💾 Lịch sử: 0/500 kỳ</span>
+                        <button type="button" id="btnExportHistory500" onclick="exportHistory500Txt()" title="Xuất 500 kỳ gần nhất ra file .txt">📄 Xuất TXT</button>
+                    </div>
+                    <div id="history500Status" aria-live="polite"></div>
                     <div id="gameTxPanel" aria-live="polite">
                         <div class="gtx-section">
                             <div class="gtx-head"><span>Kết quả cược WinGo</span><span class="gtx-note" id="betTxNote">--</span></div>
@@ -1952,8 +2023,12 @@ body {
                     
                     const LS_REFRESH_TOKEN = 'vn168_refresh_token';
                     const LS_TOKEN_HEADER = 'vn168_token_header';
+                    const LS_TOKEN_AT = 'vn168_token_at';
                     let memoryRefreshToken = '';
                     let memoryTokenHeader = '';
+                    let localTokenStoredAt = 0;
+                    try { localTokenStoredAt = Number(localStorage.getItem(LS_TOKEN_AT) || 0) || 0; } catch (e) {}
+                    let lastRefreshTokenError = '';
 
                     function cleanAuthSecret(v) {
                         let tx = String(v === null || v === undefined ? '' : v).trim();
@@ -2033,6 +2108,20 @@ body {
                         const exp = tokenExpMs(token);
                         return !!exp && exp <= Date.now() + (skewMs || 0);
                     }
+                    function tokenExpiryText(token) {
+                        const exp = tokenExpMs(token);
+                        if (!exp) return 'không rõ hạn';
+                        try { return 'đến ' + new Date(exp).toLocaleTimeString('vi-VN', { hour12: false }); }
+                        catch (e) { return 'đến ' + new Date(exp).toISOString(); }
+                    }
+                    function refreshErrorSummary(e) {
+                        if (!e) return '';
+                        if (e.status) return 'HTTP ' + e.status;
+                        if (e.code !== undefined && e.code !== null && e.code !== '') return 'mã ' + e.code;
+                        if (e.kind === 'net') return 'mất kết nối/CORS';
+                        if (e.kind) return String(e.kind);
+                        return String(e.message || 'lỗi không rõ').slice(0, 80);
+                    }
                     function getRefreshToken() {
                         if (memoryRefreshToken) return cleanAuthSecret(memoryRefreshToken);
                         try { return cleanAuthSecret(localStorage.getItem(LS_REFRESH_TOKEN) || ''); }
@@ -2053,6 +2142,8 @@ body {
                         const tok = extractToken(cleanAuthSecret(b.token || ''));
                         if (!tok) return '';
                         currentToken = tok;
+                        localTokenStoredAt = Date.now();
+                        try { localStorage.setItem(LS_TOKEN_AT, String(localTokenStoredAt)); } catch (e) {}
                         const el = document.getElementById('tokenInput');
                         if (el) el.value = tok;
                         const remember = document.getElementById('rememberToken');
@@ -2111,7 +2202,10 @@ body {
                         const el = document.getElementById('tokenInput');
                         if (el) el.value = '';
                         currentToken = '';
+                        localTokenStoredAt = 0;
+                        lastRefreshTokenError = '';
                         try { localStorage.removeItem('vn168_token'); } catch (e) {}
+                        try { localStorage.removeItem(LS_TOKEN_AT); } catch (e) {}
                         clearStoredRefreshToken();
                         memoryTokenHeader = '';
                         try { localStorage.removeItem(LS_TOKEN_HEADER); } catch (e) {}
@@ -2176,22 +2270,32 @@ body {
                     let refreshTokenPromise = null;
                     async function refreshAccessToken() {
                         const refresh = getRefreshToken();
-                        if (!refresh) return '';
+                        if (!refresh) {
+                            lastRefreshTokenError = 'thiếu refreshToken';
+                            return '';
+                        }
                         if (refreshTokenPromise) return refreshTokenPromise;
                         refreshTokenPromise = (async function () {
                             try {
-                                const res = await apiPost(CFG.apiRefreshToken, buildSignedBody({}), {
-                                    skipRefresh: true,
-                                    authMode: 'refresh'
-                                });
-                                if (res && typeof res === 'object' && res.code !== undefined && res.code !== null && res.code !== '') {
-                                    const code = Number(res.code);
+                                let res = null;
+                                for (let attempt = 0; attempt < 3; attempt++) {
+                                    const body = attempt < 2 ? buildSignedBody({}) : {};
+                                    res = await apiPost(CFG.apiRefreshToken, body, {
+                                        skipRefresh: true,
+                                        authMode: 'refresh'
+                                    });
+                                    let code = NaN;
+                                    if (res && typeof res === 'object' && res.code !== undefined && res.code !== null && res.code !== '') {
+                                        code = Number(res.code);
+                                    }
                                     if (Number.isFinite(code) && code !== 0 && code !== 1) {
+                                        if (code === 3 && attempt < 2) continue;
                                         const e = new Error(res.msg || res.message || ('RefreshToken trả mã ' + code));
                                         e.kind = (code === 4 || code === 10 || code === 22) ? 'auth' : 'api';
                                         e.code = code;
                                         throw e;
                                     }
+                                    break;
                                 }
                                 const data = (res && typeof res === 'object' && 'data' in res) ? res.data : res;
                                 const tok = storeAuthBundle({
@@ -2200,8 +2304,10 @@ body {
                                     tokenHeader: data && data.tokenHeader
                                 }, { syncFirebase: true });
                                 if (!tok) throw new Error('RefreshToken không trả token mới');
+                                lastRefreshTokenError = '';
                                 return tok;
                             } catch (e) {
+                                lastRefreshTokenError = refreshErrorSummary(e);
                                 if (e && e.kind === 'auth') clearStoredRefreshToken();
                                 throw e;
                             }
@@ -2217,7 +2323,9 @@ body {
                             try {
                                 const fresh = await refreshAccessToken();
                                 if (fresh) token = extractToken(fresh);
-                            } catch (e) {}
+                            } catch (e) {
+                                if (!lastRefreshTokenError) lastRefreshTokenError = refreshErrorSummary(e);
+                            }
                         }
                         try { return extractToken(getToken() || token); }
                         catch (e) { return token; }
@@ -2517,6 +2625,7 @@ body {
                         try {
                             await fbDB.collection(FB_COLLECTION).doc(FB_DOC).set({
                                 token: currentToken || getToken(),
+                                tokenUpdatedAt: localTokenStoredAt || 0,
                                 lastUpdated: Date.now(),
                                 board: {
                                     lastIssue: lastInsertedIssue || null,
@@ -2537,7 +2646,10 @@ body {
                             if ('token' in d) {
                                 const tok = extractToken(d.token);
                                 const localTok = extractToken(currentToken || '');
-                                if (tok !== localTok) {
+                                const remoteTokenAt = Number(d.tokenUpdatedAt || 0) || 0;
+                                const localRecentToken = !!localTok && !!localTokenStoredAt && (Date.now() - localTokenStoredAt < 5 * 60 * 1000);
+                                const ignoreRemoteToken = !!localTok && ((remoteTokenAt && remoteTokenAt <= localTokenStoredAt) || (!remoteTokenAt && localRecentToken));
+                                if (tok !== localTok && !ignoreRemoteToken) {
                                     const remoteExpired = !!tok && isTokenExpiredLocally(tok);
                                     const localUsable = !!localTok && !isTokenExpiredLocally(localTok);
                                     if (remoteExpired && localUsable) {
@@ -2547,6 +2659,9 @@ body {
                                         }, 0);
                                     } else {
                                         currentToken = tok;
+                                        localTokenStoredAt = remoteTokenAt || Date.now();
+                                        try { localStorage.setItem(LS_TOKEN_AT, String(localTokenStoredAt)); } catch (e) {}
+                                        try { gtxTokenImportSeq++; } catch (e) {}
                                         const el = document.getElementById('tokenInput');
                                         if (el) el.value = tok;
                                         const remember = document.getElementById('rememberToken');
@@ -3072,6 +3187,7 @@ body {
                     let gtxLastBalance = NaN;
                     let gtxSessionDeadToken = '';
                     let gtxNeedsToken = false;
+                    let gtxTokenImportSeq = 0;
 
                     function gtxEl(tag, cls, text) {
                         const el = document.createElement(tag);
@@ -3157,14 +3273,14 @@ body {
                     }
                     function gtxErrText(e) {
                         if (!e) return 'Chưa tải được';
-                        if (e.kind === 'auth') return 'Token hết hạn';
-                        if (e.kind === 'session') return 'Phiên hết hạn';
-                        if (e.kind === 'elsewhere') return 'Đã đăng nhập nơi khác';
+                        if (e.kind === 'auth') return e.status ? ('Token bị từ chối HTTP ' + e.status) : 'Token hết hạn';
+                        if (e.kind === 'session') return 'Phiên hết hạn' + (e.code ? (' (mã ' + e.code + ')') : '');
+                        if (e.kind === 'elsewhere') return 'Đã đăng nhập nơi khác' + (e.code ? (' (mã ' + e.code + ')') : '');
                         if (e.kind === 'sign') return 'Sai chữ ký API';
                         if (e.kind === 'net') return 'Mất kết nối';
                         if (e.kind === 'html') return 'Bị chặn';
                         if (e.kind === 'api' && e.code) return 'Lỗi API ' + e.code;
-                        if (e.kind === 'http') return 'Lỗi API';
+                        if (e.kind === 'http') return e.status ? ('Lỗi HTTP ' + e.status) : 'Lỗi API';
                         return 'Chưa tải được';
                     }
                     function gtxSetEmpty(id, msg) {
@@ -3227,6 +3343,47 @@ body {
                         }
                         return res;
                     }
+                    function gtxTokenDiagText(token) {
+                        const refresh = getRefreshToken();
+                        const refreshText = !refresh
+                            ? 'thiếu refreshToken'
+                            : (tokenExpMs(refresh) ? ('refreshToken ' + tokenExpiryText(refresh)) : 'refreshToken không đọc được hạn (có thể bị cắt)');
+                        return tokenExpiryText(token) + ' · ' + refreshText;
+                    }
+                    async function gtxValidateImportedToken(importSeq, importedToken) {
+                        let token = extractToken(importedToken || '');
+                        if (!token || importSeq !== gtxTokenImportSeq) return false;
+                        if (isTokenExpiredLocally(token, 60000)) {
+                            if (!getRefreshToken()) {
+                                gtxShowTokenProblem('Token đã hết hạn ' + tokenExpiryText(token) + ' · thiếu refreshToken');
+                                return false;
+                            }
+                            gtxSetBalance('loading', null, 'Access token đã hết hạn · đang dùng refreshToken để gia hạn');
+                            gtxSetNote('betTxNote', 'Đang gia hạn token…');
+                            try {
+                                const fresh = await refreshAccessToken();
+                                if (importSeq !== gtxTokenImportSeq) return false;
+                                if (fresh) token = extractToken(fresh);
+                            } catch (e) {
+                                if (importSeq !== gtxTokenImportSeq) return false;
+                                gtxShowTokenProblem('Gia hạn token thất bại: ' + (lastRefreshTokenError || refreshErrorSummary(e) || 'lỗi không rõ'));
+                                return false;
+                            }
+                            if (!token || isTokenExpiredLocally(token)) {
+                                gtxShowTokenProblem('Gia hạn token thất bại: ' + (lastRefreshTokenError || 'token mới vẫn hết hạn'));
+                                return false;
+                            }
+                        }
+                        const ok = await refreshGameWallet(true);
+                        if (importSeq !== gtxTokenImportSeq) return false;
+                        try { await loadBetConfig(true); } catch (e) {}
+                        try { await refreshBetIssue(true); } catch (e) {}
+                        try { betRender(); } catch (e) {}
+                        try {
+                            if (typeof autoStartBulkLoad === 'function') autoStartBulkLoad('token đã kiểm tra');
+                        } catch (e) {}
+                        return ok;
+                    }
                     function gtxAcceptTokenText(text) {
                         const bundle = parseAuthBundle(text);
                         if (!bundle.token) {
@@ -3234,6 +3391,7 @@ body {
                             return false;
                         }
                         try { if (typeof betAuto !== 'undefined' && betAuto.active) betAutoStop('Đã dừng tự động vì đổi token'); } catch (e) {}
+                        const importSeq = ++gtxTokenImportSeq;
                         const el = document.getElementById('tokenInput');
                         if (el) el.value = text;
                         try { deadToken = ''; } catch (e) {}
@@ -3242,14 +3400,26 @@ body {
                         gtxLastToken = '';
                         gtxBalanceOk = false;
                         gtxLastBalance = NaN;
-                        try { saveToken(); }
-                        catch (e) { storeAuthBundle(bundle, { syncFirebase: true }); }
+                        lastRefreshTokenError = '';
+                        let stored = '';
+                        try { stored = storeAuthBundle(bundle, { syncFirebase: true }); } catch (e) {}
+                        if (!stored) {
+                            try { saveToken(); stored = extractToken(getToken() || bundle.token); } catch (e) {}
+                        }
+                        if (!stored) {
+                            gtxShowTokenProblem('Token không hợp lệ');
+                            return false;
+                        }
+                        const diag = gtxTokenDiagText(stored);
+                        gtxSetBalance('loading', null, 'Đã nhận token · ' + diag + ' · đang kiểm tra');
+                        gtxSetNote('betTxNote', 'Đã nhận token · ' + diag);
+                        gtxSetEmpty('betTxList', 'Đang kiểm tra token…');
                         setTimeout(function () {
-                            try { refreshGameWallet(true); } catch (e) {}
-                            try { loadBetConfig(true); } catch (e) {}
-                            try { refreshBetIssue(true); } catch (e) {}
-                            try { betRender(); } catch (e) {}
-                        }, 350);
+                            try {
+                                const p = gtxValidateImportedToken(importSeq, stored);
+                                if (p && p.catch) p.catch(function () {});
+                            } catch (e) {}
+                        }, 50);
                         return true;
                     }
                     function gtxPromptNewToken(customMsg) {
@@ -3265,7 +3435,10 @@ body {
                             if (navigator.clipboard && navigator.clipboard.readText) {
                                 const text = await navigator.clipboard.readText();
                                 const bundle = parseAuthBundle(text);
-                                if (bundle.token) return gtxAcceptTokenText(text);
+                                const clipboardExpired = !!bundle.token && isTokenExpiredLocally(bundle.token);
+                                if (bundle.token && (!clipboardExpired || bundle.refreshToken || getRefreshToken())) {
+                                    return gtxAcceptTokenText(text);
+                                }
                             }
                         } catch (e) {}
                         return gtxPromptNewToken('Dán token (eyJ...) hoặc gói token+refreshToken để bật tự gia hạn:');
@@ -4369,6 +4542,7 @@ body {
                     async function refreshGameWallet(force) {
                         const balanceEl = document.getElementById('gameBalance');
                         if (!balanceEl) return false;
+                        const importSeqAtStart = gtxTokenImportSeq;
                         let token = '';
                         try { token = extractToken(getToken() || ''); } catch (e) {}
                         if (!token) {
@@ -4388,7 +4562,9 @@ body {
                             if (freshToken) token = extractToken(freshToken);
                             if (isTokenExpiredLocally(token)) {
                                 gtxSessionDeadToken = token;
-                                gtxShowTokenProblem('Token hết hạn');
+                                gtxShowTokenProblem(lastRefreshTokenError
+                                    ? ('Gia hạn token thất bại: ' + lastRefreshTokenError)
+                                    : 'Token hết hạn');
                                 return false;
                             }
                         }
@@ -4424,6 +4600,10 @@ body {
                             let current = '';
                             try { current = extractToken(getToken() || ''); } catch (e) {}
                             if (!current) return false;
+                            if (importSeqAtStart !== gtxTokenImportSeq) {
+                                setTimeout(function () { try { refreshGameWallet(true); } catch (e) {} }, 50);
+                                return false;
+                            }
                             if (current !== token) {
                                 // Token vừa được gia hạn/đổi trong lúc gọi API; dữ liệu vẫn thuộc phiên đăng nhập này.
                                 token = current;
@@ -4626,6 +4806,185 @@ body {
                         }
                         return true;
                     }
+                    /* ===== LỊCH SỬ 500 KỲ GẦN NHẤT (kho riêng, luôn cắt còn 500) ===== */
+                    const HISTORY500_MAX = 500;
+                    const LS_HISTORY500 = 'vn168_history_500_v1';
+                    let history500 = [];
+                    let history500Loaded = false;
+                    function history500Norm(e) {
+                        if (!e) return null;
+                        const i = String(e.i || e.f || '').trim();
+                        const d = String(e.d !== undefined && e.d !== null ? e.d : (e.value !== undefined && e.value !== null ? e.value : '')).trim();
+                        if (!i || !/^[0-9]$/.test(d)) return null;
+                        const nRaw = (e.n !== undefined && e.n !== null && e.n !== '') ? String(e.n).trim() : d;
+                        return { i: i, n: nRaw || d, d: d, t: Number(e.t) || 0 };
+                    }
+                    function history500SortTrim() {
+                        history500.sort(function (a, b) { return compareIssue(String(b.i || ''), String(a.i || '')); });
+                        if (history500.length > HISTORY500_MAX) history500.splice(HISTORY500_MAX);
+                    }
+                    function history500ToString() {
+                        return 'v1|' + history500.map(function (e) {
+                            return e.i + ':' + (e.n || e.d) + ':' + e.d + ':' + (Number(e.t) || 0);
+                        }).join('|');
+                    }
+                    function renderHistory500Info() {
+                        const n = Array.isArray(history500) ? history500.length : 0;
+                        const info = document.getElementById('history500Info');
+                        if (info) info.textContent = '💾 Lịch sử: ' + n + '/' + HISTORY500_MAX + ' kỳ';
+                        const btn = document.getElementById('btnExportHistory500');
+                        if (btn) {
+                            btn.disabled = n === 0;
+                            btn.textContent = '📄 Xuất TXT (' + n + ')';
+                            btn.title = n
+                                ? ('Xuất ' + n + ' kỳ gần nhất ra file .txt')
+                                : 'Chưa có kỳ nào trong lịch sử 500';
+                        }
+                    }
+                    function history500SetStatus(msg, kind) {
+                        const el = document.getElementById('history500Status');
+                        if (!el) return;
+                        el.textContent = msg || '';
+                        el.className = kind || '';
+                        el.id = 'history500Status';
+                    }
+                    function saveHistory500() {
+                        try { localStorage.setItem(LS_HISTORY500, history500ToString()); } catch (e) {}
+                        renderHistory500Info();
+                    }
+                    function loadHistory500() {
+                        if (history500Loaded) return;
+                        history500Loaded = true;
+                        let raw = '';
+                        try { raw = localStorage.getItem(LS_HISTORY500) || ''; } catch (e) {}
+                        history500 = [];
+                        if (raw && raw.indexOf('v1|') === 0) {
+                            const parts = raw.slice(3).split('|');
+                            for (let k = 0; k < parts.length; k++) {
+                                const a = String(parts[k] || '').split(':');
+                                if (a.length < 3) continue;
+                                const e = history500Norm({ i: a[0], n: a[1], d: a[2], t: Number(a[3]) || 0 });
+                                if (e) history500.push(e);
+                            }
+                        } else if (raw && raw.charAt(0) === '[') {
+                            try {
+                                const arr = JSON.parse(raw);
+                                if (Array.isArray(arr)) {
+                                    for (let k = 0; k < arr.length; k++) {
+                                        const e = history500Norm(arr[k]);
+                                        if (e) history500.push(e);
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                        const seen = new Set();
+                        history500 = history500.filter(function (e) {
+                            if (seen.has(e.i)) return false;
+                            seen.add(e.i);
+                            return true;
+                        });
+                        history500SortTrim();
+                        renderHistory500Info();
+                    }
+                    function history500Merge(entries, save) {
+                        if (!history500Loaded) loadHistory500();
+                        const byId = new Map();
+                        for (let k = 0; k < history500.length; k++) byId.set(history500[k].i, history500[k]);
+                        let changed = false;
+                        const list = entries || [];
+                        for (let k = 0; k < list.length; k++) {
+                            const e = history500Norm(list[k]);
+                            if (!e) continue;
+                            const old = byId.get(e.i);
+                            if (!old) {
+                                history500.push(e);
+                                byId.set(e.i, e);
+                                changed = true;
+                            } else {
+                                if (old.d !== e.d) { old.d = e.d; changed = true; }
+                                if ((!old.n || old.n === old.d) && e.n && e.n !== old.n) { old.n = e.n; changed = true; }
+                                if ((!old.t || old.t <= 0) && e.t > 0) { old.t = e.t; changed = true; }
+                            }
+                        }
+                        if (changed) {
+                            history500SortTrim();
+                            if (save !== false) saveHistory500();
+                            else renderHistory500Info();
+                        }
+                        return changed;
+                    }
+                    function syncHistory500FromSources(save) {
+                        const src = [];
+                        let head = '';
+                        try {
+                            for (let k = 0; k < gameArchive.length; k++) {
+                                const e = gameArchive[k];
+                                if (e && /^[0-9]$/.test(String(e.d))) { head = String(e.i || '').trim(); break; }
+                            }
+                        } catch (e) {}
+                        try {
+                            let boardTaken = 0;
+                            for (let i = TOTAL - 1; i >= 0 && boardTaken < HISTORY500_MAX; i--) {
+                                const c = cells[i];
+                                if (!c || !/^[0-9]$/.test(String(c.value || ''))) continue;
+                                const id = String(c.sttFull || '').trim();
+                                if (!id) continue;
+                                if (head && compareIssue(id, head) <= 0) break;
+                                src.push({ i: id, n: String(c.value), d: String(c.value), t: 0 });
+                                boardTaken++;
+                            }
+                        } catch (e) {}
+                        try {
+                            const top = gameArchive.slice(0, HISTORY500_MAX);
+                            for (let k = 0; k < top.length; k++) src.push(top[k]);
+                        } catch (e) {}
+                        return history500Merge(src, save);
+                    }
+                    function buildHistory500Txt() {
+                        try { syncHistory500FromSources(true); } catch (e) {}
+                        const rows = history500.slice(0, HISTORY500_MAX);
+                        const stamp = new Date().toLocaleString('vi-VN');
+                        const lines = [
+                            'LICH SU 500 KY GAN NHAT | ' + rows.length + ' ky | ' + stamp,
+                            'ky | so | chu_so_cuoi | lon_nho | thoi_gian'
+                        ];
+                        for (let k = 0; k < rows.length; k++) {
+                            const e = rows[k];
+                            lines.push(e.i + ' | ' + (e.n || e.d) + ' | ' + e.d + ' | '
+                                + (Number(e.d) >= 5 ? 'LON' : 'NHO') + ' | '
+                                + (e.t ? fmtTime(e.t) : ''));
+                        }
+                        return lines.join('\r\n');
+                    }
+                    function exportHistory500Txt() {
+                        try { syncHistory500FromSources(true); } catch (e) {}
+                        if (!history500.length) {
+                            history500SetStatus('Chưa có kỳ nào để xuất.', 'err');
+                            return false;
+                        }
+                        const text = buildHistory500Txt();
+                        const name = 'lich-su-500-ky-' + new Date().toISOString().slice(0, 10) + '.txt';
+                        try {
+                            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = name;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 3000);
+                            history500SetStatus('Đã xuất ' + history500.length + ' kỳ ra file ' + name + '.', 'ok');
+                            renderHistory500Info();
+                            return true;
+                        } catch (err) {
+                            try {
+                                if (typeof showTxtFallback === 'function') showTxtFallback(text, name);
+                            } catch (e) {}
+                            history500SetStatus('Trình duyệt chặn tải file — đã hiện ô text để copy.', 'err');
+                            return false;
+                        }
+                    }
                     /* localStorage chỉ ~5MB: kho 50.000 kỳ dạng JSON ≈ 3,5MB → DỄ TRÀN và ghi THẤT BẠI ÂM THẦM
                        (bảng vẫn hiện số nhưng kho mất → mở lại là phải tải lại từ đầu).
                        => lưu dạng NÉN "v2|ID:số:ts|ID:số:ts|…" ≈ 1,4MB, và BÁO RÕ khi không ghi được. */
@@ -4645,6 +5004,7 @@ body {
                         return out;
                     }
                     function saveGameArchive() {
+                        try { syncHistory500FromSources(true); } catch (e) {}
                         const full = archiveToString();
                         // --- cách 1: CHIA KHỐI (chứa được cả 92.000 kỳ) ---
                         try {
@@ -4703,6 +5063,7 @@ body {
                             gameArchive = gameArchive.slice(0, GAME_ARCHIVE_MAX);
                         } else { gameArchive = []; }
                         gameArchiveKeys = new Set(gameArchive.map(e => e.i));
+                        try { syncHistory500FromSources(true); } catch (e) {}
                     }
                     function renderGameArchiveInfo() {
                         const el = document.getElementById('gpArchiveInfo');
@@ -4712,6 +5073,7 @@ body {
                             + ' · đã tải tới trang ' + (Number(pg.lastPage) || 0) + '/' + AUTO_LOAD_PAGES
                             + (archiveSaveFailed ? ('  ⚠️ ' + archiveSaveFailed) : '');
                         try { if (typeof refreshExportTxtBtn === 'function') refreshExportTxtBtn(); } catch (e) {}
+                        try { if (typeof renderHistory500Info === 'function') renderHistory500Info(); } catch (e) {}
                         try { if (typeof renderPageStat === 'function') renderPageStat(true); } catch (e) {}
                     }
                     
@@ -5712,8 +6074,8 @@ body {
                         const n = segPrefixLen();
                         let html = '';
                         for (let i = 1; i <= n; i++) {
-                            html += '<input id="segD' + i + '" class="seg-in" maxlength="1" inputmode="numeric" placeholder="0-9"'
-                                + ' oninput="onSegInput(this)" value="' + (old['segD' + i] || '') + '">';
+                            html += '<input id="segD' + i + '" class="seg-in" type="text" maxlength="1" inputmode="none" placeholder="0-9"'
+                                + ' readonly aria-readonly="true" tabindex="-1" autocomplete="off" onfocus="this.blur()" value="' + (old['segD' + i] || '') + '">';
                         }
                         box.innerHTML = html;
                         const info = document.getElementById('segLenInfo');
@@ -6042,17 +6404,10 @@ body {
                     }
                     // ✅ TỰ ĐỘNG FOCUS ô nhập ĐẦU TIÊN (khi mở trang / sau khi copy xuống 4 ô)
                     function focusFirstSegInput(force) {
+                        // 4 ô chỉ HIỂN THỊ số app tự lấy: không focus để điện thoại không bật bàn phím số.
                         try {
-                            const first = document.getElementById('segD1');
-                            if (!first) return;
                             const ae = document.activeElement;
-                            const id = (ae && ae.id) ? ae.id : '';
-                            // chỉ "giành" focus khi được yêu cầu, hoặc chưa ai giữ focus, hoặc
-                            // đang ở ô nhập của khung này (không cướp focus khi người dùng đang gõ nơi khác)
-                            const duocLay = force || !ae || ae === document.body || id === 'mainInput' || /^segD[0-9]+$/.test(id);
-                            if (!duocLay) return;
-                            first.focus();
-                            try { first.select(); } catch (e2) {}
+                            if (ae && /^segD[0-9]+$/.test(ae.id || '')) ae.blur();
                         } catch (e) {}
                     }
                     // GIỮ focus ở ô nhập đầu lúc mới mở trang: một số trình duyệt chặn focus khi trang
@@ -6519,6 +6874,7 @@ body {
                     setInterval(function () {
                         try {
                                 if (typeof refreshExportTxtBtn === 'function') refreshExportTxtBtn();
+                            if (typeof syncHistory500FromSources === 'function') syncHistory500FromSources(true);
                             if (typeof renderPageStat === 'function') renderPageStat();
                             if (gameArchive.length !== dataTableLastLen) renderDataTable(dataTableMode);
                         } catch (e) {}
@@ -7281,9 +7637,11 @@ body {
                     nextStt = 1;
                     sttInput.value = '1';
                     loadCellHistory();
+                    loadHistory500();
                     loadGameArchive();
                     renderGameArchiveInfo();
                     loadBoardLocal();
+                    try { syncHistory500FromSources(true); } catch(e){}
                     try { refreshBigSmall(); } catch(e){}
                     renderCellHistory();         // vẽ ô lịch sử SAU khi đã nạp kho 5000 trang + bảng
                     // khôi phục "Số ô nhập" đã chọn (mặc định 4 ô)
@@ -7405,4 +7763,4 @@ body {
                         });
                 </script>
    
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d607ea1d178065',t:'MTc5MjQ3ODQyNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
