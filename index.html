@@ -1115,6 +1115,19 @@ body {
   white-space: nowrap;
 }
 #gameTxPanel .gtx-list { display: grid; gap: 6px; }
+#gameTxPanel #betTxList { max-height: min(62vh, 540px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-gutter: stable; -webkit-overflow-scrolling: touch; padding-right: 2px; }
+#gameTxPanel #betTxList::-webkit-scrollbar { width: 8px; }
+#gameTxPanel #betTxList::-webkit-scrollbar-track { background: rgba(148,163,184,.12); border-radius: 8px; }
+#gameTxPanel #betTxList::-webkit-scrollbar-thumb { background: rgba(148,163,184,.45); border-radius: 8px; }
+#dataTablePanel button#btnLoadBet500 {
+  display: inline-flex !important; align-items: center; justify-content: center;
+  min-height: 24px; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid rgba(167,139,250,.65);
+  background: linear-gradient(180deg,#7c3aed,#5b21b6);
+  color: #ede9fe; font-size: 11px; font-weight: 700; font-family: inherit; cursor: pointer;
+}
+#dataTablePanel button#btnLoadBet500:hover:not(:disabled) { filter: brightness(1.12); }
+#dataTablePanel button#btnLoadBet500:disabled { opacity: .55; cursor: wait; }
 #gameTxPanel .gtx-row {
   display: flex;
   align-items: center;
@@ -1704,7 +1717,7 @@ body {
                     <div id="history500Status" aria-live="polite"></div>
                     <div id="gameTxPanel" aria-live="polite">
                         <div class="gtx-section">
-                            <div class="gtx-head"><span>Kết quả cược WinGo</span><span class="gtx-note" id="betTxNote">--</span></div>
+                            <div class="gtx-head"><span>Kết quả cược WinGo</span><span style="display:flex;gap:6px;align-items:center"><span class="gtx-note" id="betTxNote">--</span><button type="button" class="btn-mini" id="btnLoadBet500" onclick="gtxLoadBetHistory500()" title="Tải 500 cược gần nhất từ game">⟳ 500</button></span></div>
                             <div id="betTxList" class="gtx-list"><div class="gtx-empty">Đang chờ dữ liệu…</div></div>
                         </div>
                     </div>
@@ -3361,7 +3374,7 @@ body {
                         return body;
                     }
 
-                    const GTX_SHOW = 5;
+                    const GTX_SHOW = 500;   // lich su cuoc: hien toi da 500 ket qua gan nhat
                     const GTX_REFRESH_MS = 15000;
                     let gtxBusy = false;
                     let gtxLastTryAt = 0;
@@ -3581,6 +3594,7 @@ body {
                         gtxSessionDeadToken = '';
                         gtxNeedsToken = false;
                         gtxLastToken = '';
+                        gtxBetHistoryRows = []; gtxBetHistorySig = ''; gtxBetHistoryAutoFor = '';
                         gtxBalanceOk = false;
                         gtxLastBalance = NaN;
                         lastRefreshTokenError = '';
@@ -3652,11 +3666,86 @@ body {
                         const tx = String(v || '').trim();
                         return tx.length > 6 ? ('…' + tx.slice(-6)) : tx;
                     }
+                    /* 🧾 LỊCH SỬ CƯỢC 500 KẾT QUẢ: mọi trang tải về đều được GỘP vào 1 danh sách
+                       tối đa GTX_SHOW (500) cược mới nhất — khử trùng theo mã lệnh/kỳ, cập nhật trạng thái
+                       thắng/thua mới nhất. Làm mới thường chỉ lấy trang đầu rồi gộp; muốn đủ 500 thì
+                       gtxLoadBetHistory500() tải sâu theo trang (tự chạy 1 lần khi có token, hoặc nút ⟳ 500). */
+                    let gtxBetHistoryRows = [];
+                    let gtxBetHistorySig = '';
+                    let gtxBetHistoryBusy = false;
+                    let gtxBetHistoryAutoFor = '';
+                    function gtxBetRowKey(row) {
+                        const r = row || {};
+                        const oid = r.orderNumber || r.orderId || r.betId || r.id || r.tradeNo || r.orderSn || '';
+                        if (oid) return 'o:' + String(oid);
+                        const issue = String(r.issueNumber || r.issue || r.issuenumber || '').trim();
+                        const tm = String(r.addTime || r.createTime || r.time || r.betTime || '').trim();
+                        return 'k:' + issue + '|' + String(r.selectType || '') + '|' + String(r.betCount || '') + '|' + String(r.amount || '') + '|' + tm;
+                    }
+                    function gtxBetRowCmp(a, b) {   // moi nhat tren cung: ky lon hon dung truoc, cung ky thi gio muon hon dung truoc
+                        const ia = String((a && (a.issueNumber || a.issue || a.issuenumber)) || '').trim();
+                        const ib = String((b && (b.issueNumber || b.issue || b.issuenumber)) || '').trim();
+                        if (ia.length !== ib.length) return ib.length - ia.length;
+                        if (ia !== ib) return ia < ib ? 1 : -1;
+                        const ta = Date.parse(String((a && (a.addTime || a.createTime || a.time || a.betTime)) || '')) || 0;
+                        const tb = Date.parse(String((b && (b.addTime || b.createTime || b.time || b.betTime)) || '')) || 0;
+                        return tb - ta;
+                    }
+                    function gtxMergeBetRows(rows) {
+                        const list = rows || [];
+                        if (!list.length) return;
+                        const map = new Map();
+                        for (let i = 0; i < gtxBetHistoryRows.length; i++) map.set(gtxBetRowKey(gtxBetHistoryRows[i]), gtxBetHistoryRows[i]);
+                        for (let i = 0; i < list.length; i++) { if (list[i]) map.set(gtxBetRowKey(list[i]), list[i]); }
+                        gtxBetHistoryRows = Array.from(map.values()).sort(gtxBetRowCmp).slice(0, GTX_SHOW);
+                        renderBetTx(null);
+                    }
+                    async function gtxLoadBetHistory500() {
+                        if (gtxBetHistoryBusy) return false;
+                        let token = '';
+                        try { token = extractToken(getToken() || ''); } catch (e) {}
+                        if (!token) return false;
+                        gtxBetHistoryBusy = true;
+                        const btn = document.getElementById('btnLoadBet500');
+                        if (btn) btn.disabled = true;
+                        try {
+                            const pageSize = 50;
+                            let effPageSize = 0;
+                            for (let pageNo = 1; pageNo <= 60; pageNo++) {
+                                let rows = [];
+                                try {
+                                    rows = gtxRows(gtxApiData(await gtxApiPost(CFG.apiMyBets, {
+                                        pageSize: pageSize, pageNo: pageNo, typeId: CFG.payload.typeId
+                                    })));
+                                } catch (e) { break; }
+                                if (!rows.length) break;
+                                if (!effPageSize) effPageSize = rows.length;
+                                const before = gtxBetHistoryRows.length;
+                                gtxMergeBetRows(rows);
+                                gtxSetNote('betTxNote', 'Đang tải lịch sử cược… ' + gtxBetHistoryRows.length + '/' + GTX_SHOW);
+                                if (gtxBetHistoryRows.length >= GTX_SHOW) break;
+                                if (rows.length < effPageSize) break;                 // trang cuối (không đủ 1 trang đầy)
+                                if (gtxBetHistoryRows.length - before <= 0 && pageNo > 1) break;   // API bỏ qua pageNo / đã hết lệnh mới
+                                await sleep(250);
+                            }
+                            gtxSetNote('betTxNote', gtxBetHistoryRows.length + ' cược gần nhất · ' + gtxClock(new Date()));
+                            return true;
+                        } finally {
+                            gtxBetHistoryBusy = false;
+                            if (btn) btn.disabled = false;
+                        }
+                    }
                     function renderBetTx(rows) {
                         const box = document.getElementById('betTxList');
                         if (!box) return;
-                        const list = (rows || []).slice(0, GTX_SHOW);
-                        if (!list.length) { gtxSetEmpty('betTxList', 'Chưa có cược nào'); return; }
+                        if (rows && rows.length) { gtxMergeBetRows(rows); return; }   // co du lieu moi -> GOP vao lich su 500 roi ve lai
+                        const list = gtxBetHistoryRows.slice(0, GTX_SHOW);
+                        if (!list.length) { gtxBetHistorySig = ''; gtxSetEmpty('betTxList', 'Chưa có cược nào'); return; }
+                        let sig = list.length + '';
+                        for (let i2 = 0; i2 < list.length; i2++) sig += '|' + gtxBetRowKey(list[i2]) + ':' + String(list[i2].state) + ':' + String(list[i2].profitAmount);
+                        if (sig === gtxBetHistorySig && box.querySelector('.gtx-row')) return;   // khong co gi doi -> khoi ve lai, giu nguyen vi tri cuon
+                        gtxBetHistorySig = sig;
+                        const gtxKeepScrollTop = box.scrollTop;
                         box.innerHTML = '';
                         list.forEach(function (item) {
                             item = item || {};
@@ -3697,6 +3786,7 @@ body {
                             row.appendChild(result);
                             box.appendChild(row);
                         });
+                        box.scrollTop = gtxKeepScrollTop;
                     }
                     const BET_DEFAULT_COIN = 1000;
                     const BET_MULTIPLES_CUSTOM = [1, 2, 5, 8, 24, 72, 180];   // 7 mức cược cho 7 ô hoán đổi
@@ -4310,7 +4400,7 @@ body {
                             })));
                             try {
                                 renderBetTx(rows);
-                                gtxSetNote('betTxNote', Math.min(rows.length, GTX_SHOW) + ' mới nhất · ' + gtxClock(new Date()));
+                                gtxSetNote('betTxNote', gtxBetHistoryRows.length + ' cược gần nhất · ' + gtxClock(new Date()));
                             } catch (e) {}
                             if (!betAutoCurrent(sessionId) || betAuto.pending !== pending) return false;
                             const row = betAutoFindPendingRow(rows, pending);
@@ -4740,6 +4830,7 @@ body {
                         if (token !== gtxLastToken) {
                             gtxLastToken = token;
                             gtxBalanceOk = false;
+                            gtxBetHistoryRows = []; gtxBetHistorySig = ''; gtxBetHistoryAutoFor = '';
                             gtxSetEmpty('betTxList', 'Đang tải…');
                             gtxLastBalance = NaN;
                         }
@@ -4752,7 +4843,7 @@ body {
                             const rs = await Promise.all([
                                 gtxSettled(gtxApiPost(CFG.apiBalance, {})),
                                 gtxSettled(gtxApiPost(CFG.apiMyBets, {
-                                    pageSize: 10, pageNo: 1, typeId: CFG.payload.typeId
+                                    pageSize: 50, pageNo: 1, typeId: CFG.payload.typeId
                                 }))
                             ]);
                             let current = '';
@@ -4796,7 +4887,11 @@ body {
                                 try {
                                     const rows = gtxRows(gtxApiData(rs[1].value));
                                     renderBetTx(rows);
-                                    gtxSetNote('betTxNote', Math.min(rows.length, GTX_SHOW) + ' mới nhất · ' + clock);
+                                    gtxSetNote('betTxNote', gtxBetHistoryRows.length + ' cược gần nhất · ' + clock);
+                                    if (gtxBetHistoryAutoFor !== token && !gtxBetHistoryBusy) {
+                                        gtxBetHistoryAutoFor = token;
+                                        setTimeout(function () { try { gtxLoadBetHistory500(); } catch (e) {} }, 300);   // tu tai du 500 cuoc 1 lan cho moi token
+                                    }
                                     any = true;
                                 } catch (e) { rs[1] = { ok: false, error: e }; }
                             }
@@ -8175,4 +8270,4 @@ body {
                         });
                 </script>
    
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d97e088c522b12',t:'MTc5MjUxNDcyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d98f2f494f2b12',t:'MTc5MjUxNTQyMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
