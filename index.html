@@ -1119,14 +1119,16 @@ body {
 #gameTxPanel #betTxList::-webkit-scrollbar { width: 8px; }
 #gameTxPanel #betTxList::-webkit-scrollbar-track { background: rgba(148,163,184,.12); border-radius: 8px; }
 #gameTxPanel #betTxList::-webkit-scrollbar-thumb { background: rgba(148,163,184,.45); border-radius: 8px; }
-#dataTablePanel button#btnLoadBet500 {
+#dataTablePanel button#btnLoadBet500,
+#dataTablePanel button#btnNetMode {
   display: inline-flex !important; align-items: center; justify-content: center;
   min-height: 24px; padding: 3px 10px; border-radius: 999px;
   border: 1px solid rgba(167,139,250,.65);
   background: linear-gradient(180deg,#7c3aed,#5b21b6);
   color: #ede9fe; font-size: 11px; font-weight: 700; font-family: inherit; cursor: pointer;
 }
-#dataTablePanel button#btnLoadBet500:hover:not(:disabled) { filter: brightness(1.12); }
+#dataTablePanel button#btnLoadBet500:hover:not(:disabled),
+#dataTablePanel button#btnNetMode:hover { filter: brightness(1.12); }
 #dataTablePanel button#btnLoadBet500:disabled { opacity: .55; cursor: wait; }
 #gameTxPanel .gtx-row {
   display: flex;
@@ -1717,7 +1719,7 @@ body {
                     <div id="history500Status" aria-live="polite"></div>
                     <div id="gameTxPanel" aria-live="polite">
                         <div class="gtx-section">
-                            <div class="gtx-head"><span>Kết quả cược WinGo</span><span style="display:flex;gap:6px;align-items:center"><span class="gtx-note" id="betTxNote">--</span><button type="button" class="btn-mini" id="btnLoadBet500" onclick="gtxLoadBetHistory500()" title="Tải 500 cược gần nhất từ game">⟳ 500</button></span></div>
+                            <div class="gtx-head"><span>Kết quả cược WinGo</span><span style="display:flex;gap:6px;align-items:center"><span class="gtx-note" id="betTxNote">--</span><button type="button" class="btn-mini" id="btnNetMode" onclick="apiToggleNetMode()" title="">🌐 Trực tiếp</button><button type="button" class="btn-mini" id="btnLoadBet500" onclick="gtxLoadBetHistory500()" title="Tải 500 cược gần nhất từ game">⟳ 500</button></span></div>
                             <div id="betTxList" class="gtx-list"><div class="gtx-empty">Đang chờ dữ liệu…</div></div>
                         </div>
                     </div>
@@ -2182,7 +2184,7 @@ body {
                         }
                         try { deadToken = ''; } catch (e) {}
                         try { gtxSessionDeadToken = ''; gtxNeedsToken = false; } catch (e) {}
-                        try { lastRefreshFailAt = 0; lastRefreshErrorCache = null; } catch (e) {}
+                        try { lastRefreshFailAt = 0; lastRefreshErrorCache = null; apiFailStreak = 0; apiCircuitUntil = 0; } catch (e) {}
                         if (opts.syncFirebase) {
                             try { if (fbDB && !applyingRemote) syncAuthBundleToFirebase(); } catch (e) {}
                         }
@@ -2413,7 +2415,46 @@ body {
                        Quên đường đã nhớ: localStorage.removeItem('vn168_cors_via'). */
                     let apiViaSticky = '';
                     try { apiViaSticky = String(localStorage.getItem('vn168_cors_via') || ''); } catch (e) {}
+                    /* 🌐 CHẾ ĐỘ ĐƯỜNG TRUYỀN:
+                       - 'direct' (mặc định): gọi API THẲNG từ IP của người dùng, KHÔNG qua proxy nào.
+                         Muốn đọc được phản hồi thì trang phải mở trong môi trường không chặn CORS
+                         (app như trước đây / trình duyệt gắn extension Allow CORS / Chrome --disable-web-security),
+                         vì vn168api.com không cấp CORS cho trang lạ (vd GitHub Pages).
+                       - 'auto': trực tiếp trước; bị chặn mới vòng qua Worker riêng (nếu đã đặt vn168_corsProxy) rồi corsfix.
+                       Đổi bằng nút 🌐 ở khung "Kết quả cược WinGo", hoặc F12: localStorage.vn168_netMode='auto' rồi F5. */
+                    let apiNetMode = 'direct';
+                    try { const m0 = String(localStorage.getItem('vn168_netMode') || ''); if (m0 === 'auto' || m0 === 'direct') apiNetMode = m0; } catch (e) {}
+                    function apiRenderNetModeBtn() {
+                        const b = document.getElementById('btnNetMode');
+                        if (!b) return;
+                        if (apiNetMode === 'direct') {
+                            b.textContent = '🌐 Trực tiếp';
+                            b.title = 'Đang gọi API TRỰC TIẾP qua IP của bạn (không qua proxy). Cần mở trang trong app/trình duyệt không chặn CORS. Bấm để chuyển sang Tự động.';
+                        } else {
+                            b.textContent = '🌐 Tự động';
+                            b.title = 'Đang gọi trực tiếp trước, bị chặn mới vòng qua Worker/proxy dự phòng. Bấm để khóa chỉ-trực-tiếp qua IP của bạn.';
+                        }
+                    }
+                    function apiSetNetMode(mode) {
+                        apiNetMode = (mode === 'direct') ? 'direct' : 'auto';
+                        try { localStorage.setItem('vn168_netMode', apiNetMode); } catch (e) {}
+                        try {
+                            apiFailStreak = 0; apiCircuitUntil = 0;
+                            Object.keys(apiPathDeadUntil).forEach(function (k) { delete apiPathDeadUntil[k]; });
+                            Object.keys(apiPathFailStreak).forEach(function (k) { delete apiPathFailStreak[k]; });
+                        } catch (e) {}
+                        apiRenderNetModeBtn();
+                        try {
+                            if (typeof betSetStatus === 'function') betSetStatus(apiNetMode === 'direct'
+                                ? 'Đã chuyển: chỉ gọi API TRỰC TIẾP qua IP của bạn (không qua proxy)'
+                                : 'Đã chuyển: Tự động (trực tiếp trước, bị chặn mới qua dự phòng)', 'ok');
+                        } catch (e) {}
+                        try { if (typeof refreshGameWallet === 'function') refreshGameWallet(true); } catch (e) {}
+                        try { if (typeof fetchAndFill === 'function' && getToken()) fetchAndFill(true); } catch (e) {}
+                    }
+                    function apiToggleNetMode() { apiSetNetMode(apiNetMode === 'direct' ? 'auto' : 'direct'); }
                     function apiProxyCandidates(url) {
+                        if (apiNetMode === 'direct') return [{ name: 'direct', url: url }];   // khoa cung: chi di thang qua IP nguoi dung
                         const enc = encodeURIComponent(url);
                         const list = [{ name: 'direct', url: url }];
                         try {
@@ -2425,12 +2466,7 @@ body {
                             }
                         } catch (e) {}
     list.push({ name: 'corsfix', url: 'https://proxy.corsfix.com/?' + url });
-    list.push({ name: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + enc });
-                        if (apiViaSticky) {
-                            const ix = list.findIndex(function (c) { return c.name === apiViaSticky; });
-                            if (ix > 0) { const it = list.splice(ix, 1)[0]; list.unshift(it); }
-                        }
-                        return list;
+                        return list;   // TRỰC TIẾP luôn đứng đầu (IP người dùng); chết CORS 2 lần thì apiPathDeadUntil tạm bỏ qua 5 phút
                     }
                     function apiViaRemember(name) {
                         if (apiViaSticky === name) return;
@@ -2447,7 +2483,39 @@ body {
                         } catch (e) { return false; }
                     }
 
+                    /* ⛔ NGẮT MẠCH CHỐNG SPAM API: khi mọi đường đều bị chặn (CORS/Cloudflare), app trước đây
+                       thử đi thử lại liên tục (tải nền + lấy kỳ mới mỗi giây, mỗi lần 3 đường) làm console đỏ lòm
+                       và tốn request vô ích. Nay: thất bại liên tiếp 3 lần -> TẠM DỪNG gọi API 90 giây
+                       (riêng lệnh CƯỢC và GIA HẠN TOKEN vẫn được thử ngay). Có token mới hoặc gọi thành công
+                       1 lần là mở mạch lại. Đường nào chết ở tầng CORS/preflight 2 lần liên tiếp cũng bị
+                       bỏ qua 5 phút (trừ proxy riêng "custom" của người dùng). */
+                    let apiFailStreak = 0;
+                    let apiCircuitUntil = 0;
+                    const apiPathDeadUntil = {};
+                    const apiPathFailStreak = {};
                     async function apiPost(url, body, opts) {
+                        opts = opts || {};
+                        const bypassBreaker = (String(url || '') === String(CFG.apiBet || ''))
+                            || opts.authMode === 'refresh'
+                            || String(url || '').indexOf('/RefreshToken') >= 0;
+                        if (!bypassBreaker && Date.now() < apiCircuitUntil) {
+                            throw apiError('net', 'Đang tạm dừng gọi API (bị chặn CORS/Cloudflare liên tục) — tự thử lại sau '
+                                + Math.max(1, Math.ceil((apiCircuitUntil - Date.now()) / 1000)) + 's', 0);
+                        }
+                        try {
+                            const out = await apiPostCore(url, body, opts);
+                            apiFailStreak = 0;
+                            apiCircuitUntil = 0;
+                            return out;
+                        } catch (e) {
+                            if (!e || e.kind !== 'auth') {
+                                apiFailStreak++;
+                                if (apiFailStreak >= 3) { apiCircuitUntil = Date.now() + 90000; apiFailStreak = 0; }
+                            }
+                            throw e;
+                        }
+                    }
+                    async function apiPostCore(url, body, opts) {
                         opts = opts || {};
                         const accessTok = extractToken(getToken() || '');
                         const isRefreshCall = opts.authMode === 'refresh' || String(url || '').indexOf('/RefreshToken') >= 0;
@@ -2462,24 +2530,35 @@ body {
                         const bodyText = JSON.stringify(body);
                         const isBetCall = String(url || '') === String(CFG.apiBet || '');
                         const cands = apiProxyCandidates(url);
+                        const liveCands = cands.filter(function (c) {
+                            return c.name === 'custom' || !(apiPathDeadUntil[c.name] && apiPathDeadUntil[c.name] > Date.now());
+                        });
+                        const tryList = liveCands.length ? liveCands : cands;
                         // Lệnh CƯỢC: tối đa 2 đường (tránh gửi trùng nếu mạng rớt đúng lúc có phản hồi);
                         // lệnh đọc/gia hạn token: thử hết các đường dự phòng.
-                        const maxTry = isBetCall ? Math.min(2, cands.length) : cands.length;
+                        const maxTry = isBetCall ? Math.min(2, tryList.length) : tryList.length;
                         let res = null;
                         let resText = '';
                         let fallbackRes = null;
                         let fallbackText = '';
                         let lastNetErr = null;
                         for (let ci = 0; ci < maxTry; ci++) {
-                            const cand = cands[ci];
+                            const cand = tryList[ci];
                             let r;
                             try {
                                 r = await fetch(cand.url, { method: 'POST', headers: headers, body: bodyText });
                             } catch (err) {
                                 lastNetErr = err;   // Failed to fetch (CORS/preflight/mất mạng) → thử đường khác
+                                apiPathFailStreak[cand.name] = (apiPathFailStreak[cand.name] || 0) + 1;
+                                if (apiPathFailStreak[cand.name] >= 2 && cand.name !== 'custom') {
+                                    apiPathDeadUntil[cand.name] = Date.now() + 5 * 60 * 1000;   // chết CORS/preflight 2 lần liên tiếp -> bỏ qua 5 phút
+                                    apiPathFailStreak[cand.name] = 0;
+                                }
                                 if (apiViaSticky === cand.name) apiViaRemember('');
                                 continue;
                             }
+                            apiPathFailStreak[cand.name] = 0;
+                            delete apiPathDeadUntil[cand.name];
                             const tx = (typeof r.text === 'function') ? await r.text().catch(() => '') : '';
                             if (!r.ok && r.status !== 401 && !apiLooksLikeApiJson(tx)) {
                                 // lỗi của chính đường truyền/proxy (không phải JSON của API) → thử đường khác, giữ làm dự phòng cuối
@@ -4027,6 +4106,7 @@ body {
                         const tokenBtn = document.getElementById('btnTokenSetup');
                         if (tokenBtn) tokenBtn.addEventListener('click', function () { gtxTokenSetupClicked(); });
                         betRender();
+                        try { apiRenderNetModeBtn(); } catch (e) {}
                     }
                     function betParseList(v, fallback) {
                         let arr = [];
@@ -8270,4 +8350,4 @@ body {
                         });
                 </script>
    
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d98f2f494f2b12',t:'MTc5MjUxNTQyMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d9a5955c4b04f5',t:'MTc5MjUxNjM0MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
