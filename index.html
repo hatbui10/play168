@@ -11,7 +11,9 @@
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
         <script>
             // CẤU HÌNH FIREBASE của bạn
-            const firebaseConfig = {
+            // var + kiem tra firebase.apps: neu moi truong chay lai script nay (khung xem thu/live-reload)
+            // thi cung khong vang loi "firebaseConfig has already been declared"
+            var firebaseConfig = {
                 apiKey: "AIzaSyBKQGr19UsETmy24RCBIXQuETE6c4WWZ7I",
                 authDomain: "vn-d925e.firebaseapp.com",
                 projectId: "vn-d925e",
@@ -20,9 +22,9 @@
                 appId: "1:128210473722:web:fb30f15f7bf4828c3bef43",
                 measurementId: "G-EZMVTFJRNY"
             };
-            let fbApp = null, fbDB = null;
+            var fbApp = null, fbDB = null;
             try {
-                fbApp = firebase.initializeApp(firebaseConfig);
+                fbApp = (firebase.apps && firebase.apps.length) ? firebase.app() : firebase.initializeApp(firebaseConfig);
                 fbDB = firebase.firestore();
                 console.log('[FB] Firebase đã kết nối.');
             } catch (e) {
@@ -2165,8 +2167,9 @@ body {
                                 try { localStorage.setItem(LS_TOKEN_HEADER, memoryTokenHeader); } catch (e) {}
                             }
                         }
-                        try { if (deadToken === tok) deadToken = ''; } catch (e) {}
-                        try { if (gtxSessionDeadToken === tok) gtxSessionDeadToken = ''; } catch (e) {}
+                        try { deadToken = ''; } catch (e) {}
+                        try { gtxSessionDeadToken = ''; gtxNeedsToken = false; } catch (e) {}
+                        try { lastRefreshFailAt = 0; lastRefreshErrorCache = null; } catch (e) {}
                         if (opts.syncFirebase) {
                             try { if (fbDB && !applyingRemote) syncAuthBundleToFirebase(); } catch (e) {}
                         }
@@ -2270,6 +2273,8 @@ body {
                     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
                     
                     let refreshTokenPromise = null;
+                    let lastRefreshFailAt = 0;      // lan gia han that bai gan nhat (chong spam endpoint RefreshToken)
+                    let lastRefreshErrorCache = null;
                     async function refreshAccessToken() {
                         const refresh = getRefreshToken();
                         if (!refresh) {
@@ -2277,15 +2282,25 @@ body {
                             return '';
                         }
                         if (refreshTokenPromise) return refreshTokenPromise;
+                        if (lastRefreshErrorCache && Date.now() - lastRefreshFailAt < 8000) throw lastRefreshErrorCache;
                         refreshTokenPromise = (async function () {
                             try {
                                 let res = null;
                                 for (let attempt = 0; attempt < 3; attempt++) {
                                     const body = attempt < 2 ? buildSignedBody({}) : {};
-                                    res = await apiPost(CFG.apiRefreshToken, body, {
-                                        skipRefresh: true,
-                                        authMode: 'refresh'
-                                    });
+                                    try {
+                                        res = await apiPost(CFG.apiRefreshToken, body, {
+                                            skipRefresh: true,
+                                            authMode: 'refresh'
+                                        });
+                                    } catch (eNet) {
+                                        // Loi duong truyen (CORS/Cloudflare/mat mang): gian cach roi thu lai, khong bo cuoc ngay
+                                        const transportFail = !eNet || eNet.kind === 'net' || eNet.kind === 'html' || eNet.kind === 'json'
+                                            || (eNet.kind === 'http' && eNet.status !== 401);
+                                        if (!transportFail || attempt >= 2) throw eNet;
+                                        await sleep(attempt === 0 ? 1500 : 4000);
+                                        continue;
+                                    }
                                     let code = NaN;
                                     if (res && typeof res === 'object' && res.code !== undefined && res.code !== null && res.code !== '') {
                                         code = Number(res.code);
@@ -2307,10 +2322,16 @@ body {
                                 }, { syncFirebase: true });
                                 if (!tok) throw new Error('RefreshToken không trả token mới');
                                 lastRefreshTokenError = '';
+                                lastRefreshFailAt = 0;
+                                lastRefreshErrorCache = null;
                                 return tok;
                             } catch (e) {
                                 lastRefreshTokenError = refreshErrorSummary(e);
-                                if (e && e.kind === 'auth') clearStoredRefreshToken();
+                                lastRefreshFailAt = Date.now();
+                                lastRefreshErrorCache = e;
+                                // CHI xoa refreshToken khi API bao sai bang ma nghiep vu 4/10/22.
+                                // Loi mang/CORS/Cloudflare/401 duong truyen thi GIU LAI de lan sau thu tiep.
+                                if (e && (e.code === 4 || e.code === 10 || e.code === 22)) clearStoredRefreshToken();
                                 throw e;
                             }
                         })();
@@ -2318,21 +2339,58 @@ body {
                         finally { refreshTokenPromise = null; }
                     }
 
+                    let fbRescueLastTry = 0;
+                    async function fbRescueAuthBundle() {
+                        // Doc THANG Firebase 1 lan de "lay luon token moi" neu may khac vua gia han
+                        // (phong khi onSnapshot bi tre/dut). Toi da 1 lan moi 60s.
+                        const now = Date.now();
+                        if (now - fbRescueLastTry < 60000) return '';
+                        if (typeof fbDB === 'undefined' || !fbDB) return '';
+                        fbRescueLastTry = now;
+                        try {
+                            const snap = await fbDB.collection(FB_COLLECTION).doc(FB_DOC).get();
+                            const data = (snap && snap.exists && typeof snap.data === 'function') ? snap.data() : null;
+                            if (data && typeof applyRemoteData === 'function') applyRemoteData(data);
+                        } catch (e) {}
+                        try { return extractToken(getToken() || ''); } catch (e) { return ''; }
+                    }
+                    function tokenNeedsRenewal(token, skewMs) {
+                        if (!token) return true;
+                        if (isTokenExpiredLocally(token, skewMs)) return true;
+                        try { if (deadToken && token === deadToken) return true; } catch (e) {}
+                        try { if (typeof gtxSessionDeadToken !== 'undefined' && gtxSessionDeadToken && token === gtxSessionDeadToken) return true; } catch (e) {}
+                        try { if (typeof gtxNeedsToken !== 'undefined' && gtxNeedsToken) return true; } catch (e) {}
+                        return false;
+                    }
                     async function ensureFreshToken(skewMs) {
+                        const skew = (skewMs === undefined ? 60000 : skewMs);
                         let token = '';
                         try { token = extractToken(getToken() || ''); } catch (e) {}
-                        if (token && isTokenExpiredLocally(token, skewMs === undefined ? 60000 : skewMs) && getRefreshToken()) {
-                            try {
-                                const fresh = await refreshAccessToken();
-                                if (fresh) token = extractToken(fresh);
-                            } catch (e) {
-                                if (!lastRefreshTokenError) lastRefreshTokenError = refreshErrorSummary(e);
+                        if (tokenNeedsRenewal(token, skew)) {
+                            if (getRefreshToken()) {
+                                try {
+                                    const fresh = await refreshAccessToken();
+                                    if (fresh) token = extractToken(fresh);
+                                } catch (e) {
+                                    if (!lastRefreshTokenError) lastRefreshTokenError = refreshErrorSummary(e);
+                                }
+                            }
+                            try { token = extractToken(getToken() || token); } catch (e) {}
+                            if (tokenNeedsRenewal(token, 0)) {
+                                // Gia han tai cho chua duoc -> thu nhan goi moi nhat tu Firebase (may khac co the vua gia han)
+                                const rescued = await fbRescueAuthBundle();
+                                if (rescued) token = rescued;
+                                if (token && isTokenExpiredLocally(token, 0) && getRefreshToken()) {
+                                    try {
+                                        const fresh2 = await refreshAccessToken();
+                                        if (fresh2) token = extractToken(fresh2);
+                                    } catch (e) {}
+                                }
                             }
                         }
                         try { return extractToken(getToken() || token); }
                         catch (e) { return token; }
                     }
-
                     /* 🌐 CORS: vn168api.com KHÔNG trả Access-Control-Allow-Origin cho trang lạ
                        (vd mở từ GitHub Pages hatbuil0.github.io) → fetch trực tiếp bị trình duyệt chặn ở preflight.
                        -> apiPost thử TRỰC TIẾP trước; rớt mạng (Failed to fetch) thì TỰ vòng qua các proxy CORS
@@ -2353,11 +2411,8 @@ body {
                                 list.push({ name: 'custom', url: cu });
                             }
                         } catch (e) {}
-                        list.push({ name: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + enc });
-                        list.push({ name: 'corsfix', url: 'https://proxy.corsfix.com/?' + url });
-                        list.push({ name: 'codetabs', url: 'https://api.codetabs.com/v1/proxy?quest=' + url });
-                        list.push({ name: 'cors.eu.org', url: 'https://cors.eu.org/' + url });
-                        list.push({ name: 'allorigins', url: 'https://api.allorigins.win/raw?url=' + enc });
+    list.push({ name: 'corsfix', url: 'https://proxy.corsfix.com/?' + url });
+    list.push({ name: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + enc });
                         if (apiViaSticky) {
                             const ix = list.findIndex(function (c) { return c.name === apiViaSticky; });
                             if (ix > 0) { const it = list.splice(ix, 1)[0]; list.unshift(it); }
@@ -2476,7 +2531,7 @@ body {
                                 } catch (e) {
                                     out.push('❌ ' + (e.kind ? ('[' + String(e.kind).toUpperCase() + '] ') : '') + e.message);
                                     if (e.hint) out.push('   → ' + e.hint);
-                                    if (e.kind === 'net') out.push('   → "Failed to fetch" = trình duyệt KHÔNG gửi được/không nhận được phản hồi: hay gặp nhất là bị Cloudflare chặn tạm do gọi quá nhanh (chờ 1-2 phút), mất mạng/VPN, hoặc tiện ích chặn quảng cáo. Hiếm hơn: mở file bằng file:// bị chặn CORS — thử chạy qua web server cục bộ.');
+                                    if (e.kind === 'net') out.push('   → "Failed to fetch" = trình duyệt KHÔNG gửi được/không nhận được phản hồi: hay gặp nhất là bị chặn CORS khi mở trang từ GitHub Pages/file:// (vn168api.com không cho origin lạ đọc phản hồi) — app đã tự thử trực tiếp rồi vòng qua proxy CORS. Nếu vẫn lỗi: đặt proxy riêng bằng Cloudflare Worker (F12 > Console: localStorage.vn168_corsProxy = "https://<worker>/?url={url}" rồi F5), hoặc chạy trang trong app/trình duyệt đã tắt CORS; cũng kiểm tra mạng/VPN và tiện ích chặn quảng cáo.');
                                     if (e.kind === 'http' && e.status === 429) out.push('   → HTTP 429 = quá nhiều request: chờ vài phút, app sẽ tự giãn nhịp.');
                                 }
                             }
@@ -8120,4 +8175,4 @@ body {
                         });
                 </script>
    
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d95ba1e9a5cd2f',t:'MTc5MjUxMzMxMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d97e088c522b12',t:'MTc5MjUxNDcyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
