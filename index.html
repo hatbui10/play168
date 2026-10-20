@@ -650,12 +650,25 @@
 #segInputs, #segMirror, #segBigSmall { display: flex !important; }
 #segBsWrap { margin-top: 10px !important; padding-top: 0 !important; }
 
-/* bang ket qua: bo thanh cuon/khung thua, chi 1 dong */
-#dataTableBody { max-height: none !important; overflow: visible !important; }
+/* bang ket qua: hien NHIEU dong (toi thieu 10 ket qua neu co) + thanh cuon rieng trong khung */
+#dataTableBody {
+  max-height: min(88vh, 620px) !important;   /* du cao de thay 10 dong ket qua, nhieu hon thi cuon */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
 #dataTableBody .dt-head-row,
 #dataTableBody .dt-sum,
 #dataTableBody .ch-empty { display: none !important; }
-#dataTableBody .dt-row ~ .dt-row { display: none !important; } /* chi dong dau tien */
+#dataTableBody .dt-row ~ .dt-row { display: flex !important; }
+#dataTableBody .dt-row + .dt-row { margin-top: 8px; }
+#dataTableBody .dt-more { display: block; padding: 8px 10px 4px; color: #94a3b8; font-size: 11px; text-align: center; }
+#dataTableBody::-webkit-scrollbar { width: 8px; }
+#dataTableBody::-webkit-scrollbar-track { background: rgba(15,23,42,.55); border-radius: 999px; }
+#dataTableBody::-webkit-scrollbar-thumb { background: rgba(167,139,250,.65); border-radius: 999px; }
 </style>
 
 <style id="gon-beauty-style">
@@ -1387,6 +1400,24 @@ body {
 }
 #betPlacePanel .bet-status.ok { color: #4ade80; }
 #betPlacePanel .bet-status.err { color: #fda4af; }
+#dataTablePanel #betPlacePanel button#btnSegLenPassword {
+  display: flex !important;
+  width: 100%;
+  min-height: 36px;
+  margin-top: 8px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(167,139,250,.78);
+  background: linear-gradient(180deg, rgba(49,46,129,.94), rgba(30,27,75,.97));
+  color: #ddd6fe;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .15px;
+  box-shadow: 0 6px 16px rgba(99,102,241,.20), inset 0 1px 0 rgba(255,255,255,.14);
+}
+#dataTablePanel #betPlacePanel button#btnSegLenPassword:hover { filter: brightness(1.14); }
+#dataTablePanel #betPlacePanel button#btnSegLenPassword:active { transform: translateY(1px); }
+#dataTablePanel #segBigSmall { flex-wrap: wrap !important; }
 #dataTablePanel #betPlacePanel button#btnBsForbiddenPassword {
   display: flex !important;
   width: 100%;
@@ -1582,7 +1613,7 @@ body {
                                 <option value="5">5 ô</option>
                                 <option value="6">6 ô</option>
                             </select>
-                            <span id="segLenInfo" style="font-size:10px;color:#94a3b8">→ đoạn 9 số (3 số đầu nhập + 6 số phía sau)</span>
+                            <span id="segLenInfo" style="font-size:10px;color:#94a3b8">→ đoạn 10 số (3 số đầu nhập + 7 số phía sau)</span>
                         </div>
                         <div class="gon-hide" style="display:none!important">
                             <label style="font-size:11px;color:#e9d5ff;font-weight:bold">Sắp xếp kết quả:</label>
@@ -1608,7 +1639,7 @@ body {
                         </div>
                         <div id="segInputs" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
                         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px">
-                            <span id="segMirrorLabel" style="font-size:11px;color:#94a3b8;font-weight:bold">⬇️ Copy xuống 4 ô:</span>
+                            <span id="segMirrorLabel" style="font-size:11px;color:#94a3b8;font-weight:bold">⬇️ Copy xuống 3 ô:</span>
                             <span id="segMirror" style="display:flex;gap:6px"></span>
                         </div>
                         <!-- 📊 SO SÁNH LỚN / NHỎ TRONG N TRANG GẦN NHẤT (1 trang = 10 kỳ) -->
@@ -1641,20 +1672,15 @@ body {
                             <div id="pgStat"></div>
                         </div>
                         <div id="segBsWrap">
-                            <div class="bs-title" id="segBsTitle">🔢 LỚN / NHỎ — 6 số CUỐI BẢNG (mới nhất)</div>
+                            <div class="bs-title" id="segBsTitle">🔢 LỚN / NHỎ — 7 số CUỐI BẢNG (mới nhất)</div>
                             <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
                                 <span id="segBigSmall" style="display:flex;gap:8px"></span>
-                                <button type="button" id="bsShuffleBtn" onclick="bsShuffle()"
-                                        title="Xáo trộn thứ tự 6 ô 0-1">🔀 Random</button>
                             </div>
                             <div id="segBsNote" style="font-size:10px;color:#94a3b8;margin-top:6px"></div>
                             <div id="segBsLabel" style="display:none"></div>
                         </div>
                         <div id="betPlacePanel">
-                            <div class="bet-bigsmall" id="betBigSmallRow"></div>
                             <div class="bet-chip-row bet-multiple-row" id="betMultipleRow"></div>
-                            <button type="button" id="btnPlaceBet" disabled>Chọn Lớn hoặc Nhỏ</button>
-                            <button type="button" id="btnBsForbiddenPassword" onclick="bsEditCustomForbidden()" title="Nhập mật khẩu để thêm dãy random muốn loại">🔐 Nhập mật khẩu · Loại random (0)</button>
                             <button type="button" id="btnAutoBet" title="Chạy 15 phút, nghỉ 2 phút, lặp lại và tự dừng sau 10 tiếng">▶ START</button>
                             <div id="betPlaceStatus" class="bet-status" aria-live="polite">--</div>
                         </div>
@@ -2233,7 +2259,7 @@ body {
                         const e = new Error(msg);
                         e.kind = kind; e.status = status || 0;
                         e.hint = ({
-                            net : 'Request KHÔNG gửi được: chờ 1-2 phút cho hết chặn tạm, kiểm tra mạng/VPN, tắt tiện ích chặn quảng cáo. Nếu đang tải 5000 trang thì app tự giãn nhịp và thử lại.',
+                            net : 'Request KHÔNG gửi được — hay gặp nhất là CORS (vn168api.com chặn trang mở từ github.io/file://) hoặc Cloudflare chặn tạm. App đã tự vòng qua các proxy CORS dự phòng; nếu vẫn lỗi: chờ 1-2 phút, kiểm tra mạng/VPN, tắt tiện ích chặn quảng cáo, hoặc đặt proxy riêng: F12 > Console > localStorage.vn168_corsProxy = "https://<worker>/?url={url}" rồi tải lại trang.',
                             http: 'HTTP ' + (status || '?') + ': 401 = token hết hạn (dán token mới) · 403/429/503 = bị chặn hoặc giới hạn tần suất (chờ vài phút, giảm tốc).',
                             html: 'API trả về TRANG HTML (challenge Cloudflare) → mở trang game thật 1 lần rồi lấy lại token.',
                             json: 'Phản hồi không phải JSON hợp lệ.',
@@ -2307,6 +2333,52 @@ body {
                         catch (e) { return token; }
                     }
 
+                    /* 🌐 CORS: vn168api.com KHÔNG trả Access-Control-Allow-Origin cho trang lạ
+                       (vd mở từ GitHub Pages hatbuil0.github.io) → fetch trực tiếp bị trình duyệt chặn ở preflight.
+                       -> apiPost thử TRỰC TIẾP trước; rớt mạng (Failed to fetch) thì TỰ vòng qua các proxy CORS
+                       dự phòng bên dưới, đường nào chạy được thì NHỚ (sticky) để các lần sau đi thẳng đường đó.
+                       Đặt proxy riêng (ổn định nhất — tự dựng Cloudflare Worker, xem file cloudflare-worker-cors.js):
+                         F12 > Console > localStorage.vn168_corsProxy = 'https://<worker-cua-ban>/?url={url}'  rồi tải lại trang.
+                       Quên đường đã nhớ: localStorage.removeItem('vn168_cors_via'). */
+                    let apiViaSticky = '';
+                    try { apiViaSticky = String(localStorage.getItem('vn168_cors_via') || ''); } catch (e) {}
+                    function apiProxyCandidates(url) {
+                        const enc = encodeURIComponent(url);
+                        const list = [{ name: 'direct', url: url }];
+                        try {
+                            const custom = String(localStorage.getItem('vn168_corsProxy') || '').trim();
+                            if (custom) {
+                                const cu = (custom.indexOf('{url}') >= 0) ? custom.split('{url}').join(enc)
+                                         : (/=$/.test(custom) ? custom + enc : custom + url);
+                                list.push({ name: 'custom', url: cu });
+                            }
+                        } catch (e) {}
+                        list.push({ name: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + enc });
+                        list.push({ name: 'corsfix', url: 'https://proxy.corsfix.com/?' + url });
+                        list.push({ name: 'codetabs', url: 'https://api.codetabs.com/v1/proxy?quest=' + url });
+                        list.push({ name: 'cors.eu.org', url: 'https://cors.eu.org/' + url });
+                        list.push({ name: 'allorigins', url: 'https://api.allorigins.win/raw?url=' + enc });
+                        if (apiViaSticky) {
+                            const ix = list.findIndex(function (c) { return c.name === apiViaSticky; });
+                            if (ix > 0) { const it = list.splice(ix, 1)[0]; list.unshift(it); }
+                        }
+                        return list;
+                    }
+                    function apiViaRemember(name) {
+                        if (apiViaSticky === name) return;
+                        apiViaSticky = name || '';
+                        try {
+                            if (apiViaSticky) localStorage.setItem('vn168_cors_via', apiViaSticky);
+                            else localStorage.removeItem('vn168_cors_via');
+                        } catch (e) {}
+                    }
+                    function apiLooksLikeApiJson(text) {
+                        try {
+                            const o = JSON.parse(text);
+                            return !!(o && typeof o === 'object' && ('code' in o || 'data' in o));
+                        } catch (e) { return false; }
+                    }
+
                     async function apiPost(url, body, opts) {
                         opts = opts || {};
                         const accessTok = extractToken(getToken() || '');
@@ -2319,18 +2391,44 @@ body {
                             'Ar-Origin': CFG.arOrigin
                         };
                         if (isRefreshCall) headers['AR-REAL-IP'] = '';
-                        let res;
-                        try {
-                            res = await fetch(url, {
-                                method: 'POST',
-                                headers: headers,
-                                body: JSON.stringify(body)
-                            });
-                        } catch (err) {
-                            throw apiError('net', 'Failed to fetch (' + (err && err.message ? err.message : String(err)) + ')', 0);
+                        const bodyText = JSON.stringify(body);
+                        const isBetCall = String(url || '') === String(CFG.apiBet || '');
+                        const cands = apiProxyCandidates(url);
+                        // Lệnh CƯỢC: tối đa 2 đường (tránh gửi trùng nếu mạng rớt đúng lúc có phản hồi);
+                        // lệnh đọc/gia hạn token: thử hết các đường dự phòng.
+                        const maxTry = isBetCall ? Math.min(2, cands.length) : cands.length;
+                        let res = null;
+                        let resText = '';
+                        let fallbackRes = null;
+                        let fallbackText = '';
+                        let lastNetErr = null;
+                        for (let ci = 0; ci < maxTry; ci++) {
+                            const cand = cands[ci];
+                            let r;
+                            try {
+                                r = await fetch(cand.url, { method: 'POST', headers: headers, body: bodyText });
+                            } catch (err) {
+                                lastNetErr = err;   // Failed to fetch (CORS/preflight/mất mạng) → thử đường khác
+                                if (apiViaSticky === cand.name) apiViaRemember('');
+                                continue;
+                            }
+                            const tx = (typeof r.text === 'function') ? await r.text().catch(() => '') : '';
+                            if (!r.ok && r.status !== 401 && !apiLooksLikeApiJson(tx)) {
+                                // lỗi của chính đường truyền/proxy (không phải JSON của API) → thử đường khác, giữ làm dự phòng cuối
+                                if (!fallbackRes) { fallbackRes = r; fallbackText = tx; }
+                                if (apiViaSticky === cand.name) apiViaRemember('');
+                                continue;
+                            }
+                            res = r; resText = tx;
+                            apiViaRemember(cand.name);
+                            break;
+                        }
+                        if (!res && fallbackRes) { res = fallbackRes; resText = fallbackText; }
+                        if (!res) {
+                            throw apiError('net', 'Failed to fetch (' + (lastNetErr && lastNetErr.message ? lastNetErr.message : String(lastNetErr || 'không có phản hồi')) + ')', 0);
                         }
                         const canText = (typeof res.text === 'function');
-                        const text = canText ? await res.text().catch(() => '') : '';
+                        const text = resText;
                         if (!res.ok) {
                             if (res.status === 401 && !isRefreshCall && !opts.skipRefresh && !opts.retried && getRefreshToken()) {
                                 try {
@@ -2354,7 +2452,6 @@ body {
                                 (isHtml ? 'API trả về TRANG HTML (Cloudflare chặn)' : 'JSON hỏng') + ': ' + text.slice(0, 100).replace(/\s+/g, ' '), res.status);
                         }
                     }
-                    
                     /* 🩺 TEST API: gửi ĐÚNG 1 request rồi báo chính xác chuyện gì xảy ra
                        (Failed to fetch / HTTP bao nhiêu / token / Cloudflare / bao lâu thì có phản hồi) */
                     async function apiDiagnose() {
@@ -3547,8 +3644,8 @@ body {
                         });
                     }
                     const BET_DEFAULT_COIN = 1000;
-                    const BET_MULTIPLES_CUSTOM = [1, 2, 5, 8, 24, 72];   // 6 muc cuoc theo luot random 6 o
-                    const BET_PATTERN_LEN = BET_MULTIPLES_CUSTOM.length;   // so o random 0/1 moi luot (= 6, phai khop BS_LEN)
+                    const BET_MULTIPLES_CUSTOM = [1, 2, 5, 8, 24, 72, 180];   // 7 mức cược cho 7 ô hoán đổi
+                    function betPatternLen() { return bsLen(); }   // so o random moi luot = 10 - so o nhap
                     const BET_CLOSE_SECONDS = 5;
                     let betMultiples = BET_MULTIPLES_CUSTOM.slice();
                     let betSel = null;
@@ -3599,7 +3696,7 @@ body {
                     }
                     function betSummaryText() {
                         if (betAuto.active) return betAutoProgressText(false);
-                        if (!betSel) return 'Chọn Lớn hoặc Nhỏ';
+                        if (!betSel) return 'Bấm START để tự cược theo lượt hoán đổi';
                         return 'Đã chọn ' + betSel.label + ' · ' + gtxFmtMoney(betCoin) + ' × ' + betCount;
                     }
                     function betSetStatus(msg, kind) {
@@ -3930,11 +4027,11 @@ body {
                             const tx = String(cells[i].textContent || '').trim();
                             if (tx === '0' || tx === '1') vals.push(Number(tx));
                         }
-                        return vals.length === BET_PATTERN_LEN ? vals : [];
+                        return vals.length === betPatternLen() ? vals : [];
                     }
                     function betAutoPatternInfo() {
                         const pattern = betAutoReadPattern();
-                        if (pattern.length !== BET_PATTERN_LEN) return { pattern: [], key: '' };
+                        if (pattern.length !== betPatternLen()) return { pattern: [], key: '' };
                         let src = '';
                         try {
                             src = [bsTopIssue || '', (bsBaseDigits || []).join(''), (bsCurDigits || []).join('')].join('|');
@@ -3947,7 +4044,7 @@ body {
                         const info = betAutoCycleInfo(now);
                         const phaseRemain = betAutoFormatClock(info.phaseRemainMs);
                         const totalRemain = betAutoFormatClock(info.totalRemainMs);
-                        const total = betAuto.pattern.length || BET_PATTERN_LEN;
+                        const total = betAuto.pattern.length || betPatternLen();
                         if (info.phase === 'rest') {
                             if (betAuto.pending) {
                                 return 'Đang nghỉ · chờ kết quả kỳ ' + gtxShortIssue(betAuto.pending.issue)
@@ -3969,10 +4066,10 @@ body {
                         }
                         if (betAuto.waitingPattern) {
                             return (betAuto.lastOutcome === 'win' ? 'Thắng' : 'Hết lượt')
-                                + ' · chờ lượt random mới · pha chạy còn ' + phaseRemain + ' · tổng còn ' + totalRemain;
+                                + ' · chờ lượt hoán đổi mới · pha chạy còn ' + phaseRemain + ' · tổng còn ' + totalRemain;
                         }
                         if (!betAuto.pattern.length || betAuto.index >= total) {
-                            return 'Tự động · chờ lượt random mới · pha chạy còn ' + phaseRemain + ' · tổng còn ' + totalRemain;
+                            return 'Tự động · chờ lượt hoán đổi mới · pha chạy còn ' + phaseRemain + ' · tổng còn ' + totalRemain;
                         }
                         const bit = betAuto.pattern[betAuto.index];
                         const side = bit ? 'LỚN' : 'NHỎ';
@@ -4061,7 +4158,7 @@ body {
                             if (typeof takeLatest4Busy !== 'undefined' && takeLatest4Busy) return false;
                         } catch (e) {}
                         const info = betAutoPatternInfo();
-                        if (info.pattern.length === BET_PATTERN_LEN && info.key && info.key !== betAuto.lastPatternKey) {
+                        if (info.pattern.length === betPatternLen() && info.key && info.key !== betAuto.lastPatternKey) {
                             betAuto.pattern = info.pattern.slice();
                             betAuto.patternKey = info.key;
                             betAuto.lastPatternKey = info.key;
@@ -4072,7 +4169,7 @@ body {
                             betCoin = betAuto.coin;
                             betCount = betAuto.count;
                             betSel = betAutoChoice(betAuto.pattern[0]);
-                            betSetStatus('Đã có lượt random ' + betAuto.round + ' · bắt đầu ' + gtxFmtMoney(betAuto.coin * betAuto.count), 'ok');
+                            betSetStatus('Đã có lượt hoán đổi ' + betAuto.round + ' · bắt đầu ' + gtxFmtMoney(betAuto.coin * betAuto.count), 'ok');
                             betRender();
                             return true;
                         }
@@ -4114,17 +4211,17 @@ body {
                         const issueShort = gtxShortIssue(pending.issue);
                         if (win) {
                             betAutoEnterWaitingPattern('win');
-                            betSetStatus('Thắng kỳ ' + issueShort + ' · chờ lượt random mới', 'ok');
+                            betSetStatus('Thắng kỳ ' + issueShort + ' · chờ lượt hoán đổi mới', 'ok');
                         } else if (pending.index + 1 >= betAuto.pattern.length) {
                             betAutoEnterWaitingPattern('lose');
-                            betSetStatus('Thua ô ' + (pending.index + 1) + '/' + BET_PATTERN_LEN + ' kỳ ' + issueShort + ' · chờ lượt random mới', 'err');
+                            betSetStatus('Thua ô ' + (pending.index + 1) + '/' + betPatternLen() + ' kỳ ' + issueShort + ' · chờ lượt hoán đổi mới', 'err');
                         } else {
                             betAuto.lastOutcome = 'lose';
                             betAuto.index = pending.index + 1;
                             betAuto.count = betAutoLevelForIndex(betAuto.index);
                             betCount = betAuto.count;
                             betSel = betAutoChoice(betAuto.pattern[betAuto.index]);
-                            betSetStatus('Thua kỳ ' + issueShort + ' · sang ô ' + (betAuto.index + 1) + '/' + (betAuto.pattern.length || BET_PATTERN_LEN) + ' · '
+                            betSetStatus('Thua kỳ ' + issueShort + ' · sang ô ' + (betAuto.index + 1) + '/' + (betAuto.pattern.length || betPatternLen()) + ' · '
                                 + gtxFmtMoney(betAuto.coin * betAuto.count), 'err');
                         }
                         betRender();
@@ -4217,10 +4314,10 @@ body {
                         try {
                             let takeBusyAtStart = false;
                             try { takeBusyAtStart = (typeof takeLatest4Busy !== 'undefined' && !!takeLatest4Busy); } catch (e) {}
-                            if (pattern.length !== BET_PATTERN_LEN || takeBusyAtStart) {
+                            if (pattern.length !== betPatternLen() || takeBusyAtStart) {
                                 betSetStatus(takeBusyAtStart
-                                    ? 'Đang chờ lấy 3 số mới nhất xong để tạo lượt random...'
-                                    : 'Đang tự bấm “Lấy 3 số mới nhất” để tạo 6 ô random...');
+                                    ? 'Đang chờ lấy ' + segPrefixLen() + ' số mới nhất xong để tạo lượt hoán đổi...'
+                                    : 'Đang tự bấm “Lấy ' + segPrefixLen() + ' số mới nhất” để tạo ' + betPatternLen() + ' ô hoán đổi...');
                                 if (!takeBusyAtStart) betAutoTriggerTakeLatest();
                                 let sawTakeBusy = takeBusyAtStart;
                                 const takeStartedAt = Date.now();
@@ -4230,11 +4327,11 @@ body {
                                     if (takeBusy) sawTakeBusy = true;
                                     patternInfo = betAutoPatternInfo();
                                     pattern = patternInfo.pattern;
-                                    if (!takeBusy && (pattern.length === BET_PATTERN_LEN || sawTakeBusy || Date.now() - takeStartedAt > 700)) break;
+                                    if (!takeBusy && (pattern.length === betPatternLen() || sawTakeBusy || Date.now() - takeStartedAt > 700)) break;
                                     await new Promise(function (resolve) { setTimeout(resolve, 120); });
                                 }
-                                if (pattern.length !== BET_PATTERN_LEN) {
-                                    betSetStatus('Chưa lấy được ' + BET_PATTERN_LEN + ' ô random để tự đặt', 'err');
+                                if (pattern.length !== betPatternLen()) {
+                                    betSetStatus('Chưa lấy được ' + betPatternLen() + ' ô hoán đổi để tự đặt', 'err');
                                     return false;
                                 }
                             }
@@ -4261,11 +4358,12 @@ body {
                             const seq = pattern.map(function (bit, i) {
                                 return (bit ? '1-LỚN ' : '0-NHỎ ') + gtxFmtMoney(BET_DEFAULT_COIN * betAutoLevelForIndex(i));
                             }).join(' → ');
-                            const maxRound = BET_MULTIPLES_CUSTOM.reduce(function (sum, v) { return sum + v; }, 0) * BET_DEFAULT_COIN;
-                            const text = 'TỰ ĐỘNG THEO LƯỢT RANDOM?\n'
+                            const maxRound = pattern.reduce(function (sum, bit, i) { return sum + betAutoLevelForIndex(i); }, 0) * BET_DEFAULT_COIN;
+                            const levelsText = pattern.map(function (bit, i) { return betAutoLevelForIndex(i) + 'k'; }).join(' → ');
+                            const text = 'TỰ ĐỘNG THEO LƯỢT HOÁN ĐỔI (quy tắc cố định)?\n'
                                 + seq + '\n\n'
-                                + 'Thua: sang ô tiếp theo và tăng mức 1k → 2k → 5k → 8k → 24k → 72k.\n'
-                                + 'Thắng: bỏ các ô còn lại, chờ lượt random mới và quay về 1k.\n'
+                                + 'Thua: sang ô tiếp theo và tăng mức ' + levelsText + '.\n'
+                                + 'Thắng: bỏ các ô còn lại, chờ lượt hoán đổi mới và quay về 1k.\n'
                                 + 'Một lượt thua hết tối đa ' + gtxFmtMoney(maxRound) + '. Chu kỳ: chạy 15 phút, nghỉ 2 phút, lặp lại và tự dừng sau 10 tiếng.\n\n'
                                 + 'Bấm OK để app tự đặt cược thật.';
                             let confirmed = false;
@@ -4949,10 +5047,12 @@ body {
                         try { syncHistory500FromSources(true); } catch (e) {}
                         const rows = history500.slice(0, HISTORY500_MAX);
                         const stamp = new Date().toLocaleString('vi-VN');
-                        const lines = [
+                        let swapLines = [];
+                        try { if (typeof bsSwapTxtLines === 'function') swapLines = bsSwapTxtLines(); } catch (e) {}
+                        const lines = swapLines.concat([
                             'LICH SU 500 KY GAN NHAT | ' + rows.length + ' ky | ' + stamp,
                             'ky | so | chu_so_cuoi | lon_nho | thoi_gian'
-                        ];
+                        ]);
                         for (let k = 0; k < rows.length; k++) {
                             const e = rows[k];
                             lines.push(e.i + ' | ' + (e.n || e.d) + ' | ' + e.d + ' | '
@@ -5235,10 +5335,10 @@ body {
                     
                     /* ===== ☁️ CHỈ MỨC ĐOẠN SỐ TRÊN FIREBASE — TRA TRỰC TIẾP, KHÔNG CẦN TẢI KHO VỀ =====
                        • doc "meta"    : 20 số cuối cùng (mới→cũ) + quy mô kho  (~100 byte)
-                       • doc "p_XX"    : mỗi cặp 2 số đầu → các đoạn 12 số (mới nhất trước)
+                       • doc "p_XX"    : mỗi cặp 2 số đầu → các đoạn 10 số (mới nhất trước)
                        → tra 1 đoạn = đọc ĐÚNG 1 doc nhỏ. Không kéo cả kho (hàng chục MB) về nữa. */
                     const FB_SEGIDX_COL = 'vn168_segidx';
-                    const FB_SEG_MAXDIGITS = 12;      // 6 ô nhập + 6 số phía sau
+                    const FB_SEG_MAXDIGITS = 10;      // doan luon 10 so (o nhap + ket qua phia sau)
                     const FB_SEG_PER_PREFIX = 200;    // đoạn mới nhất lưu cho mỗi cặp 2 số
                     const FB_SEG_REBUILD_EVERY = 1000;   // dựng lại chỉ mục khi kho thêm ~1000 kỳ (đỡ tốn lượt ghi)
                     let fbSegIdxSig = {};             // chữ ký doc đã ghi → khỏi ghi lại
@@ -5335,7 +5435,7 @@ body {
                             const f = p.split('|');
                             if (f.length < 4) continue;
                             if (f[1].slice(0, want.length) !== want) continue;
-                            segs.push({ start: { i: f[0], t: 0, d: f[1].charAt(0) }, digits: f[1].split(''), end: { i: f[2], t: Number(f[3]) || 0 } });
+                            segs.push({ start: { i: f[0], t: 0, d: f[1].charAt(0) }, digits: f[1].slice(0, FB_SEG_MAXDIGITS).split(''), end: { i: f[2], t: Number(f[3]) || 0 } });
                         }
                         return { missing: false, segs: segs, total: Number(d.count) || segs.length };
                     }
@@ -5769,6 +5869,7 @@ body {
                     let dataTableMode = 'latest';      // 'latest' | 'segments'
                     let dataTableSeg = null;           // {d1, d2}
                     let dataTableLastLen = -1;
+                    let dataTableSegScrollKey = '';   // giu vi tri thanh cuon khi bang ket qua tu ve lai
                     let segSortMode = 'issue';       // sắp xếp kết quả tra đoạn: 'issue' | 'value' | 'sum'
 
                     // kho đang sắp MỚI -> CŨ → đảo thành CŨ -> MỚI để cắt đoạn 5 số liên tiếp
@@ -5795,15 +5896,11 @@ body {
                             + (dataTableSeg ? (' · đang xem đoạn ' + dataTableSeg.prefix.join('')) : ' · nhập số để tra đoạn.'));
                     }
                     // Tìm mọi đoạn 5 số liên tiếp có 2 số đầu = d1, d2 (trả về mới nhất trước)
-                    /* ===== SỐ Ô NHẬP: 2..6 (mỗi ô 1 chữ số 0-9), đoạn = (số ô) + 5 số phía sau ===== */
-                    const SEG_TAIL = 6;   // hiện 6 số phía sau phần nhập
-                    function segPrefixLen() {
-                        const el = document.getElementById('segLen');
-                        let n = parseInt(el && el.value, 10);
-                        if (!(n >= 2 && n <= 6)) n = 2;
-                        return n;
-                    }
-                    function segTotalLen() { return segPrefixLen() + SEG_TAIL; }
+                    /* ===== SỐ Ô NHẬP CỐ ĐỊNH = 3 (đã bỏ phần chọn số ô nhập), đoạn 10 số = 3 số đầu + 7 số phía sau ===== */
+                    const SEG_TOTAL = 10;   // doan LUON 10 so: o nhap + ket qua phia sau
+                    function segTailLen() { return SEG_TOTAL - segPrefixLen(); }   // so so phia sau = 10 - o nhap
+                    function segPrefixLen() { return 3; }   // CỐ ĐỊNH 3 ô nhập -> 7 ô kết quả/random
+                    function segTotalLen() { return SEG_TOTAL; }
                     function segInputIds() {
                         const a = [];
                         for (let i = 1; i <= segPrefixLen(); i++) a.push('segD' + i);
@@ -5821,7 +5918,7 @@ body {
                          vd 5 6 8 0 3 → 3 lớn / 2 nhỏ → "0 0 1 1 1"
                        (số 5 tính là LỚN, giống cột Tài/Xỉu trong bảng dữ liệu kho)
                        LUÔN 5 Ô — lấy 5 số MỚI NHẤT (được từ BẢNG, tự đổi mỗi kỳ), KHÔNG phụ thuộc số ô nhập */
-                    const BS_LEN = 6;   // day random LON/NHO 6 o (phai khop BET_PATTERN_LEN)
+                    function bsLen() { return segTailLen(); }   // so o random LON/NHO = 10 - so o nhap
                     let bsSrc = '';        // nguồn số đang dùng
                     let bsTopIssue = '';   // ID kỳ cao nhất đang được dùng (khi lấy từ bảng kết quả)
                     let bsPinned = false;  // đang "ghim" theo bảng kết quả → vòng 3s KHÔNG ghi đè
@@ -5838,21 +5935,25 @@ body {
                        Vì xáo 0 0 0 0 0 hay 1 1 1 1 1 thì xáo kiểu gì cũng y nguyên (vô nghĩa),
                        nên phải có ít nhất MỘT số ngược lại trong dãy. */
                     function bsAugment(digits) {
-                        const d = (digits || []).slice();
                         bsAdded = null;
-                        if (d.length < 2) return d;
-                        let lon = 0;
-                        for (let i = 0; i < d.length; i++) if (Number(d[i]) >= 5) lon++;
-                        if (lon === 0) { bsAdded = 1; d[d.length - 1] = BS_ADD_LON; return d; }          // toàn NHỎ → ĐỔI 1 số thành LỚN
-                        if (lon === d.length) { bsAdded = 0; d[d.length - 1] = BS_ADD_NHO; return d; }  // toàn LỚN → ĐỔI 1 số thành NHỎ
-                        return d;
+                        return (digits || []).slice();   // quy tắc hoán đổi cố định: GIỮ NGUYÊN số gốc, không đổi 1 số nữa
                     }
-                    function bsCount() { return BS_LEN; }   // dãy LUÔN ĐÚNG 5 Ô (chỉ đổi số, không thêm ô)
+                    function bsCount() { return bsLen(); }   // dãy LUÔN ĐÚNG 5 Ô (chỉ đổi số, không thêm ô)
                     /* 🚫 4 KIỂU BỊ CẤM: random ra 1 trong 4 kiểu dưới đây thì TỰ RANDOM LẠI
                        cho tới khi ra kiểu KHÁC (đây là đúng 4 kiểu 'gom nhóm' chưa xáo):
                          1-0-0-0-0 · 0-1-1-1-1 · 0-0-1-1-1 · 1-1-0-0-0 */
-                    const BS_FORBIDDEN = ['100000', '011111', '110000', '001111', '111000', '000111'];   // cac kieu 'gom nhom' cua day 6 o
-                    const BS_PAT_RE = new RegExp('^[01]{' + BS_LEN + '}$');
+                    function bsForbiddenFixed() {   // cac kieu 'gom nhom' sinh theo DUNG do dai day random hien tai
+                        const L = bsLen();
+                        const out = [];
+                        for (let k = 1; k < L; k++) {
+                            const zeros = L - k;
+                            if (k < zeros) out.push('1'.repeat(k) + '0'.repeat(zeros));
+                            else if (k > zeros) out.push('0'.repeat(zeros) + '1'.repeat(k));
+                            else { out.push('1'.repeat(k) + '0'.repeat(zeros)); out.push('0'.repeat(zeros) + '1'.repeat(k)); }
+                        }
+                        return out;
+                    }
+                    function bsPatRe() { return new RegExp('^[01]{' + bsLen() + '}$'); }
                     const BS_CUSTOM_FORBIDDEN_KEY = 'vn168_bs_custom_forbidden_v1';
                     const BS_CUSTOM_FORBIDDEN_PASSWORD = '123456';
                     function bsNormalizeCustomForbidden(values) {
@@ -5861,40 +5962,55 @@ body {
                         const list = values || [];
                         for (let i = 0; i < list.length; i++) {
                             const clean = String(list[i] || '').replace(/-/g, '').trim();
-                            if (!BS_PAT_RE.test(clean)) continue;
-                            if (BS_FORBIDDEN.indexOf(clean) !== -1 || seen.has(clean)) continue;
+                            if (!bsPatRe().test(clean)) continue;
+                            if (bsForbiddenFixed().indexOf(clean) !== -1 || seen.has(clean)) continue;
                             seen.add(clean);
                             out.push(clean);
                         }
                         return out;
                     }
-                    function bsLoadCustomForbidden() {
+                    function bsStoredCustomForbiddenAll() {   // toan bo day tu loai da luu (moi do dai)
                         try {
                             const raw = localStorage.getItem(BS_CUSTOM_FORBIDDEN_KEY) || '';
                             if (!raw) return [];
+                            let list = [];
                             if (raw.charAt(0) === '[') {
                                 const arr = JSON.parse(raw);
-                                return Array.isArray(arr) ? bsNormalizeCustomForbidden(arr) : [];
+                                list = Array.isArray(arr) ? arr : [];
+                            } else list = raw.split(/[\s,;|]+/);
+                            const out = [];
+                            const seen = new Set();
+                            for (let i = 0; i < list.length; i++) {
+                                const clean = String(list[i] || '').replace(/-/g, '').trim();
+                                if (/^[01]+$/.test(clean) && clean.length >= 2 && clean.length <= 10 && !seen.has(clean)) {
+                                    seen.add(clean);
+                                    out.push(clean);
+                                }
                             }
-                            return bsNormalizeCustomForbidden(raw.split(/[\s,;|]+/));
+                            return out;
                         } catch (e) { return []; }
+                    }
+                    function bsLoadCustomForbidden() {   // chi lay cac day khop do dai random HIEN TAI
+                        return bsNormalizeCustomForbidden(bsStoredCustomForbiddenAll());
                     }
                     let bsCustomForbidden = bsLoadCustomForbidden();
                     function bsSaveCustomForbidden(values) {
+                        const curLen = bsLen();
                         bsCustomForbidden = bsNormalizeCustomForbidden(values);
-                        try { localStorage.setItem(BS_CUSTOM_FORBIDDEN_KEY, JSON.stringify(bsCustomForbidden)); } catch (e) {}
+                        const others = bsStoredCustomForbiddenAll().filter(function (x) { return x.length !== curLen; });
+                        try { localStorage.setItem(BS_CUSTOM_FORBIDDEN_KEY, JSON.stringify(others.concat(bsCustomForbidden))); } catch (e) {}
                         bsRenderCustomForbiddenButton();
                         return bsCustomForbidden.slice();
                     }
                     function bsForbiddenPatterns() {
-                        return BS_FORBIDDEN.concat(bsCustomForbidden);
+                        return bsForbiddenFixed().concat(bsCustomForbidden);
                     }
                     function bsRenderCustomForbiddenButton() {
                         const btn = document.getElementById('btnBsForbiddenPassword');
                         if (!btn) return;
                         const n = bsCustomForbidden.length;
                         btn.textContent = '🔐 Nhập mật khẩu · Loại random (' + n + ')';
-                        btn.title = 'Cấm cố định: ' + BS_FORBIDDEN.join(', ')
+                        btn.title = 'Cấm cố định: ' + bsForbiddenFixed().join(', ')
                             + (n ? (' · Tự thêm: ' + bsCustomForbidden.join(', ')) : ' · Chưa có dãy tự thêm');
                     }
                     function bsCustomStatus(msg, kind) {
@@ -5917,8 +6033,8 @@ body {
                         for (let i = 0; i < tokens.length; i++) {
                             const raw = tokens[i];
                             const clean = String(raw || '').replace(/-/g, '').trim();
-                            if (!BS_PAT_RE.test(clean)) { invalid.push(raw); continue; }
-                            if (BS_FORBIDDEN.indexOf(clean) !== -1) {
+                            if (!bsPatRe().test(clean)) { invalid.push(raw); continue; }
+                            if (bsForbiddenFixed().indexOf(clean) !== -1) {
                                 if (!seenFixed.has(clean)) { seenFixed.add(clean); fixedAlready.push(clean); }
                             } else if (!seenValid.has(clean)) {
                                 seenValid.add(clean);
@@ -5929,27 +6045,28 @@ body {
                     }
                     function bsCustomForbiddenLeavesOption(customList) {
                         const custom = bsNormalizeCustomForbidden(customList);
+                        const fixed = bsForbiddenFixed();
                         const byOnes = {};
-                        for (let k0 = 1; k0 < BS_LEN; k0++) byOnes[k0] = [];
-                        const maxMask = (1 << BS_LEN) - 1;
+                        for (let k0 = 1; k0 < bsLen(); k0++) byOnes[k0] = [];
+                        const maxMask = (1 << bsLen()) - 1;
                         for (let mask = 1; mask < maxMask; mask++) {
                             let ones = 0;
                             let pat = '';
-                            for (let pos = BS_LEN - 1; pos >= 0; pos--) {
+                            for (let pos = bsLen() - 1; pos >= 0; pos--) {
                                 const bit = (mask >> pos) & 1;
                                 ones += bit;
                                 pat += bit ? '1' : '0';
                             }
                             if (byOnes[ones]) byOnes[ones].push(pat);
                         }
-                        for (let k = 1; k < BS_LEN; k++) {
+                        for (let k = 1; k < bsLen(); k++) {
                             const patterns = byOnes[k];
                             for (let i = 0; i < patterns.length; i++) {
                                 const source = patterns[i];
                                 let has = false;
                                 for (let j = 0; j < patterns.length; j++) {
                                     const cand = patterns[j];
-                                    if (cand !== source && BS_FORBIDDEN.indexOf(cand) === -1 && custom.indexOf(cand) === -1) { has = true; break; }
+                                    if (cand !== source && fixed.indexOf(cand) === -1 && custom.indexOf(cand) === -1) { has = true; break; }
                                 }
                                 if (!has) return { ok: false, ones: k, source: source };
                             }
@@ -5958,8 +6075,8 @@ body {
                     }
                     function bsRefreshAfterCustomForbiddenChange() {
                         try {
-                            if (!bsCurDigits || bsCurDigits.length !== BS_LEN) return true;
-                            const base = (bsBaseDigits && bsBaseDigits.length === BS_LEN) ? bsBaseDigits : bsCurDigits;
+                            if (!bsCurDigits || bsCurDigits.length !== bsLen()) return true;
+                            const base = (bsBaseDigits && bsBaseDigits.length === bsLen()) ? bsBaseDigits : bsCurDigits;
                             if (!bsIsForbiddenFor(bsCurDigits, base)) return true;
                             bsShuffled = false;
                             bsPerm = null;
@@ -5991,9 +6108,12 @@ body {
                             return false;
                         }
                         const current = bsCustomForbidden.join(', ');
-                        const promptText = 'Nhập các dãy random 6 ô muốn LOẠI, cách nhau bằng dấu phẩy.\n'
-                            + 'Ví dụ: 101010, 010101, 100100\n\n'
-                            + 'Đã cấm cố định sẵn: ' + BS_FORBIDDEN.join(', ') + '\n'
+                        const bsL = bsLen();
+                        const bsEx1 = Array.from({ length: bsL }, function (_, i) { return i % 2 ? '0' : '1'; }).join('');
+                        const bsEx2 = Array.from({ length: bsL }, function (_, i) { return i % 2 ? '1' : '0'; }).join('');
+                        const promptText = 'Nhập các dãy random ' + bsL + ' ô muốn LOẠI, cách nhau bằng dấu phẩy.\n'
+                            + 'Ví dụ: ' + bsEx1 + ', ' + bsEx2 + '\n\n'
+                            + 'Đã cấm cố định sẵn: ' + bsForbiddenFixed().join(', ') + '\n'
                             + 'Để trống = xoá toàn bộ danh sách tự thêm.';
                         let text = null;
                         try { text = window.prompt(promptText, current); } catch (e) {}
@@ -6003,7 +6123,7 @@ body {
                         }
                         const parsed = bsParseCustomForbiddenText(text);
                         if (parsed.invalid.length) {
-                            bsCustomStatus('Dãy không hợp lệ: ' + parsed.invalid.join(', ') + ' · mỗi dãy phải đúng ' + BS_LEN + ' ký tự 0/1', 'err');
+                            bsCustomStatus('Dãy không hợp lệ: ' + parsed.invalid.join(', ') + ' · mỗi dãy phải đúng ' + bsLen() + ' ký tự 0/1', 'err');
                             return false;
                         }
                         const leaves = bsCustomForbiddenLeavesOption(parsed.valid);
@@ -6026,24 +6146,10 @@ body {
                     function bsPatternStr(digits) {   // dãy số 0-9 -> chuỗi 0/1 đang hiện (≥5 -> '1', <5 -> '0')
                         return (digits || []).map(function (v) { return (Number(v) >= 5) ? '1' : '0'; }).join('');
                     }
-                    function bsIsForbidden(digits) {
-                        const pat = bsPatternStr(digits);
-                        return BS_FORBIDDEN.indexOf(pat) !== -1 || bsCustomForbidden.indexOf(pat) !== -1;
-                    }
-
-                    /* 🚫 Cấm thêm theo TỪNG dãy gốc: kết quả SAU XÁO không được TRÙNG dãy 0/1 GỐC chưa xáo.
-                       VD 5 số cuối 3-8-6-7-1 -> dãy gốc 0-1-1-1-0 thì random xong bắt buộc KHÁC 01110
-                       (vẫn giữ cả 4 kiểu cấm cố định ở trên). */
-                    function bsIsForbiddenFor(digits, baseDigits) {
-                        if (bsIsForbidden(digits)) return true;
-                        if (!digits || !baseDigits || digits.length !== baseDigits.length) return false;
-                        const basePat = bsPatternStr(baseDigits);
-                        if (basePat.indexOf('0') === -1 || basePat.indexOf('1') === -1) return false;   // toàn một nhóm: không có kiểu khác để đổi
-                        return bsPatternStr(digits) === basePat;
-                    }
-                    /* 👁️ Hàng 5 ô 0/1 CHỈ HIỆN khi đã có kết quả random từ đoạn tra được.
-                       Lúc mới mở trang / chưa tra / tra không ra đoạn nào -> ẩn hẳn hàng này,
-                       dù app có tự xáo ngầm theo số mới nhất trên bảng. */
+                    function bsIsForbidden(digits) { return false; }   // đã bỏ phần "Loại random": dùng nguyên kết quả hoán đổi
+                    function bsIsForbiddenFor(digits, baseDigits) { return false; }
+                    /* 👁️ Hàng 7 ô 0/1 CHỈ HIỆN khi đã có kết quả hoán đổi từ đoạn tra được.
+                       Lúc mới mở trang / chưa tra / tra không ra đoạn nào -> ẩn hẳn hàng này. */
                     let bsRandomShown = false;
                     function bsSetRandomShown(show) {
                         bsRandomShown = !!show;
@@ -6059,35 +6165,25 @@ body {
                             if (!list.length) { bsUnpin(); return; }
                             let top = list[0];
                             for (let i = 1; i < list.length; i++) if (segIssueCmp(list[i], top) > 0) top = list[i];
-                            const tail = segTailDigits(top, n).slice(-BS_LEN);
+                            const tail = segTailDigits(top, n).slice(-bsLen());
                             if (!tail.length) { bsUnpin(); return; }
                             bsTopIssue = segIssueId(top);
                             bsPinned = true;      // đặt TRƯớc bsRender để tiêu đề đổi theo
-                            // 🔀 ĐANG XEM BẢN ĐÃ XÁO → GIỬ NGUYÊN thứ tự đang xáo (kể cả khi bảng được vẽ lại mỗi 2s)
-                            const aug = bsAugment(tail);   // ➕ toàn một nhóm → THÊM 1 ô ngược lại
-                            if (bsShuffled && bsPerm && bsPerm.length === aug.length) {
-                                const same = (bsBaseDigits.length === aug.length) && (bsBaseDigits.join('') === aug.join(''));
-                                if (same) {
-                                    // dữ liệu không đổi: bản đang hiện đã qua bsShuffle (không thuộc 4 kiểu cấm) → giữ y nguyên
-                                    if (!bsIsForbiddenFor(bsCurDigits, aug)) { bsBaseDigits = aug.slice(); bsSrc = 'cuối kỳ cao nhất'; bsSetRandomShown(true); return; }
-                                    // bản đang hiện thuộc 4 kiểu cấm → rơi xuống dưới để RANDOM LẠI
-                                } else {
-                                    const preserved = bsPerm.map(function (i) { return aug[i]; });
-                                    if (!bsIsForbiddenFor(preserved, aug)) {
-                                        bsBaseDigits = aug.slice();
-                                        bsSrc = 'cuối kỳ cao nhất';
-                                        bsRender(preserved, true);
-                                        bsSetRandomShown(true);
-                                        return;
-                                    }
-                                    // giữ hoán vị cũ mà ra 4 kiểu cấm → rơi xuống dưới để RANDOM LẠI
+                            const aug = bsAugment(tail);   // giữ NGUYÊN 7 số gốc của kỳ cao nhất (không đổi số)
+                            // Dữ liệu không đổi + bản đang hiện đã đúng quy tắc hoán đổi -> giữ yên, khỏi vẽ lại mỗi 2s
+                            if (bsShuffled && bsBaseDigits.length === aug.length && bsBaseDigits.join('') === aug.join('')) {
+                                const expect0 = bsSwapRuleDigits(aug);
+                                if (expect0 && bsCurDigits.join('') === expect0.join('')) {
+                                    bsSrc = 'cuối kỳ cao nhất';
+                                    bsSetRandomShown(true);
+                                    return;
                                 }
                             }
                             bsShuffled = false; bsPerm = null;
                             bsSrc = 'cuối kỳ cao nhất';
                             bsRender(aug);
-                            bsShuffle();            // 🔀 TỰ RANDOM LUÔN: có kết quả là xáo ngay, khỏi bấm nút
-                            if (bsShuffled) bsSetRandomShown(true);   // đã random từ đoạn tra được -> giờ mới hiện hàng 5 ô
+                            bsShuffle();            // 🔁 ÁP QUY TẮC HOÁN ĐỔI CỐ ĐỊNH (không random nữa)
+                            if (bsShuffled) bsSetRandomShown(true);   // đã có kết quả hoán đổi từ đoạn tra được -> hiện hàng 7 ô
                         } catch (e) { try { console.warn('[BigSmall]', e); } catch (e2) {} }
                     }
                     function bsUnpin() { bsPinned = false; bsShuffled = false; bsPerm = null; bsBaseDigits = []; bsSrc = ''; bsTopIssue = ''; bsAdded = null; bsSetRandomShown(false); refreshBigSmall(); }
@@ -6128,7 +6224,7 @@ body {
                             + (bsPinned ? 'CUỐI của KỲ CAO NHẤT trong BẢNG' : (bsSrc || 'mới nhất'))
                             + (bsAdded === null ? ''
                                : (bsAdded ? '   🔁 đổi 1 số → 1 (vì toàn NHỎ <5)' : '   🔁 đổi 1 số → 0 (vì toàn LỚN ≥5)'))
-                            + (bsShuffled ? '   🔀 đã xáo' : '');
+                            + (bsShuffled ? '   🔁 đã hoán đổi' : '');
                         if (lbl) lbl.textContent = '🔢 Lớn/Nhỏ (' + digits.length + ' số · '
                             + r.lon + ' lớn / ' + r.nho + ' nhỏ):';
                         let addIdx = -1;                  // vị trí ô ĐƯỢC THÊM trong dãy đang hiện
@@ -6151,7 +6247,7 @@ body {
                                + (bsAdded === null ? ''
                                   : ('  ·  🔁 ĐỔI 1 số thành ' + (bsAdded ? '1 (LỚN)' : '0 (NHỎ)')
                                      + ' vì ' + bsCount() + ' số gốc toàn ' + (bsAdded ? 'NHỎ (<5)' : 'LỚN (≥5)')))
-                               + (bsShuffled ? '  ·  🔀 đã xáo' : ''))
+                               + (bsShuffled ? '  ·  🔁 đã hoán đổi' : ''))
                             : '· chưa có số trong kho ·';
                     }
                     function bsOrdered(digits) {   // 1/0 theo ĐÚNG thứ tự đang có (dùng sau khi xáo)
@@ -6160,78 +6256,57 @@ body {
                         for (let i = 0; i < pat.length; i++) if (pat[i]) lon++;
                         return { pat: pat, lon: lon, nho: pat.length - lon, tie: (lon * 2 === pat.length) };
                     }
-                    // 🔀 RANDOM: xáo trộn thứ tự 5 ô (giữ nguyên số lượng 0 và 1)
-                    function bsShuffle() {
+                    /* 🔁 QUY TẮC HOÁN ĐỔI CỐ ĐỊNH (thay cho random) — theo 7 số KẾT QUẢ (đuôi) của
+                       dòng kỳ cao nhất trong khung kết quả. K1..K7 = Lớn/Nhỏ của 7 số đó (số >=5 = LỚN):
+                         R1=K4 · R2=NGƯỢC K6 · R3=K3 · R4=K2 · R5=NGƯỢC K1 · R6=K5 · R7=NGƯỢC K7
+                       Đảo ngược 1 số: cộng 5 rồi mod 10 (0-4 <-> 5-9) để lật nhóm LỚN<->NHỎ mà vẫn có số đại diện. */
+                    const BS_SWAP_SRC = [3, 5, 2, 1, 0, 4, 6];                 // R1..R7 lấy từ K4,K6,K3,K2,K1,K5,K7 (0-based)
+                    const BS_SWAP_INV = [false, true, false, false, true, false, true];   // R2, R5, R7 đảo ngược
+                    function bsSwapRuleDigits(base) {
+                        if (!base || base.length !== BS_SWAP_SRC.length) return null;
+                        const out = [];
+                        for (let i = 0; i < BS_SWAP_SRC.length; i++) {
+                            let d = Number(base[BS_SWAP_SRC[i]]);
+                            if (!Number.isFinite(d)) d = 0;
+                            if (BS_SWAP_INV[i]) d = (d + 5) % 10;
+                            out.push(String(d));
+                        }
+                        return out;
+                    }
+                    function bsShuffle() {   // giữ tên cũ cho các chỗ gọi sẵn có — nay là ÁP QUY TẮC HOÁN ĐỔI, không random
                         try {
                             const base = (bsBaseDigits && bsBaseDigits.length) ? bsBaseDigits.slice()
                                        : ((bsCurDigits && bsCurDigits.length) ? bsCurDigits.slice() : bsDigitsNewest());
                             if (base.length < 2) return;
-                            /* 🔀 Xáo, rồi TỰ XÁO LẠI LIÊN TIẾP nếu kết quả thuộc 4 kiểu cấm HOẶC trùng dãy gốc chưa xáo
-                               (10000 / 01111 / 00111 / 11000) — chỉ dừng khi ra kiểu KHÁC.
-                               Tối đa 100 lần thử để không bao giờ treo vòng lặp. */
-                            let perm = null;
-                            let shuffledDigits = null;
-                            for (let attempt = 0; attempt < 100; attempt++) {
-                                perm = [];
-                                for (let i = 0; i < base.length; i++) perm.push(i);
-                                for (let i = perm.length - 1; i > 0; i--) {          // Fisher-Yates trên CHỈ SỐ
-                                    const j = Math.floor(Math.random() * (i + 1));
-                                    const t = perm[i]; perm[i] = perm[j]; perm[j] = t;
-                                }
-                                shuffledDigits = perm.map(function (i) { return base[i]; });
-                                if (!bsIsForbiddenFor(shuffledDigits, base)) break;   // khác 4 kiểu cấm VÀ khác dãy gốc chưa xáo → dùng luôn
-                            }
-                            if (shuffledDigits && bsIsForbiddenFor(shuffledDigits, base)) {
-                                // random 'đứng im' 100 lần vẫn trùng -> tự tìm 1 cặp KHÁC NHÓM đổi chỗ sao cho ra kiểu được phép
-                                // (khác cả 4 kiểu cấm lẫn dãy gốc; cặp nào đổi xong vẫn bị cấm thì trả lại và thử cặp khác)
-                                let fixed = false;
-                                for (let i = 0; i < perm.length && !fixed; i++) {
-                                    for (let j = i + 1; j < perm.length; j++) {
-                                        if ((Number(shuffledDigits[i]) >= 5) === (Number(shuffledDigits[j]) >= 5)) continue;
-                                        const t2 = perm[i]; perm[i] = perm[j]; perm[j] = t2;
-                                        const cand = perm.map(function (k) { return base[k]; });
-                                        if (!bsIsForbiddenFor(cand, base)) { shuffledDigits = cand; fixed = true; break; }
-                                        const t3 = perm[i]; perm[i] = perm[j]; perm[j] = t3;
-                                    }
-                                }
-                            }
-                            if (shuffledDigits && bsIsForbiddenFor(shuffledDigits, base)) {
-                                const allowedPerms = [];
-                                const usedIdx = [];
-                                for (let u = 0; u < base.length; u++) usedIdx.push(false);
-                                const curPerm = [];
-                                const walkPerm = function () {
-                                    if (curPerm.length === base.length) {
-                                        const cand = curPerm.map(function (k) { return base[k]; });
-                                        if (!bsIsForbiddenFor(cand, base)) allowedPerms.push(curPerm.slice());
-                                        return;
-                                    }
-                                    for (let u = 0; u < base.length; u++) {
-                                        if (usedIdx[u]) continue;
-                                        usedIdx[u] = true;
-                                        curPerm.push(u);
-                                        walkPerm();
-                                        curPerm.pop();
-                                        usedIdx[u] = false;
-                                    }
-                                };
-                                walkPerm();
-                                if (!allowedPerms.length) {
-                                    bsBaseDigits = base.slice();
-                                    bsPerm = null;
-                                    bsShuffled = false;
-                                    bsSetRandomShown(false);
-                                    return;
-                                }
-                                perm = allowedPerms[Math.floor(Math.random() * allowedPerms.length)].slice();
-                                shuffledDigits = perm.map(function (k) { return base[k]; });
-                            }
-                            bsPerm = perm;                 // NHớ hoán vị để lát nữa vẽ lại vẫn giữ
+                            const swapped = bsSwapRuleDigits(base);
+                            bsPerm = BS_SWAP_SRC.slice();
                             bsBaseDigits = base.slice();
                             bsShuffled = true;
                             bsPinned = true;               // vòng 2s/3s không được ghi đè
-                            bsRender(perm.map(function (i) { return base[i]; }), true);
+                            bsRender(swapped || base.slice(), true);
                         } catch (e) { try { console.warn('[BigSmall]', e); } catch (e2) {} }
+                    }
+                    function bsSwapTxtLines() {   // mấy dòng "kết quả hoán đổi" để ghi vào file TXT xuất ra
+                        const out = [];
+                        try {
+                            const base = (typeof bsBaseDigits !== 'undefined' && bsBaseDigits) ? bsBaseDigits.slice() : [];
+                            const cur = (typeof bsCurDigits !== 'undefined' && bsCurDigits) ? bsCurDigits.slice() : [];
+                            if (base.length !== 7 || cur.length !== 7) return out;
+                            const bit = function (d) { return (Number(d) >= 5) ? '1' : '0'; };
+                            const word = function (d) { return (Number(d) >= 5) ? 'LON' : 'NHO'; };
+                            let levels = [1, 2, 5, 8, 24, 72, 180];
+                            try { if (typeof BET_MULTIPLES_CUSTOM !== 'undefined' && BET_MULTIPLES_CUSTOM.length >= 7) levels = BET_MULTIPLES_CUSTOM; } catch (e) {}
+                            let prefix = [];
+                            try { if (typeof segPrefixDigits === 'function') prefix = segPrefixDigits(); } catch (e) {}
+                            out.push('KET QUA HOAN DOI LON/NHO | ky goc: ' + ((typeof bsTopIssue !== 'undefined' && bsTopIssue) || '') + ' | ' + new Date().toLocaleString('vi-VN'));
+                            out.push('Quy tac: R1=K4, R2=nguoc K6, R3=K3, R4=K2, R5=nguoc K1, R6=K5, R7=nguoc K7 | so >=5 = LON (1), so <=4 = NHO (0)');
+                            if (prefix && prefix.join('')) out.push('3 so nhap: ' + prefix.join(' '));
+                            out.push('7 so ket qua K: ' + base.join(' ') + ' -> ' + base.map(bit).join('') + ' (' + base.map(word).join(' ') + ')');
+                            const seq = cur.map(function (d, i) { return word(d) + ' ' + (levels[i] !== undefined ? levels[i] : levels[levels.length - 1]) + 'k'; }).join(', ');
+                            out.push('Sau hoan doi R: ' + cur.map(bit).join('') + ' -> ' + seq);
+                            out.push('');
+                        } catch (e) {}
+                        return out;
                     }
                     /* 5 số MỚI NHẤT (cuối bảng) — đổi ngay khi có kỳ mới rơi.
                        LƯU Ý: số mới rơi CHỈ đi vào BẢNG (pushValueRaw), KHÔNG vào kho
@@ -6240,7 +6315,7 @@ body {
                         // 1) BẢNG CHÍNH: 5 ô CUỐI = 5 kỳ mới nhất (đang xếp cũ → mới)
                         const b = [];
                         try {
-                            for (let i = TOTAL - 1; i >= 0 && b.length < BS_LEN; i--) {
+                            for (let i = TOTAL - 1; i >= 0 && b.length < bsLen(); i--) {
                                 const c = cells[i];
                                 if (c && /^[0-9]$/.test(String(c.value || ''))) b.push(String(c.value));
                             }
@@ -6249,7 +6324,7 @@ body {
                         // 2) lịch sử số đi qua ô (5,10): mới nhất ở đầu
                         const h = [];
                         try {
-                            for (let i = 0; i < cellHistory.length && h.length < BS_LEN; i++) {
+                            for (let i = 0; i < cellHistory.length && h.length < bsLen(); i++) {
                                 const c = cellHistory[i];
                                 if (c && /^[0-9]$/.test(String(c.d))) h.push(String(c.d));
                             }
@@ -6257,7 +6332,7 @@ body {
                         if (h.length) { bsSrc = 'lịch sử ô'; return h.reverse(); }
                         // 3) kho (chỉ có khi đã tải trang): mới nhất ở đầu
                         const out = [];
-                        for (let i = 0; i < gameArchive.length && out.length < BS_LEN; i++) {
+                        for (let i = 0; i < gameArchive.length && out.length < bsLen(); i++) {
                             const e = gameArchive[i];
                             if (e && /^[0-9]$/.test(String(e.d))) out.push(String(e.d));
                         }
@@ -6269,9 +6344,29 @@ body {
                         bsShuffled = false; bsPerm = null;
                         try {
                             bsRender(bsAugment(bsDigitsNewest()));
-                            bsShuffle();            // 🔀 TỰ RANDOM LUÔN
+                            bsShuffle();            // 🔁 áp quy tắc hoán đổi cố định
                         }
                         catch (e) { try { console.warn('[BigSmall]', e); } catch (e2) {} }
+                    }
+                    function segRenderLenControls() {   // cap nhat chu tren nut chon o nhap + nut lay so theo o nhap hien tai
+                        try {
+                            const n = segPrefixLen();
+                            const r = segTailLen();
+                            const b = document.getElementById('btnSegLenPassword');
+                            if (b) {
+                                b.textContent = '🔐 Ô nhập: ' + n + ' · Kết quả/Random: ' + r;
+                                b.title = 'Nhập mật khẩu để chọn số ô nhập (2–6). Đoạn luôn 10 số: nhập ' + n + ' + kết quả/random ' + r;
+                            }
+                            const take = document.getElementById('btnTakeLatest4');
+                            if (take) {
+                                take.textContent = '⚡ Lấy ' + n + ' số mới nhất';
+                                take.title = 'Lấy ' + n + ' kết quả mới nhất trong game điền vào ' + n + ' ô nhập';
+                            }
+                            const st = document.getElementById('btnTakeLatest4Status');
+                            if (st) st.title = 'Dấu hiệu đã lấy ' + n + ' số thành công';
+                            const sh = document.getElementById('bsShuffleBtn');
+                            if (sh) sh.title = 'Xáo trộn thứ tự ' + r + ' ô 0-1';
+                        } catch (e) {}
                     }
                     function renderSegInputs(keepValues) {
                         const box = document.getElementById('segInputs');
@@ -6281,6 +6376,8 @@ body {
                             const e = document.getElementById(id); if (e) old[id] = e.value;
                         });
                         const n = segPrefixLen();
+                        try { bsCustomForbidden = bsLoadCustomForbidden(); bsRenderCustomForbiddenButton(); } catch (e) {}
+                        try { segRenderLenControls(); } catch (e) {}
                         let html = '';
                         for (let i = 1; i <= n; i++) {
                             html += '<input id="segD' + i + '" class="seg-in" type="text" maxlength="1" inputmode="none" placeholder="0-9"'
@@ -6288,7 +6385,7 @@ body {
                         }
                         box.innerHTML = html;
                         const info = document.getElementById('segLenInfo');
-                        if (info) info.textContent = '→ đoạn ' + segTotalLen() + ' số (' + n + ' số đầu nhập + ' + SEG_TAIL + ' số cuối tra)';
+                        if (info) info.textContent = '→ đoạn ' + segTotalLen() + ' số (' + n + ' số đầu nhập + ' + segTailLen() + ' số cuối tra)';
                         const hdr = document.querySelector('#dataTablePanel .ch-head span');
                         if (hdr) hdr.textContent = '📋 Tra đoạn ' + segTotalLen() + ' số trong kho';
                         // Đổi số ô nhập (2-6) → vẽ LẠI dãy ô copy cho BẰNG NHAU, vẫn giữ số đang gỡ dở
@@ -6369,13 +6466,13 @@ body {
                         if (takeLatest4Busy) return false;
                         takeLatest4Busy = true;
                         const button = document.getElementById('btnTakeLatest4') || btn;
-                        const BTN_TEXT = '⚡ Lấy 3 số mới nhất';
+                        const BTN_TEXT = '⚡ Lấy ' + segPrefixLen() + ' số mới nhất';
                         let filled = false;
                         if (button) { button.disabled = true; button.textContent = BTN_TEXT; }
                         setTakeLatest4Status('loading');
                         try { refreshGameWallet(true); } catch (e) {}
                         try {
-                            const n = segPrefixLen();   // chế độ gọn đang cố định = 3 ô
+                            const n = segPrefixLen();   // so o nhap dang chon (2-6, doi bang nut mat khau)
                             // 1) Lấy kỳ VỪA RƠI từ game trước (nếu có token còn sống).
                             //    Đang có lượt lấy chạy dở (app tự lấy mỗi 1s) thì chờ lượt đó xong;
                             //    tự gọi mới thì chờ tối đa ~4s rồi dùng dữ liệu mới nhất đang có -> bấm là điền ngay, không treo.
@@ -6493,11 +6590,51 @@ body {
                             ddSync('segLen');
                         } catch (e) {}
                     }
-                    // Tìm mọi đoạn (n+3) số liền nhau có n số đầu đúng như nhập (mới nhất trước)
+                    function segChooseInputLen() {   // chon SO O NHAP (2-6) sau khi nhap dung mat khau
+                        try {
+                            if ((typeof betAuto !== 'undefined' && (betAuto.active || betAuto.starting))
+                                || (typeof betPlacing !== 'undefined' && betPlacing)) {
+                                bsCustomStatus('Hãy dừng START trước khi đổi số ô nhập', 'err');
+                                return false;
+                            }
+                            if (typeof takeLatest4Busy !== 'undefined' && takeLatest4Busy) {
+                                bsCustomStatus('Đang lấy số mới nhất — chờ xong rồi đổi số ô nhập', 'err');
+                                return false;
+                            }
+                        } catch (e) {}
+                        let entered = null;
+                        try { entered = window.prompt('Nhập mật khẩu để chọn SỐ Ô NHẬP:', ''); } catch (e) {}
+                        if (entered === null) { bsCustomStatus('Đã huỷ nhập mật khẩu'); return false; }
+                        if (String(entered).trim() !== BS_CUSTOM_FORBIDDEN_PASSWORD) { bsCustomStatus('Sai mật khẩu', 'err'); return false; }
+                        const cur = segPrefixLen();
+                        let text = null;
+                        try {
+                            text = window.prompt('Chọn SỐ Ô NHẬP từ 2 đến 6.\nĐoạn luôn 10 số: Kết quả phía sau + Random = 10 − ô nhập.\nVí dụ: nhập 4 → random 6 · nhập 3 → random 7 · nhập 2 → random 8.', String(cur));
+                        } catch (e) {}
+                        if (text === null) { bsCustomStatus('Đã huỷ chọn số ô nhập'); return false; }
+                        const tx = String(text).trim();
+                        const n = parseInt(tx, 10);
+                        if (!(n >= 2 && n <= 6) || String(n) !== tx) {
+                            bsCustomStatus('Số ô nhập không hợp lệ: ' + tx + ' · chỉ chọn 2, 3, 4, 5 hoặc 6', 'err');
+                            return false;
+                        }
+                        if (n === cur) {
+                            segRenderLenControls();
+                            bsCustomStatus('Đang dùng ' + n + ' ô nhập · kết quả/random ' + (SEG_TOTAL - n) + ' ô');
+                            return true;
+                        }
+                        const sel = document.getElementById('segLen');
+                        if (!sel) return false;
+                        sel.value = String(n);
+                        onSegLenChange();   // luu lua chon + ve lai o nhap/random + tu lay so cuoi
+                        bsCustomStatus('✓ Đã đổi: ' + n + ' ô nhập · kết quả/random ' + (SEG_TOTAL - n) + ' ô (đoạn 10 số)', 'ok');
+                        return true;
+                    }
+                    // Tìm mọi đoạn 10 số liền nhau có các số đầu đúng như nhập (mới nhất trước)
                     function findSegments(prefix) {
                         if (typeof prefix === 'string') prefix = [prefix];
                         const n = prefix.length;
-                        const total = n + SEG_TAIL;
+                        const total = SEG_TOTAL;
                         const arr = archiveChrono();
                         const out = [];
                         for (let i = 0; i + total - 1 < arr.length; i++) {
@@ -6523,7 +6660,7 @@ body {
                         const raw = (s && s.digits != null) ? s.digits : [];
                         const d = Array.isArray(raw) ? raw : String(raw).split('');
                         const cut = Math.max(0, Number(n) || 0);
-                        return d.slice(cut).map(x => String(x)).filter(x => /^\d$/.test(x));
+                        return d.slice(cut, SEG_TOTAL).map(x => String(x)).filter(x => /^\d$/.test(x));
                     }
                     function segIssueId(s) {
                         return String((s && s.start && s.start.i) || (s && s.i) || '');
@@ -6579,7 +6716,7 @@ body {
                         const info = document.getElementById('segSortInfo');
                         if (!info) return;
                         info.textContent = segSortMode === 'sum'
-                            ? 'Tổng ' + SEG_TAIL + ' số phía sau lớn nhất trên cùng · trùng thì xếp theo ID kỳ xổ'
+                            ? 'Tổng ' + segTailLen() + ' số phía sau lớn nhất trên cùng · trùng thì xếp theo ID kỳ xổ'
                             : (segSortMode === 'value'
                                 ? 'Số lớn nhất trên cùng, số nhỏ nhất dưới · trùng số thì xếp theo ID kỳ xổ'
                                 : 'Kỳ lớn nhất trên cùng, bé dần xuống dưới (theo ID kỳ xổ)');
@@ -6694,7 +6831,7 @@ body {
                         }
                         dataTableSeg = { prefix: vals, len: vals.length };
                         // có kho trong máy -> tra ngay trên máy (nhanh nhất)
-                        if (gameArchive.length >= vals.length + SEG_TAIL) { dataTableFbSegs = null; renderDataTable('segments'); return; }
+                        if (gameArchive.length >= SEG_TOTAL) { dataTableFbSegs = null; renderDataTable('segments'); return; }
                         // KHÔNG có kho trong máy -> tra TRỰC TIẾP trên Firebase (chỉ đọc 1 doc nhỏ)
                         if (!fbDB) { dataTableFbSegs = null; renderDataTable('segments'); return; }
                         if (info) { info.style.color = '#94a3b8'; info.textContent = '☁️ Đang tra trên Firebase…'; }
@@ -6731,11 +6868,16 @@ body {
                         if (dataTableMode === 'segments' && dataTableSeg) {
                             const prefix = dataTableSeg.prefix;
                             const n = prefix.length;
-                            const total = n + SEG_TAIL;
+                            const total = SEG_TOTAL;
                             const key = prefix.join('');
                             const segs = sortSegments(dataTableFbSegs || findSegments(prefix), n);
-                            const LIMIT = 1;   // CHE DO GON: chi hien 1 dong ket qua dau tien              // hiện tối đa 500 dãy
-                            const cntRows = segs.slice(0, LIMIT);
+                            const LIMIT = 500;   // hien nhieu ket qua trong khung cuon (co tu 10 ket qua tro len la hien du; chan 500 de DOM khong nang)
+                            const scrollKey = key + '|' + n + '|' + (typeof segSortMode !== 'undefined' ? segSortMode : '') + '|' + (dataTableFbSegs ? 'fb' : 'local');
+                            const prevScrollTop = (dataTableSegScrollKey === scrollKey) ? (body.scrollTop || 0) : 0;
+                            dataTableSegScrollKey = scrollKey;
+                            const displayRows = segs.slice(0, LIMIT);
+                            const cntRows = displayRows;   // thong ke cap trung tinh tren cac dong dang hien
+                            const bsRows = segs.slice(0, 1);   // QUAN TRONG: nguon random van la DONG DAU TIEN nhu ban 1 dong truoc day
                             // 🔗 ĐẾM CẶP dãy LIỀN KỀ "TRÙNG NHAU": so từng vị trí của 5 số phía sau,
                             // hai số ở cùng vị trí phải hoặc cùng NHỎ hơn 5 (0-4) hoặc cùng LỚN hơn/ bằng 5 (5-9)
                             // ví dụ: trên 23689 · dưới 42578 -> tại mọi vị trí đều cùng nhóm -> tính 1 CẶP
@@ -6744,7 +6886,7 @@ body {
                             for (let i = 0; i + 1 < cntRows.length; i++) {
                                 const a = cntRows[i].digits, b = cntRows[i + 1].digits;
                                 let trung = true;
-                                for (let k = n; k < n + SEG_TAIL; k++) {
+                                for (let k = n; k < SEG_TOTAL; k++) {
                                     if (laLon(a[k]) !== laLon(b[k])) { trung = false; break; }
                                 }
                                 capKe.push(trung);
@@ -6768,7 +6910,7 @@ body {
                             if (!segs.length) {
                                 html += '<div class="ch-empty">Không có đoạn nào — thử dãy số khác hoặc bấm "⬇️ Tải 100 trang".</div>';
                             } else {
-                                html += '<div class="dt-sum">🔎 <b>' + cntRows.length + '</b> dãy ' + SEG_TAIL + ' số phía sau'
+                                html += '<div class="dt-sum">🔎 <b>' + cntRows.length + '</b> dãy ' + (SEG_TOTAL - n) + ' số phía sau'
                                     + ' · 🔗 liền kề TRÙNG nhau (từng vị trí cùng < 5 hoặc cùng ≥ 5): <b class="dt-rest">' + soCap + '</b> cặp'
                                     + (chuoiDai >= 2 ? ' · dài nhất ' + chuoiDai + ' cặp liền nhau' : '')
                                     + (segs.length > LIMIT ? ' · chỉ tính trên ' + LIMIT + ' dãy đang hiện' : '')
@@ -6786,12 +6928,13 @@ body {
                                         + '<span class="dt-t">' + s.end.i + ' · ' + (s.end.t ? fmtTime(s.end.t) : '') + '</span></div>';
                                 }
                                 if (segs.length > LIMIT) {
-                                    html += '<div class="ch-empty">… chỉ hiện ' + LIMIT + ' đoạn đầu theo thứ tự sắp xếp / ' + segs.length + ' đoạn.</div>';
+                                    html += '<div class="dt-more">… đang hiện ' + LIMIT + ' đoạn đầu / ' + segs.length + ' đoạn · cuộn trong khung này để xem tiếp.</div>';
                                 }
                             }
                             body.innerHTML = html;
+                            body.scrollTop = prevScrollTop;   // ve lai do kho cap nhat thi khong nhay mat vi tri dang cuon xem
                             dataTableLastLen = gameArchive.length;
-                            try { bsApplyResults(cntRows.length ? cntRows : segs, n); } catch (e0) {}
+                            try { bsApplyResults(bsRows.length ? bsRows : segs, n); } catch (e0) {}
                             return;
                         }
 
@@ -6810,6 +6953,7 @@ body {
                                     : 'Kho trống — bấm "⬇️ Tải 100 trang" (cần token API).'
                                         + '<br><span style="color:#64748b">Nếu đang mở trong khung xem thử (không có mạng, localStorage riêng) thì kho sẽ luôn là 0 — hãy mở file này bằng trình duyệt để thấy kho đã lưu (50.000+ kỳ).</span>'))
                             + '</div>';
+                        dataTableSegScrollKey = '';
                         body.innerHTML = html;
                         dataTableLastLen = gameArchive.length;
                     }
@@ -6817,7 +6961,9 @@ body {
                     // dựng nội dung file txt cả kho (mỗi dòng: kỳ | số | giờ)
                     function buildArchiveTxt() {
                         const stamp = new Date().toLocaleString('vi-VN');
-                        const lines = ['KHO GAME | ' + gameArchive.length + ' ky | ' + stamp, 'ky | so | gio'];
+                        let swapLines = [];
+                        try { if (typeof bsSwapTxtLines === 'function') swapLines = bsSwapTxtLines(); } catch (e) {}
+                        const lines = swapLines.concat(['KHO GAME | ' + gameArchive.length + ' ky | ' + stamp, 'ky | so | gio']);
                         for (const e of gameArchive) lines.push(e.i + ' | ' + e.d + ' | ' + (e.t ? fmtTime(e.t) : ''));
                         return lines.join('\r\n');
                     }
@@ -7856,9 +8002,10 @@ body {
                     renderCellHistory();         // vẽ ô lịch sử SAU khi đã nạp kho 5000 trang + bảng
                     // khôi phục "Số ô nhập" đã chọn (mặc định 4 ô)
                     try {
-                        const sv2 = 3;   // CHE DO GON: co dinh 3 o nhap (khong dung lua chon da luu)
+                        let sv2 = 3;   // mac dinh 3 o nhap -> ket qua/random 7 o
+                        try { const svSaved = parseInt(localStorage.getItem('vn168_segLen'), 10); if (svSaved >= 2 && svSaved <= 6) sv2 = svSaved; } catch (e2) {}
                         const sel2 = document.getElementById('segLen');
-                        if (sel2) sel2.value = '3';   // CHE DO GON: luon 3 o nhap + 3 o copy
+                        if (sel2) sel2.value = String(sv2);   // khoi phuc so o nhap da chon bang mat khau lan truoc
                     } catch(e){}
                     try { renderSegInputs(false); } catch(e){}
                     // khôi phục cách sắp xếp đã lưu (mặc định: số lớn nhất trên cùng)
@@ -7973,4 +8120,4 @@ body {
                         });
                 </script>
    
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8e73cfb9f220f',t:'MTc5MjUwODU0Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d95ba1e9a5cd2f',t:'MTc5MjUxMzMxMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
