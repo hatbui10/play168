@@ -1387,6 +1387,23 @@ body {
 }
 #betPlacePanel .bet-status.ok { color: #4ade80; }
 #betPlacePanel .bet-status.err { color: #fda4af; }
+#dataTablePanel #betPlacePanel button#btnBsForbiddenPassword {
+  display: flex !important;
+  width: 100%;
+  min-height: 36px;
+  margin-top: 8px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(251,191,36,.72);
+  background: linear-gradient(180deg, rgba(69,26,3,.92), rgba(42,20,5,.96));
+  color: #fde68a;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .15px;
+  box-shadow: 0 6px 16px rgba(245,158,11,.16), inset 0 1px 0 rgba(255,255,255,.14);
+}
+#dataTablePanel #betPlacePanel button#btnBsForbiddenPassword:hover { filter: brightness(1.12); }
+#dataTablePanel #betPlacePanel button#btnBsForbiddenPassword:active { transform: translateY(1px); }
 #dataTablePanel #betPlacePanel button#btnAutoBet {
   display: flex !important;
   width: 100%;
@@ -1409,57 +1426,16 @@ body {
   background: linear-gradient(135deg,#ea580c 0%,#dc2626 55%,#be123c 100%);
   box-shadow: 0 10px 24px rgba(239,68,68,.22), 0 3px 0 #7f1d1d, inset 0 1px 0 rgba(255,255,255,.32);
 }
+#dataTablePanel #betPlacePanel button#btnAutoBet.is-resting {
+  border-color: rgba(253,230,138,.95);
+  background: linear-gradient(135deg,#d97706 0%,#b45309 55%,#92400e 100%);
+  box-shadow: 0 10px 24px rgba(245,158,11,.22), 0 3px 0 #451a03, inset 0 1px 0 rgba(255,255,255,.32);
+}
 #dataTablePanel #betPlacePanel button#btnAutoBet:disabled {
   cursor: not-allowed;
   opacity: .55;
   filter: saturate(.65);
   box-shadow: none;
-}
-#betPlacePanel .bet-auto-duration-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  margin-top: 8px;
-}
-#dataTablePanel #betPlacePanel button.bet-duration-chip,
-#dataTablePanel #betPlacePanel button.bet-duration-lock {
-  min-height: 32px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid rgba(196,181,253,.55);
-  background: rgba(30,27,75,.82);
-  color: #ede9fe;
-  font-size: 12px;
-  font-weight: 850;
-  font-variant-numeric: tabular-nums;
-}
-#dataTablePanel #betPlacePanel button.bet-duration-lock {
-  min-width: 118px;
-  border-color: rgba(251,191,36,.68);
-  background: rgba(69,26,3,.78);
-  color: #fde68a;
-}
-#dataTablePanel #betPlacePanel button.bet-duration-lock.unlocked {
-  border-color: rgba(110,231,183,.75);
-  background: rgba(6,78,59,.78);
-  color: #d1fae5;
-}
-#dataTablePanel #betPlacePanel button.bet-duration-chip.sel {
-  outline: 2px solid #fde68a;
-  outline-offset: 1px;
-  background: linear-gradient(135deg,#7c3aed,#2563eb);
-  color: #fff;
-  filter: brightness(1.14);
-  box-shadow: 0 0 0 2px rgba(253,230,138,.20), 0 7px 16px rgba(0,0,0,.28);
-}
-#dataTablePanel #betPlacePanel button.bet-duration-chip.locked { opacity: .68; }
-#dataTablePanel #betPlacePanel button.bet-duration-chip.sel.locked { opacity: 1; }
-#dataTablePanel #betPlacePanel button.bet-duration-chip:disabled,
-#dataTablePanel #betPlacePanel button.bet-duration-lock:disabled {
-  cursor: not-allowed;
-  opacity: .48;
-  filter: saturate(.6);
 }
 @media (max-width: 520px) {
   #dataTablePanel #betPlacePanel button.bet-choice { min-height: 36px; font-size: 12px; }
@@ -1678,8 +1654,8 @@ body {
                             <div class="bet-bigsmall" id="betBigSmallRow"></div>
                             <div class="bet-chip-row bet-multiple-row" id="betMultipleRow"></div>
                             <button type="button" id="btnPlaceBet" disabled>Chọn Lớn hoặc Nhỏ</button>
-                            <div class="bet-auto-duration-row" id="betAutoDurationRow" aria-label="Thời gian tự động"></div>
-                            <button type="button" id="btnAutoBet">▶ Tự động 3p</button>
+                            <button type="button" id="btnBsForbiddenPassword" onclick="bsEditCustomForbidden()" title="Nhập mật khẩu để thêm dãy random muốn loại">🔐 Nhập mật khẩu · Loại random (0)</button>
+                            <button type="button" id="btnAutoBet" title="Chạy 10 phút, nghỉ 5 phút, lặp lại và tự dừng sau 10 tiếng">▶ START</button>
                             <div id="betPlaceStatus" class="bet-status" aria-live="polite">--</div>
                         </div>
                         <div class="gon-hide" style="display:none!important">
@@ -3532,18 +3508,17 @@ body {
                     let betStatusMsg = '';
                     let betStatusKind = '';
                     let betPanelReady = false;
-                    const BET_AUTO_DEFAULT_MINUTES = 3;
-                    const BET_AUTO_DURATION_OPTIONS = [3, 10, 30, 60, 120, 180, 240];
-                    const BET_AUTO_EXTENDED_PASSWORD = '123456';
+                    const BET_AUTO_RUN_MS = 10 * 60 * 1000;
+                    const BET_AUTO_REST_MS = 5 * 60 * 1000;
+                    const BET_AUTO_CYCLE_MS = BET_AUTO_RUN_MS + BET_AUTO_REST_MS;
+                    const BET_AUTO_TOTAL_MS = 10 * 60 * 60 * 1000;
                     let betAuto = {
                         active: false,
                         starting: false,
                         busy: false,
                         sessionId: 0,
                         deadlineMs: 0,
-                        durationMinutes: BET_AUTO_DEFAULT_MINUTES,
-                        durationEditing: false,
-                        durationAuthorized: false,
+                        sessionStartedMs: 0,
                         pattern: [],
                         patternKey: '',
                         index: 0,
@@ -3623,105 +3598,11 @@ body {
                         if (onClick) b.addEventListener('click', onClick);
                         return b;
                     }
-                    function betAutoDurationMinutes() {
-                        const minutes = Number(betAuto.durationMinutes);
-                        if (BET_AUTO_DURATION_OPTIONS.indexOf(minutes) < 0) return BET_AUTO_DEFAULT_MINUTES;
-                        if (minutes > BET_AUTO_DEFAULT_MINUTES && !betAuto.durationAuthorized) return BET_AUTO_DEFAULT_MINUTES;
-                        return minutes;
-                    }
-                    function betAutoDurationLabel(minutes) {
-                        const m = Number(minutes);
-                        const safe = BET_AUTO_DURATION_OPTIONS.indexOf(m) >= 0 ? m : BET_AUTO_DEFAULT_MINUTES;
-                        if (safe < 60) return safe + ' phút';
-                        const h = Math.floor(safe / 60);
-                        const rest = safe % 60;
-                        return safe + ' phút (' + h + ' giờ' + (rest ? (' ' + rest + ' phút') : '') + ')';
-                    }
                     function betAutoExpiredText() {
-                        return 'Hết ' + betAutoDurationLabel(betAutoDurationMinutes()) + ' · đã đặt ' + betAuto.placedCount + ' lệnh';
-                    }
-                    function betAutoUnlockDurationEditing() {
-                        if (betAuto.active || betAuto.starting || betPlacing) return false;
-                        if (betAuto.durationEditing) return true;
-                        let entered = null;
-                        try { entered = window.prompt('Nhập mật khẩu để mở chọn thời gian tự động:', ''); } catch (e) {}
-                        if (entered === null) {
-                            betSetStatus('Đã hủy nhập mật khẩu');
-                            return false;
-                        }
-                        if (String(entered).trim() !== BET_AUTO_EXTENDED_PASSWORD) {
-                            betSetStatus('Sai mật khẩu', 'err');
-                            betRenderAutoDuration();
-                            return false;
-                        }
-                        betAuto.durationEditing = true;
-                        betAuto.durationAuthorized = true;
-                        betRenderAutoDuration();
-                        betRenderAutoButton();
-                        betSetStatus('Đã mở khoá · chọn 10p, 30p, 60p, 120p, 180p hoặc 240p · chọn xong bấm nút mật khẩu để khoá', 'ok');
-                        return true;
-                    }
-                    function betAutoLockDurationSelection() {
-                        if (betAuto.active || betAuto.starting || betPlacing) return;
-                        const selected = betAutoDurationMinutes();
-                        betAuto.durationMinutes = selected;
-                        betAuto.durationEditing = false;
-                        betRenderAutoDuration();
-                        betRenderAutoButton();
-                        betSetStatus('Đã khoá thời gian ở mức ' + betAutoDurationLabel(selected), 'ok');
-                    }
-                    function betAutoPasswordButtonClicked() {
-                        if (betAuto.active) { betAutoUpdateStatus(false); return; }
-                        if (betAuto.starting || betPlacing) return;
-                        if (betAuto.durationEditing) betAutoLockDurationSelection();
-                        else betAutoUnlockDurationEditing();
-                    }
-                    function betAutoSelectDuration(minutes) {
-                        const m = Number(minutes);
-                        if (BET_AUTO_DURATION_OPTIONS.indexOf(m) < 0) return;
-                        if (betAuto.active) { betAutoUpdateStatus(false); return; }
-                        if (betAuto.starting || betPlacing) return;
-                        if (!betAuto.durationEditing) {
-                            betSetStatus('Đang khoá · bấm “Nhập mật khẩu” để mở chọn thời gian', 'err');
-                            return;
-                        }
-                        betAuto.durationMinutes = m;
-                        if (m > BET_AUTO_DEFAULT_MINUTES) betAuto.durationAuthorized = true;
-                        betRenderAutoDuration();
-                        betRenderAutoButton();
-                        betSetStatus('Đã chọn ' + betAutoDurationLabel(m) + ' · bấm nút mật khẩu để khoá', 'ok');
+                        return 'Đã hết 10 tiếng · đã đặt ' + betAuto.placedCount + ' lệnh';
                     }
                     function betRenderAutoDuration() {
-                        const row = document.getElementById('betAutoDurationRow');
-                        if (!row) return;
-                        row.innerHTML = '';
-                        const controlsDisabled = !!(betAuto.active || betAuto.starting || betPlacing);
-                        const passwordBtn = betMakeButton(betAuto.durationEditing ? '🔒 Bấm để khoá' : '🔐 Nhập mật khẩu',
-                            'bet-duration-lock' + (betAuto.durationEditing ? ' unlocked' : ''), function () {
-                                betAutoPasswordButtonClicked();
-                            });
-                        passwordBtn.id = 'btnAutoDurationPassword';
-                        passwordBtn.disabled = controlsDisabled;
-                        passwordBtn.title = betAuto.durationEditing
-                            ? 'Bấm để khoá mức thời gian đã chọn'
-                            : 'Nhập mật khẩu để mở chọn thời gian';
-                        row.appendChild(passwordBtn);
-                        const selected = betAutoDurationMinutes();
-                        const selectionLocked = !betAuto.durationEditing;
-                        BET_AUTO_DURATION_OPTIONS.forEach(function (minutes) {
-                            const showLock = selectionLocked && minutes === selected && minutes > BET_AUTO_DEFAULT_MINUTES;
-                            const b = betMakeButton(minutes + 'p' + (showLock ? ' 🔒' : ''),
-                                'bet-duration-chip' + (minutes === selected ? ' sel' : '') + (selectionLocked ? ' locked' : ''), function () {
-                                    betAutoSelectDuration(minutes);
-                                });
-                            b.setAttribute('data-auto-minutes', String(minutes));
-                            b.setAttribute('aria-pressed', minutes === selected ? 'true' : 'false');
-                            b.disabled = controlsDisabled;
-                            b.title = selectionLocked
-                                ? (minutes === selected ? ('Đã khoá ở mức ' + betAutoDurationLabel(minutes)) : 'Bấm nút Nhập mật khẩu để mở chọn thời gian')
-                                : ('Chọn phiên tự động ' + betAutoDurationLabel(minutes));
-                            row.appendChild(b);
-                        });
+                        // START dùng chu kỳ cố định 10 phút chạy / 5 phút nghỉ trong 10 tiếng.
                     }
                     function betRenderChips() {
                         const multipleRow = document.getElementById('betMultipleRow');
@@ -3956,6 +3837,33 @@ body {
                         if (h > 0) return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
                         return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(s).padStart(2, '0');
                     }
+                    function betAutoCycleInfo(nowMs) {
+                        const now = Number(nowMs) || Date.now();
+                        const started = Number(betAuto.sessionStartedMs) || 0;
+                        const deadline = Number(betAuto.deadlineMs) || 0;
+                        if (!betAuto.active || !started || !deadline) {
+                            return { phase: 'idle', cycle: 0, phaseEndsMs: 0, phaseRemainMs: 0, totalRemainMs: 0 };
+                        }
+                        if (now >= deadline) {
+                            return { phase: 'done', cycle: Math.ceil(BET_AUTO_TOTAL_MS / BET_AUTO_CYCLE_MS), phaseEndsMs: deadline, phaseRemainMs: 0, totalRemainMs: 0 };
+                        }
+                        const elapsed = Math.max(0, now - started);
+                        const cycleIndex = Math.floor(elapsed / BET_AUTO_CYCLE_MS);
+                        const cycleStart = started + (cycleIndex * BET_AUTO_CYCLE_MS);
+                        const inCycle = elapsed - (cycleIndex * BET_AUTO_CYCLE_MS);
+                        const isRun = inCycle < BET_AUTO_RUN_MS;
+                        const phaseEndsMs = Math.min(deadline, cycleStart + (isRun ? BET_AUTO_RUN_MS : BET_AUTO_CYCLE_MS));
+                        return {
+                            phase: isRun ? 'run' : 'rest',
+                            cycle: cycleIndex + 1,
+                            phaseEndsMs: phaseEndsMs,
+                            phaseRemainMs: Math.max(0, phaseEndsMs - now),
+                            totalRemainMs: Math.max(0, deadline - now)
+                        };
+                    }
+                    function betAutoIsResting(nowMs) {
+                        return betAutoCycleInfo(nowMs).phase === 'rest';
+                    }
                     function betAutoReadPattern() {
                         const wrap = document.getElementById('segBsWrap');
                         const box = document.getElementById('segBigSmall');
@@ -3979,24 +3887,42 @@ body {
                     }
                     function betAutoProgressText(waiting) {
                         if (!betAuto.active) return '';
-                        const remain = betAutoFormatClock(betAuto.deadlineMs - Date.now());
+                        const now = Date.now();
+                        const info = betAutoCycleInfo(now);
+                        const phaseRemain = betAutoFormatClock(info.phaseRemainMs);
+                        const totalRemain = betAutoFormatClock(info.totalRemainMs);
+                        const total = betAuto.pattern.length || 5;
+                        if (info.phase === 'rest') {
+                            if (betAuto.pending) {
+                                return 'Đang nghỉ · chờ kết quả kỳ ' + gtxShortIssue(betAuto.pending.issue)
+                                    + ' · chạy lại sau ' + phaseRemain + ' · tổng còn ' + totalRemain;
+                            }
+                            if (betAuto.waitingPattern || !betAuto.pattern.length || betAuto.index >= total) {
+                                return 'Đang nghỉ · chạy lại sau ' + phaseRemain + ' · tổng còn ' + totalRemain;
+                            }
+                            const restBit = betAuto.pattern[betAuto.index];
+                            const restSide = restBit ? 'LỚN' : 'NHỎ';
+                            const restMoney = gtxFmtMoney(betAuto.coin * betAutoLevelForIndex(betAuto.index));
+                            return 'Đang nghỉ · giữ ô ' + (betAuto.index + 1) + '/' + total + ': ' + restSide + ' ' + restMoney
+                                + ' · chạy lại sau ' + phaseRemain + ' · tổng còn ' + totalRemain;
+                        }
                         if (betAuto.pending) {
                             return 'Tự động · đã đặt ô ' + (betAuto.pending.index + 1) + '/5 · chờ kết quả kỳ '
-                                + gtxShortIssue(betAuto.pending.issue) + ' · còn ' + remain;
+                                + gtxShortIssue(betAuto.pending.issue) + ' · pha chạy còn ' + phaseRemain
+                                + ' · tổng còn ' + totalRemain;
                         }
                         if (betAuto.waitingPattern) {
                             return (betAuto.lastOutcome === 'win' ? 'Thắng' : 'Hết lượt')
-                                + ' · chờ lượt random mới · còn ' + remain;
+                                + ' · chờ lượt random mới · pha chạy còn ' + phaseRemain + ' · tổng còn ' + totalRemain;
                         }
-                        const total = betAuto.pattern.length || 5;
                         if (!betAuto.pattern.length || betAuto.index >= total) {
-                            return 'Tự động · chờ lượt random mới · còn ' + remain;
+                            return 'Tự động · chờ lượt random mới · pha chạy còn ' + phaseRemain + ' · tổng còn ' + totalRemain;
                         }
                         const bit = betAuto.pattern[betAuto.index];
                         const side = bit ? 'LỚN' : 'NHỎ';
                         const money = gtxFmtMoney(betAuto.coin * betAutoLevelForIndex(betAuto.index));
                         return 'Tự động · lượt ' + betAuto.round + ' · ô ' + (betAuto.index + 1) + '/' + total
-                            + ': ' + side + ' ' + money + ' · còn ' + remain;
+                            + ': ' + side + ' ' + money + ' · pha chạy còn ' + phaseRemain + ' · tổng còn ' + totalRemain;
                     }
                     function betAutoUpdateStatus(waiting) {
                         if (betAuto.active) betSetStatus(betAutoProgressText(waiting));
@@ -4006,14 +3932,22 @@ body {
                         if (!btn) return;
                         btn.classList.toggle('is-running', betAuto.active);
                         if (betAuto.active) {
+                            const info = betAutoCycleInfo();
+                            const resting = info.phase === 'rest';
+                            btn.classList.toggle('is-resting', resting);
                             btn.disabled = false;
-                            btn.textContent = '■ Dừng · ' + betAutoFormatClock(betAuto.deadlineMs - Date.now());
+                            btn.textContent = '■ STOP · ' + (resting ? 'NGHỈ ' : 'CHẠY ') + betAutoFormatClock(info.phaseRemainMs);
+                            btn.title = 'Bấm để dừng · tổng còn ' + betAutoFormatClock(info.totalRemainMs);
                         } else if (betAuto.starting) {
+                            btn.classList.remove('is-resting');
                             btn.disabled = true;
-                            btn.textContent = 'Đang chuẩn bị...';
+                            btn.textContent = 'ĐANG CHUẨN BỊ...';
+                            btn.title = 'Đang chuẩn bị chu kỳ 10 phút chạy / 5 phút nghỉ trong 10 tiếng';
                         } else {
+                            btn.classList.remove('is-resting');
                             btn.disabled = !!betPlacing;
-                            btn.textContent = '▶ Tự động ' + betAutoDurationMinutes() + 'p';
+                            btn.textContent = '▶ START';
+                            btn.title = 'Chạy 10 phút, nghỉ 5 phút, lặp lại và tự dừng sau 10 tiếng';
                         }
                     }
                     function betAutoCurrent(sessionId) {
@@ -4028,6 +3962,7 @@ body {
                         betAuto.pending = null;
                         betAuto.waitingPattern = false;
                         betAuto.sessionId++;
+                        betAuto.sessionStartedMs = 0;
                         betAuto.deadlineMs = 0;
                         if (wasActive && !betPlacing) betSel = null;
                         if (message) betSetStatus(message, kind || '');
@@ -4064,6 +3999,7 @@ body {
                     }
                     async function betAutoWaitForPattern(sessionId) {
                         if (!betAutoCurrent(sessionId) || !betAuto.waitingPattern) return false;
+                        if (betAutoIsResting()) { betAutoUpdateStatus(true); return false; }
                         try {
                             // Chờ lấy 4 số xong hẳn mới chốt lượt random mới, tránh đọc dãy đang cập nhật dở.
                             if (typeof takeLatest4Busy !== 'undefined' && takeLatest4Busy) return false;
@@ -4266,7 +4202,6 @@ body {
                                 return false;
                             }
                             if (betPlacing) return false;
-                            const selectedDurationMinutes = betAutoDurationMinutes();
                             const seq = pattern.map(function (bit, i) {
                                 return (bit ? '1-LỚN ' : '0-NHỎ ') + gtxFmtMoney(BET_DEFAULT_COIN * betAutoLevelForIndex(i));
                             }).join(' → ');
@@ -4275,7 +4210,7 @@ body {
                                 + seq + '\n\n'
                                 + 'Thua: sang ô tiếp theo và tăng mức 1k → 3k → 9k → 27k → 81k.\n'
                                 + 'Thắng: bỏ các ô còn lại, chờ lượt random mới và quay về 1k.\n'
-                                + 'Một lượt thua hết tối đa ' + gtxFmtMoney(maxRound) + '. Phiên tối đa ' + betAutoDurationLabel(selectedDurationMinutes) + '.\n\n'
+                                + 'Một lượt thua hết tối đa ' + gtxFmtMoney(maxRound) + '. Chu kỳ: chạy 10 phút, nghỉ 5 phút, lặp lại và tự dừng sau 10 tiếng.\n\n'
                                 + 'Bấm OK để app tự đặt cược thật.';
                             let confirmed = false;
                             try { confirmed = !!window.confirm(text); } catch (e) {}
@@ -4288,8 +4223,8 @@ body {
                             betAuto.busy = false;
                             betAuto.settleBusy = false;
                             betAuto.sessionId++;
-                            betAuto.durationMinutes = selectedDurationMinutes;
-                            betAuto.deadlineMs = Date.now() + (selectedDurationMinutes * 60 * 1000);
+                            betAuto.sessionStartedMs = Date.now();
+                            betAuto.deadlineMs = betAuto.sessionStartedMs + BET_AUTO_TOTAL_MS;
                             betAuto.pattern = pattern.slice();
                             betAuto.patternKey = patternInfo.key;
                             betAuto.lastPatternKey = patternInfo.key;
@@ -4327,12 +4262,22 @@ body {
                             betAutoStop(betAutoExpiredText());
                             return;
                         }
+                        if (betAutoIsResting()) {
+                            if (betAuto.pending) await betAutoCheckSettlement(sessionId);
+                            if (!betAutoCurrent(sessionId)) return;
+                            betAutoUpdateStatus(true);
+                            return;
+                        }
                         if (betAuto.pending) {
                             await betAutoCheckSettlement(sessionId);
                             if (!betAutoCurrent(sessionId) || betAuto.pending) return;
                         }
                         if (Date.now() >= betAuto.deadlineMs) {
                             betAutoStop(betAutoExpiredText());
+                            return;
+                        }
+                        if (betAutoIsResting()) {
+                            betAutoUpdateStatus(true);
                             return;
                         }
                         if (betAuto.waitingPattern) {
@@ -4346,6 +4291,10 @@ body {
                         }
                         if (Date.now() >= betAuto.deadlineMs) {
                             betAutoStop(betAutoExpiredText());
+                            return;
+                        }
+                        if (betAutoIsResting()) {
+                            betAutoUpdateStatus(true);
                             return;
                         }
                         if (!betIssue || betSecondsLeft() <= 0) {
@@ -4485,8 +4434,8 @@ body {
                                     throw betError('Đã sang kỳ mới, hãy kiểm tra lại trước khi đặt');
                                 }
                                 if (betSecondsLeft() <= BET_CLOSE_SECONDS) throw betError('Đã đóng cược kỳ này', 'closed');
-                            } else if (!betAutoCurrent(opts.sessionId) || Date.now() >= betAuto.deadlineMs) {
-                                throw betError('Đã dừng tự động', 'cancelled');
+                            } else if (!betAutoCurrent(opts.sessionId) || Date.now() >= betAuto.deadlineMs || betAutoIsResting()) {
+                                throw betError(betAutoIsResting() ? 'Đã tới giờ nghỉ' : 'Đã dừng tự động', 'cancelled');
                             }
                             const payload = {
                                 typeId: CFG.payload.typeId,
@@ -5847,12 +5796,182 @@ body {
                        cho tới khi ra kiểu KHÁC (đây là đúng 4 kiểu 'gom nhóm' chưa xáo):
                          1-0-0-0-0 · 0-1-1-1-1 · 0-0-1-1-1 · 1-1-0-0-0 */
                     const BS_FORBIDDEN = ['10000', '01111', '00111', '11000'];
+                    const BS_CUSTOM_FORBIDDEN_KEY = 'vn168_bs_custom_forbidden_v1';
+                    const BS_CUSTOM_FORBIDDEN_PASSWORD = '123456';
+                    function bsNormalizeCustomForbidden(values) {
+                        const out = [];
+                        const seen = new Set();
+                        const list = values || [];
+                        for (let i = 0; i < list.length; i++) {
+                            const clean = String(list[i] || '').replace(/-/g, '').trim();
+                            if (!/^[01]{5}$/.test(clean)) continue;
+                            if (BS_FORBIDDEN.indexOf(clean) !== -1 || seen.has(clean)) continue;
+                            seen.add(clean);
+                            out.push(clean);
+                        }
+                        return out;
+                    }
+                    function bsLoadCustomForbidden() {
+                        try {
+                            const raw = localStorage.getItem(BS_CUSTOM_FORBIDDEN_KEY) || '';
+                            if (!raw) return [];
+                            if (raw.charAt(0) === '[') {
+                                const arr = JSON.parse(raw);
+                                return Array.isArray(arr) ? bsNormalizeCustomForbidden(arr) : [];
+                            }
+                            return bsNormalizeCustomForbidden(raw.split(/[\s,;|]+/));
+                        } catch (e) { return []; }
+                    }
+                    let bsCustomForbidden = bsLoadCustomForbidden();
+                    function bsSaveCustomForbidden(values) {
+                        bsCustomForbidden = bsNormalizeCustomForbidden(values);
+                        try { localStorage.setItem(BS_CUSTOM_FORBIDDEN_KEY, JSON.stringify(bsCustomForbidden)); } catch (e) {}
+                        bsRenderCustomForbiddenButton();
+                        return bsCustomForbidden.slice();
+                    }
+                    function bsForbiddenPatterns() {
+                        return BS_FORBIDDEN.concat(bsCustomForbidden);
+                    }
+                    function bsRenderCustomForbiddenButton() {
+                        const btn = document.getElementById('btnBsForbiddenPassword');
+                        if (!btn) return;
+                        const n = bsCustomForbidden.length;
+                        btn.textContent = '🔐 Nhập mật khẩu · Loại random (' + n + ')';
+                        btn.title = 'Cấm cố định: ' + BS_FORBIDDEN.join(', ')
+                            + (n ? (' · Tự thêm: ' + bsCustomForbidden.join(', ')) : ' · Chưa có dãy tự thêm');
+                    }
+                    function bsCustomStatus(msg, kind) {
+                        try {
+                            if (typeof betSetStatus === 'function') { betSetStatus(msg, kind || ''); return; }
+                        } catch (e) {}
+                        const el = document.getElementById('betPlaceStatus');
+                        if (el) {
+                            el.textContent = msg || '';
+                            el.className = 'bet-status' + (kind ? (' ' + kind) : '');
+                        }
+                    }
+                    function bsParseCustomForbiddenText(text) {
+                        const tokens = String(text || '').split(/[\s,;|]+/).filter(function (x) { return !!x; });
+                        const valid = [];
+                        const fixedAlready = [];
+                        const invalid = [];
+                        const seenValid = new Set();
+                        const seenFixed = new Set();
+                        for (let i = 0; i < tokens.length; i++) {
+                            const raw = tokens[i];
+                            const clean = String(raw || '').replace(/-/g, '').trim();
+                            if (!/^[01]{5}$/.test(clean)) { invalid.push(raw); continue; }
+                            if (BS_FORBIDDEN.indexOf(clean) !== -1) {
+                                if (!seenFixed.has(clean)) { seenFixed.add(clean); fixedAlready.push(clean); }
+                            } else if (!seenValid.has(clean)) {
+                                seenValid.add(clean);
+                                valid.push(clean);
+                            }
+                        }
+                        return { valid: valid, fixedAlready: fixedAlready, invalid: invalid };
+                    }
+                    function bsCustomForbiddenLeavesOption(customList) {
+                        const custom = bsNormalizeCustomForbidden(customList);
+                        const byOnes = { 1: [], 2: [], 3: [], 4: [] };
+                        for (let mask = 1; mask < 31; mask++) {
+                            let ones = 0;
+                            let pat = '';
+                            for (let pos = 4; pos >= 0; pos--) {
+                                const bit = (mask >> pos) & 1;
+                                ones += bit;
+                                pat += bit ? '1' : '0';
+                            }
+                            if (byOnes[ones]) byOnes[ones].push(pat);
+                        }
+                        for (let k = 1; k <= 4; k++) {
+                            const patterns = byOnes[k];
+                            for (let i = 0; i < patterns.length; i++) {
+                                const source = patterns[i];
+                                let has = false;
+                                for (let j = 0; j < patterns.length; j++) {
+                                    const cand = patterns[j];
+                                    if (cand !== source && BS_FORBIDDEN.indexOf(cand) === -1 && custom.indexOf(cand) === -1) { has = true; break; }
+                                }
+                                if (!has) return { ok: false, ones: k, source: source };
+                            }
+                        }
+                        return { ok: true };
+                    }
+                    function bsRefreshAfterCustomForbiddenChange() {
+                        try {
+                            if (!bsCurDigits || bsCurDigits.length !== BS_LEN) return true;
+                            const base = (bsBaseDigits && bsBaseDigits.length === BS_LEN) ? bsBaseDigits : bsCurDigits;
+                            if (!bsIsForbiddenFor(bsCurDigits, base)) return true;
+                            bsShuffled = false;
+                            bsPerm = null;
+                            bsShuffle();
+                            if (!bsShuffled) {
+                                bsSetRandomShown(false);
+                                return false;
+                            }
+                            bsSetRandomShown(true);
+                            return true;
+                        } catch (e) { return false; }
+                    }
+                    function bsEditCustomForbidden() {
+                        try {
+                            if ((typeof betAuto !== 'undefined' && (betAuto.active || betAuto.starting))
+                                || (typeof betPlacing !== 'undefined' && betPlacing)) {
+                                bsCustomStatus('Hãy dừng START trước khi sửa danh sách random bị loại', 'err');
+                                return false;
+                            }
+                        } catch (e) {}
+                        let entered = null;
+                        try { entered = window.prompt('Nhập mật khẩu để sửa danh sách random bị loại:', ''); } catch (e) {}
+                        if (entered === null) {
+                            bsCustomStatus('Đã huỷ nhập mật khẩu');
+                            return false;
+                        }
+                        if (String(entered).trim() !== BS_CUSTOM_FORBIDDEN_PASSWORD) {
+                            bsCustomStatus('Sai mật khẩu', 'err');
+                            return false;
+                        }
+                        const current = bsCustomForbidden.join(', ');
+                        const promptText = 'Nhập các dãy random 5 ô muốn LOẠI, cách nhau bằng dấu phẩy.\n'
+                            + 'Ví dụ: 10101, 01010, 10010\n\n'
+                            + 'Đã cấm cố định sẵn: ' + BS_FORBIDDEN.join(', ') + '\n'
+                            + 'Để trống = xoá toàn bộ danh sách tự thêm.';
+                        let text = null;
+                        try { text = window.prompt(promptText, current); } catch (e) {}
+                        if (text === null) {
+                            bsCustomStatus('Đã huỷ sửa danh sách random bị loại');
+                            return false;
+                        }
+                        const parsed = bsParseCustomForbiddenText(text);
+                        if (parsed.invalid.length) {
+                            bsCustomStatus('Dãy không hợp lệ: ' + parsed.invalid.join(', ') + ' · mỗi dãy phải đúng 5 ký tự 0/1', 'err');
+                            return false;
+                        }
+                        const leaves = bsCustomForbiddenLeavesOption(parsed.valid);
+                        if (!leaves.ok) {
+                            bsCustomStatus('Danh sách loại quá nhiều: nhóm ' + leaves.ones + ' số 1 không còn dãy random hợp lệ', 'err');
+                            return false;
+                        }
+                        bsSaveCustomForbidden(parsed.valid);
+                        const refreshed = bsRefreshAfterCustomForbiddenChange();
+                        let msg = parsed.valid.length
+                            ? ('Đã lưu ' + parsed.valid.length + ' dãy random tự loại: ' + parsed.valid.join(', '))
+                            : 'Đã xoá danh sách random tự loại';
+                        if (parsed.fixedAlready.length) {
+                            msg += ' · ' + parsed.fixedAlready.join(', ') + ' đã cấm cố định sẵn';
+                        }
+                        if (!refreshed) msg += ' · lượt hiện tại chưa có dãy hợp lệ';
+                        bsCustomStatus(msg, refreshed ? 'ok' : 'err');
+                        return true;
+                    }
                     function bsPatternStr(digits) {   // dãy số 0-9 -> chuỗi 0/1 đang hiện (≥5 -> '1', <5 -> '0')
                         return (digits || []).map(function (v) { return (Number(v) >= 5) ? '1' : '0'; }).join('');
                     }
                     function bsIsForbidden(digits) {
-                        return BS_FORBIDDEN.indexOf(bsPatternStr(digits)) !== -1;
+                        const pat = bsPatternStr(digits);
+                        return BS_FORBIDDEN.indexOf(pat) !== -1 || bsCustomForbidden.indexOf(pat) !== -1;
                     }
+
                     /* 🚫 Cấm thêm theo TỪNG dãy gốc: kết quả SAU XÁO không được TRÙNG dãy 0/1 GỐC chưa xáo.
                        VD 5 số cuối 3-8-6-7-1 -> dãy gốc 0-1-1-1-0 thì random xong bắt buộc KHÁC 01110
                        (vẫn giữ cả 4 kiểu cấm cố định ở trên). */
@@ -6016,6 +6135,37 @@ body {
                                         const t3 = perm[i]; perm[i] = perm[j]; perm[j] = t3;
                                     }
                                 }
+                            }
+                            if (shuffledDigits && bsIsForbiddenFor(shuffledDigits, base)) {
+                                const allowedPerms = [];
+                                const usedIdx = [];
+                                for (let u = 0; u < base.length; u++) usedIdx.push(false);
+                                const curPerm = [];
+                                const walkPerm = function () {
+                                    if (curPerm.length === base.length) {
+                                        const cand = curPerm.map(function (k) { return base[k]; });
+                                        if (!bsIsForbiddenFor(cand, base)) allowedPerms.push(curPerm.slice());
+                                        return;
+                                    }
+                                    for (let u = 0; u < base.length; u++) {
+                                        if (usedIdx[u]) continue;
+                                        usedIdx[u] = true;
+                                        curPerm.push(u);
+                                        walkPerm();
+                                        curPerm.pop();
+                                        usedIdx[u] = false;
+                                    }
+                                };
+                                walkPerm();
+                                if (!allowedPerms.length) {
+                                    bsBaseDigits = base.slice();
+                                    bsPerm = null;
+                                    bsShuffled = false;
+                                    bsSetRandomShown(false);
+                                    return;
+                                }
+                                perm = allowedPerms[Math.floor(Math.random() * allowedPerms.length)].slice();
+                                shuffledDigits = perm.map(function (k) { return base[k]; });
                             }
                             bsPerm = perm;                 // NHớ hoán vị để lát nữa vẽ lại vẫn giữ
                             bsBaseDigits = base.slice();
@@ -7643,6 +7793,7 @@ body {
                     loadBoardLocal();
                     try { syncHistory500FromSources(true); } catch(e){}
                     try { refreshBigSmall(); } catch(e){}
+                    try { bsRenderCustomForbiddenButton(); } catch(e){}
                     renderCellHistory();         // vẽ ô lịch sử SAU khi đã nạp kho 5000 trang + bảng
                     // khôi phục "Số ô nhập" đã chọn (mặc định 4 ô)
                     try {
@@ -7763,4 +7914,4 @@ body {
                         });
                 </script>
    
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
