@@ -1566,7 +1566,7 @@ body {
                         <div class="gon-hide" style="display:none!important">
                             <label style="font-size:11px;color:#e9d5ff;font-weight:bold">Số ô nhập:</label>
                             <span class="dd-wrap">
-                                <button type="button" class="dd-btn" id="segLenBtn">4 ô ▾</button>
+                                <button type="button" class="dd-btn" id="segLenBtn">3 ô ▾</button>
                                 <div class="dd-list" id="segLenList" style="display:none">
                                     <div class="dd-item" data-val="2">2 ô</div>
                                     <div class="dd-item" data-val="3">3 ô</div>
@@ -1577,12 +1577,12 @@ body {
                             </span>
                             <select id="segLen" class="dd-hidden-sel" onchange="onSegLenChange()">
                                 <option value="2">2 ô</option>
-                                <option value="3">3 ô</option>
-                                <option value="4" selected>4 ô</option>
+                                <option value="3" selected>3 ô</option>
+                                <option value="4">4 ô</option>
                                 <option value="5">5 ô</option>
                                 <option value="6">6 ô</option>
                             </select>
-                            <span id="segLenInfo" style="font-size:10px;color:#94a3b8">→ đoạn 9 số (4 số đầu nhập + 5 số phía sau)</span>
+                            <span id="segLenInfo" style="font-size:10px;color:#94a3b8">→ đoạn 9 số (3 số đầu nhập + 6 số phía sau)</span>
                         </div>
                         <div class="gon-hide" style="display:none!important">
                             <label style="font-size:11px;color:#e9d5ff;font-weight:bold">Sắp xếp kết quả:</label>
@@ -1603,8 +1603,8 @@ body {
                         </div>
                         <div class="gon-hide" style="display:none!important">🔎 Nhập các số đầu:</div>
                         <div id="takeLatestRow">
-                            <button type="button" id="btnTakeLatest4" onclick="lay4SoMoiNhat(this)" title="Lấy 4 kết quả mới nhất trong game điền vào 4 ô nhập">⚡ Lấy 4 số mới nhất</button>
-                            <button type="button" id="btnTakeLatest4Status" class="take-status is-wait" disabled aria-live="polite" title="Dấu hiệu đã lấy 4 số thành công">○ Chưa lấy</button>
+                            <button type="button" id="btnTakeLatest4" onclick="lay4SoMoiNhat(this)" title="Lấy 3 kết quả mới nhất trong game điền vào 3 ô nhập">⚡ Lấy 3 số mới nhất</button>
+                            <button type="button" id="btnTakeLatest4Status" class="take-status is-wait" disabled aria-live="polite" title="Dấu hiệu đã lấy 3 số thành công">○ Chưa lấy</button>
                         </div>
                         <div id="segInputs" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
                         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px">
@@ -1641,11 +1641,11 @@ body {
                             <div id="pgStat"></div>
                         </div>
                         <div id="segBsWrap">
-                            <div class="bs-title" id="segBsTitle">🔢 LỚN / NHỎ — 5 số CUỐI BẢNG (mới nhất)</div>
+                            <div class="bs-title" id="segBsTitle">🔢 LỚN / NHỎ — 6 số CUỐI BẢNG (mới nhất)</div>
                             <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
                                 <span id="segBigSmall" style="display:flex;gap:8px"></span>
                                 <button type="button" id="bsShuffleBtn" onclick="bsShuffle()"
-                                        title="Xáo trộn thứ tự 5 ô 0-1">🔀 Random</button>
+                                        title="Xáo trộn thứ tự 6 ô 0-1">🔀 Random</button>
                             </div>
                             <div id="segBsNote" style="font-size:10px;color:#94a3b8;margin-top:6px"></div>
                             <div id="segBsLabel" style="display:none"></div>
@@ -1655,7 +1655,7 @@ body {
                             <div class="bet-chip-row bet-multiple-row" id="betMultipleRow"></div>
                             <button type="button" id="btnPlaceBet" disabled>Chọn Lớn hoặc Nhỏ</button>
                             <button type="button" id="btnBsForbiddenPassword" onclick="bsEditCustomForbidden()" title="Nhập mật khẩu để thêm dãy random muốn loại">🔐 Nhập mật khẩu · Loại random (0)</button>
-                            <button type="button" id="btnAutoBet" title="Chạy 10 phút, nghỉ 5 phút, lặp lại và tự dừng sau 10 tiếng">▶ START</button>
+                            <button type="button" id="btnAutoBet" title="Chạy 15 phút, nghỉ 2 phút, lặp lại và tự dừng sau 10 tiếng">▶ START</button>
                             <div id="betPlaceStatus" class="bet-status" aria-live="polite">--</div>
                         </div>
                         <div class="gon-hide" style="display:none!important">
@@ -2142,7 +2142,7 @@ body {
                         try { if (deadToken === tok) deadToken = ''; } catch (e) {}
                         try { if (gtxSessionDeadToken === tok) gtxSessionDeadToken = ''; } catch (e) {}
                         if (opts.syncFirebase) {
-                            try { if (fbDB && !applyingRemote) writeToFirebase(); } catch (e) {}
+                            try { if (fbDB && !applyingRemote) syncAuthBundleToFirebase(); } catch (e) {}
                         }
                         return tok;
                     }
@@ -2189,7 +2189,7 @@ body {
                         try { gtxSessionDeadToken = ''; gtxNeedsToken = true; } catch (e) {}
                         if (fbDB && !applyingRemote) {
                             fbDB.collection(FB_COLLECTION).doc(FB_DOC).set(
-                                { token: '', lastTokenAt: Date.now() },
+                                { token: '', refreshToken: '', tokenHeader: '', tokenUpdatedAt: Date.now(), lastTokenAt: Date.now() },
                                 { merge: true }
                             ).catch(err => console.log('[FB] Lỗi xoá token:', err.message));
                         }
@@ -2596,12 +2596,30 @@ body {
                         searchPattern();
                     }
                     
+                    // 🔐 DONG BO CA GOI TOKEN len Firebase: access token + refreshToken + tokenHeader
+                    // trong CUNG 1 lan ghi (kem tokenUpdatedAt) de may/tab khac nhan duoc NGUYEN CAP
+                    // token da duoc RefreshToken xoay vong. Ham nay CHI ghi goi token (rat nhe) nen
+                    // van chay duoc ngay ca khi dang tai hang loat (bulkLoadMode) - khac writeToFirebase.
+                    async function syncAuthBundleToFirebase() {
+                        if (!fbDB || applyingRemote) return;
+                        try {
+                            await fbDB.collection(FB_COLLECTION).doc(FB_DOC).set({
+                                token: currentToken || getToken(),
+                                refreshToken: getRefreshToken() || '',
+                                tokenHeader: getTokenHeader(),
+                                tokenUpdatedAt: localTokenStoredAt || 0,
+                                lastUpdated: Date.now()
+                            }, { merge: true });
+                        } catch (e) {}
+                    }
                     async function writeToFirebase() {
                         if (!fbDB || bulkLoadMode) return;   // đang tải hàng loạt: đồng bộ 1 lần khi xong
                         try {
                             await fbDB.collection(FB_COLLECTION).doc(FB_DOC).set({
                                 token: currentToken || getToken(),
                                 tokenUpdatedAt: localTokenStoredAt || 0,
+                                refreshToken: getRefreshToken() || '',
+                                tokenHeader: getTokenHeader(),
                                 lastUpdated: Date.now(),
                                 board: {
                                     lastIssue: lastInsertedIssue || null,
@@ -2619,8 +2637,12 @@ body {
                         if (!d) return;
                         applyingRemote = true;
                         try {
-                            if ('token' in d) {
+                            if ('token' in d || 'refreshToken' in d || 'tokenHeader' in d) {
                                 const tok = extractToken(d.token);
+                                const remoteRefresh = cleanAuthSecret(d.refreshToken || '');
+                                const remoteHeader = normalizeTokenHeader(d.tokenHeader || '');
+                                const hasRemoteHeader = !!String(d.tokenHeader || '').trim();
+                                const localRefresh = getRefreshToken();
                                 const localTok = extractToken(currentToken || '');
                                 const remoteTokenAt = Number(d.tokenUpdatedAt || 0) || 0;
                                 const localRecentToken = !!localTok && !!localTokenStoredAt && (Date.now() - localTokenStoredAt < 5 * 60 * 1000);
@@ -2647,9 +2669,42 @@ body {
                                                 else localStorage.removeItem('vn168_token');
                                             } catch (e) {}
                                         }
+                                        // 🔐 Nhan CA GOI: refreshToken/tokenHeader di cung DUNG access token nay.
+                                        // Khong con canh access moi + refresh CU (nguyen nhan chet token sau vai phut).
+                                        if (remoteRefresh) {
+                                            memoryRefreshToken = remoteRefresh;
+                                            if (remember && remember.checked) {
+                                                try { localStorage.setItem(LS_REFRESH_TOKEN, remoteRefresh); } catch (e) {}
+                                            }
+                                        } else if (!tok) clearStoredRefreshToken();
+                                        if (hasRemoteHeader) {
+                                            memoryTokenHeader = remoteHeader;
+                                            if (remember && remember.checked) {
+                                                try { localStorage.setItem(LS_TOKEN_HEADER, remoteHeader); } catch (e) {}
+                                            }
+                                        } else if (!tok) {
+                                            memoryTokenHeader = '';
+                                            try { localStorage.removeItem(LS_TOKEN_HEADER); } catch (e) {}
+                                        }
                                         if (tok) {
                                             autoStartBulkLoad('token đồng bộ từ Firebase');
                                             setTimeout(function () { try { refreshGameWallet(true); } catch (e) {} }, 500);
+                                        }
+                                    }
+                                }
+                                // Cung 1 access token nhung may nay CHUA co refreshToken (vd truoc day chi nhan
+                                // access token tu ban cu): bo sung refresh/header tu Firebase de bat tu gia han.
+                                if (!ignoreRemoteToken && tok && tok === localTok && remoteRefresh && remoteRefresh !== localRefresh
+                                    && (remoteTokenAt > localTokenStoredAt || !localRefresh)) {
+                                    memoryRefreshToken = remoteRefresh;
+                                    if (hasRemoteHeader) memoryTokenHeader = remoteHeader;
+                                    localTokenStoredAt = remoteTokenAt || localTokenStoredAt;
+                                    try { localStorage.setItem(LS_TOKEN_AT, String(localTokenStoredAt)); } catch (e) {}
+                                    const remember2 = document.getElementById('rememberToken');
+                                    if (remember2 && remember2.checked) {
+                                        try { localStorage.setItem(LS_REFRESH_TOKEN, remoteRefresh); } catch (e) {}
+                                        if (hasRemoteHeader) {
+                                            try { localStorage.setItem(LS_TOKEN_HEADER, remoteHeader); } catch (e) {}
                                         }
                                     }
                                 }
@@ -3492,7 +3547,8 @@ body {
                         });
                     }
                     const BET_DEFAULT_COIN = 1000;
-                    const BET_MULTIPLES_CUSTOM = [1, 3, 9, 27, 81];
+                    const BET_MULTIPLES_CUSTOM = [1, 2, 5, 8, 24, 72];   // 6 muc cuoc theo luot random 6 o
+                    const BET_PATTERN_LEN = BET_MULTIPLES_CUSTOM.length;   // so o random 0/1 moi luot (= 6, phai khop BS_LEN)
                     const BET_CLOSE_SECONDS = 5;
                     let betMultiples = BET_MULTIPLES_CUSTOM.slice();
                     let betSel = null;
@@ -3508,8 +3564,8 @@ body {
                     let betStatusMsg = '';
                     let betStatusKind = '';
                     let betPanelReady = false;
-                    const BET_AUTO_RUN_MS = 10 * 60 * 1000;
-                    const BET_AUTO_REST_MS = 5 * 60 * 1000;
+                    const BET_AUTO_RUN_MS = 15 * 60 * 1000;
+                    const BET_AUTO_REST_MS = 2 * 60 * 1000;
                     const BET_AUTO_CYCLE_MS = BET_AUTO_RUN_MS + BET_AUTO_REST_MS;
                     const BET_AUTO_TOTAL_MS = 10 * 60 * 60 * 1000;
                     let betAuto = {
@@ -3602,7 +3658,7 @@ body {
                         return 'Đã hết 10 tiếng · đã đặt ' + betAuto.placedCount + ' lệnh';
                     }
                     function betRenderAutoDuration() {
-                        // START dùng chu kỳ cố định 10 phút chạy / 5 phút nghỉ trong 10 tiếng.
+                        // START dùng chu kỳ cố định 15 phút chạy / 2 phút nghỉ trong 10 tiếng.
                     }
                     function betRenderChips() {
                         const multipleRow = document.getElementById('betMultipleRow');
@@ -3874,11 +3930,11 @@ body {
                             const tx = String(cells[i].textContent || '').trim();
                             if (tx === '0' || tx === '1') vals.push(Number(tx));
                         }
-                        return vals.length === 5 ? vals : [];
+                        return vals.length === BET_PATTERN_LEN ? vals : [];
                     }
                     function betAutoPatternInfo() {
                         const pattern = betAutoReadPattern();
-                        if (pattern.length !== 5) return { pattern: [], key: '' };
+                        if (pattern.length !== BET_PATTERN_LEN) return { pattern: [], key: '' };
                         let src = '';
                         try {
                             src = [bsTopIssue || '', (bsBaseDigits || []).join(''), (bsCurDigits || []).join('')].join('|');
@@ -3891,7 +3947,7 @@ body {
                         const info = betAutoCycleInfo(now);
                         const phaseRemain = betAutoFormatClock(info.phaseRemainMs);
                         const totalRemain = betAutoFormatClock(info.totalRemainMs);
-                        const total = betAuto.pattern.length || 5;
+                        const total = betAuto.pattern.length || BET_PATTERN_LEN;
                         if (info.phase === 'rest') {
                             if (betAuto.pending) {
                                 return 'Đang nghỉ · chờ kết quả kỳ ' + gtxShortIssue(betAuto.pending.issue)
@@ -3907,7 +3963,7 @@ body {
                                 + ' · chạy lại sau ' + phaseRemain + ' · tổng còn ' + totalRemain;
                         }
                         if (betAuto.pending) {
-                            return 'Tự động · đã đặt ô ' + (betAuto.pending.index + 1) + '/5 · chờ kết quả kỳ '
+                            return 'Tự động · đã đặt ô ' + (betAuto.pending.index + 1) + '/' + total + ' · chờ kết quả kỳ '
                                 + gtxShortIssue(betAuto.pending.issue) + ' · pha chạy còn ' + phaseRemain
                                 + ' · tổng còn ' + totalRemain;
                         }
@@ -3942,12 +3998,12 @@ body {
                             btn.classList.remove('is-resting');
                             btn.disabled = true;
                             btn.textContent = 'ĐANG CHUẨN BỊ...';
-                            btn.title = 'Đang chuẩn bị chu kỳ 10 phút chạy / 5 phút nghỉ trong 10 tiếng';
+                            btn.title = 'Đang chuẩn bị chu kỳ 15 phút chạy / 2 phút nghỉ trong 10 tiếng';
                         } else {
                             btn.classList.remove('is-resting');
                             btn.disabled = !!betPlacing;
                             btn.textContent = '▶ START';
-                            btn.title = 'Chạy 10 phút, nghỉ 5 phút, lặp lại và tự dừng sau 10 tiếng';
+                            btn.title = 'Chạy 15 phút, nghỉ 2 phút, lặp lại và tự dừng sau 10 tiếng';
                         }
                     }
                     function betAutoCurrent(sessionId) {
@@ -4001,11 +4057,11 @@ body {
                         if (!betAutoCurrent(sessionId) || !betAuto.waitingPattern) return false;
                         if (betAutoIsResting()) { betAutoUpdateStatus(true); return false; }
                         try {
-                            // Chờ lấy 4 số xong hẳn mới chốt lượt random mới, tránh đọc dãy đang cập nhật dở.
+                            // Chờ lấy 3 số xong hẳn mới chốt lượt random mới, tránh đọc dãy đang cập nhật dở.
                             if (typeof takeLatest4Busy !== 'undefined' && takeLatest4Busy) return false;
                         } catch (e) {}
                         const info = betAutoPatternInfo();
-                        if (info.pattern.length === 5 && info.key && info.key !== betAuto.lastPatternKey) {
+                        if (info.pattern.length === BET_PATTERN_LEN && info.key && info.key !== betAuto.lastPatternKey) {
                             betAuto.pattern = info.pattern.slice();
                             betAuto.patternKey = info.key;
                             betAuto.lastPatternKey = info.key;
@@ -4061,14 +4117,14 @@ body {
                             betSetStatus('Thắng kỳ ' + issueShort + ' · chờ lượt random mới', 'ok');
                         } else if (pending.index + 1 >= betAuto.pattern.length) {
                             betAutoEnterWaitingPattern('lose');
-                            betSetStatus('Thua ô 5/5 kỳ ' + issueShort + ' · chờ lượt random mới', 'err');
+                            betSetStatus('Thua ô ' + (pending.index + 1) + '/' + BET_PATTERN_LEN + ' kỳ ' + issueShort + ' · chờ lượt random mới', 'err');
                         } else {
                             betAuto.lastOutcome = 'lose';
                             betAuto.index = pending.index + 1;
                             betAuto.count = betAutoLevelForIndex(betAuto.index);
                             betCount = betAuto.count;
                             betSel = betAutoChoice(betAuto.pattern[betAuto.index]);
-                            betSetStatus('Thua kỳ ' + issueShort + ' · sang ô ' + (betAuto.index + 1) + '/5 · '
+                            betSetStatus('Thua kỳ ' + issueShort + ' · sang ô ' + (betAuto.index + 1) + '/' + (betAuto.pattern.length || BET_PATTERN_LEN) + ' · '
                                 + gtxFmtMoney(betAuto.coin * betAuto.count), 'err');
                         }
                         betRender();
@@ -4161,10 +4217,10 @@ body {
                         try {
                             let takeBusyAtStart = false;
                             try { takeBusyAtStart = (typeof takeLatest4Busy !== 'undefined' && !!takeLatest4Busy); } catch (e) {}
-                            if (pattern.length !== 5 || takeBusyAtStart) {
+                            if (pattern.length !== BET_PATTERN_LEN || takeBusyAtStart) {
                                 betSetStatus(takeBusyAtStart
-                                    ? 'Đang chờ lấy 4 số mới nhất xong để tạo lượt random...'
-                                    : 'Đang tự bấm “Lấy 4 số mới nhất” để tạo 5 ô random...');
+                                    ? 'Đang chờ lấy 3 số mới nhất xong để tạo lượt random...'
+                                    : 'Đang tự bấm “Lấy 3 số mới nhất” để tạo 6 ô random...');
                                 if (!takeBusyAtStart) betAutoTriggerTakeLatest();
                                 let sawTakeBusy = takeBusyAtStart;
                                 const takeStartedAt = Date.now();
@@ -4174,11 +4230,11 @@ body {
                                     if (takeBusy) sawTakeBusy = true;
                                     patternInfo = betAutoPatternInfo();
                                     pattern = patternInfo.pattern;
-                                    if (!takeBusy && (pattern.length === 5 || sawTakeBusy || Date.now() - takeStartedAt > 700)) break;
+                                    if (!takeBusy && (pattern.length === BET_PATTERN_LEN || sawTakeBusy || Date.now() - takeStartedAt > 700)) break;
                                     await new Promise(function (resolve) { setTimeout(resolve, 120); });
                                 }
-                                if (pattern.length !== 5) {
-                                    betSetStatus('Chưa lấy được 5 ô random để tự đặt', 'err');
+                                if (pattern.length !== BET_PATTERN_LEN) {
+                                    betSetStatus('Chưa lấy được ' + BET_PATTERN_LEN + ' ô random để tự đặt', 'err');
                                     return false;
                                 }
                             }
@@ -4208,9 +4264,9 @@ body {
                             const maxRound = BET_MULTIPLES_CUSTOM.reduce(function (sum, v) { return sum + v; }, 0) * BET_DEFAULT_COIN;
                             const text = 'TỰ ĐỘNG THEO LƯỢT RANDOM?\n'
                                 + seq + '\n\n'
-                                + 'Thua: sang ô tiếp theo và tăng mức 1k → 3k → 9k → 27k → 81k.\n'
+                                + 'Thua: sang ô tiếp theo và tăng mức 1k → 2k → 5k → 8k → 24k → 72k.\n'
                                 + 'Thắng: bỏ các ô còn lại, chờ lượt random mới và quay về 1k.\n'
-                                + 'Một lượt thua hết tối đa ' + gtxFmtMoney(maxRound) + '. Chu kỳ: chạy 10 phút, nghỉ 5 phút, lặp lại và tự dừng sau 10 tiếng.\n\n'
+                                + 'Một lượt thua hết tối đa ' + gtxFmtMoney(maxRound) + '. Chu kỳ: chạy 15 phút, nghỉ 2 phút, lặp lại và tự dừng sau 10 tiếng.\n\n'
                                 + 'Bấm OK để app tự đặt cược thật.';
                             let confirmed = false;
                             try { confirmed = !!window.confirm(text); } catch (e) {}
@@ -5179,10 +5235,10 @@ body {
                     
                     /* ===== ☁️ CHỈ MỨC ĐOẠN SỐ TRÊN FIREBASE — TRA TRỰC TIẾP, KHÔNG CẦN TẢI KHO VỀ =====
                        • doc "meta"    : 20 số cuối cùng (mới→cũ) + quy mô kho  (~100 byte)
-                       • doc "p_XX"    : mỗi cặp 2 số đầu → các đoạn 11 số (mới nhất trước)
+                       • doc "p_XX"    : mỗi cặp 2 số đầu → các đoạn 12 số (mới nhất trước)
                        → tra 1 đoạn = đọc ĐÚNG 1 doc nhỏ. Không kéo cả kho (hàng chục MB) về nữa. */
                     const FB_SEGIDX_COL = 'vn168_segidx';
-                    const FB_SEG_MAXDIGITS = 11;      // 6 ô nhập + 5 số phía sau
+                    const FB_SEG_MAXDIGITS = 12;      // 6 ô nhập + 6 số phía sau
                     const FB_SEG_PER_PREFIX = 200;    // đoạn mới nhất lưu cho mỗi cặp 2 số
                     const FB_SEG_REBUILD_EVERY = 1000;   // dựng lại chỉ mục khi kho thêm ~1000 kỳ (đỡ tốn lượt ghi)
                     let fbSegIdxSig = {};             // chữ ký doc đã ghi → khỏi ghi lại
@@ -5740,7 +5796,7 @@ body {
                     }
                     // Tìm mọi đoạn 5 số liên tiếp có 2 số đầu = d1, d2 (trả về mới nhất trước)
                     /* ===== SỐ Ô NHẬP: 2..6 (mỗi ô 1 chữ số 0-9), đoạn = (số ô) + 5 số phía sau ===== */
-                    const SEG_TAIL = 5;   // hiện 5 số phía sau phần nhập
+                    const SEG_TAIL = 6;   // hiện 6 số phía sau phần nhập
                     function segPrefixLen() {
                         const el = document.getElementById('segLen');
                         let n = parseInt(el && el.value, 10);
@@ -5765,7 +5821,7 @@ body {
                          vd 5 6 8 0 3 → 3 lớn / 2 nhỏ → "0 0 1 1 1"
                        (số 5 tính là LỚN, giống cột Tài/Xỉu trong bảng dữ liệu kho)
                        LUÔN 5 Ô — lấy 5 số MỚI NHẤT (được từ BẢNG, tự đổi mỗi kỳ), KHÔNG phụ thuộc số ô nhập */
-                    const BS_LEN = 5;
+                    const BS_LEN = 6;   // day random LON/NHO 6 o (phai khop BET_PATTERN_LEN)
                     let bsSrc = '';        // nguồn số đang dùng
                     let bsTopIssue = '';   // ID kỳ cao nhất đang được dùng (khi lấy từ bảng kết quả)
                     let bsPinned = false;  // đang "ghim" theo bảng kết quả → vòng 3s KHÔNG ghi đè
@@ -5795,7 +5851,8 @@ body {
                     /* 🚫 4 KIỂU BỊ CẤM: random ra 1 trong 4 kiểu dưới đây thì TỰ RANDOM LẠI
                        cho tới khi ra kiểu KHÁC (đây là đúng 4 kiểu 'gom nhóm' chưa xáo):
                          1-0-0-0-0 · 0-1-1-1-1 · 0-0-1-1-1 · 1-1-0-0-0 */
-                    const BS_FORBIDDEN = ['10000', '01111', '00111', '11000'];
+                    const BS_FORBIDDEN = ['100000', '011111', '110000', '001111', '111000', '000111'];   // cac kieu 'gom nhom' cua day 6 o
+                    const BS_PAT_RE = new RegExp('^[01]{' + BS_LEN + '}$');
                     const BS_CUSTOM_FORBIDDEN_KEY = 'vn168_bs_custom_forbidden_v1';
                     const BS_CUSTOM_FORBIDDEN_PASSWORD = '123456';
                     function bsNormalizeCustomForbidden(values) {
@@ -5804,7 +5861,7 @@ body {
                         const list = values || [];
                         for (let i = 0; i < list.length; i++) {
                             const clean = String(list[i] || '').replace(/-/g, '').trim();
-                            if (!/^[01]{5}$/.test(clean)) continue;
+                            if (!BS_PAT_RE.test(clean)) continue;
                             if (BS_FORBIDDEN.indexOf(clean) !== -1 || seen.has(clean)) continue;
                             seen.add(clean);
                             out.push(clean);
@@ -5860,7 +5917,7 @@ body {
                         for (let i = 0; i < tokens.length; i++) {
                             const raw = tokens[i];
                             const clean = String(raw || '').replace(/-/g, '').trim();
-                            if (!/^[01]{5}$/.test(clean)) { invalid.push(raw); continue; }
+                            if (!BS_PAT_RE.test(clean)) { invalid.push(raw); continue; }
                             if (BS_FORBIDDEN.indexOf(clean) !== -1) {
                                 if (!seenFixed.has(clean)) { seenFixed.add(clean); fixedAlready.push(clean); }
                             } else if (!seenValid.has(clean)) {
@@ -5872,18 +5929,20 @@ body {
                     }
                     function bsCustomForbiddenLeavesOption(customList) {
                         const custom = bsNormalizeCustomForbidden(customList);
-                        const byOnes = { 1: [], 2: [], 3: [], 4: [] };
-                        for (let mask = 1; mask < 31; mask++) {
+                        const byOnes = {};
+                        for (let k0 = 1; k0 < BS_LEN; k0++) byOnes[k0] = [];
+                        const maxMask = (1 << BS_LEN) - 1;
+                        for (let mask = 1; mask < maxMask; mask++) {
                             let ones = 0;
                             let pat = '';
-                            for (let pos = 4; pos >= 0; pos--) {
+                            for (let pos = BS_LEN - 1; pos >= 0; pos--) {
                                 const bit = (mask >> pos) & 1;
                                 ones += bit;
                                 pat += bit ? '1' : '0';
                             }
                             if (byOnes[ones]) byOnes[ones].push(pat);
                         }
-                        for (let k = 1; k <= 4; k++) {
+                        for (let k = 1; k < BS_LEN; k++) {
                             const patterns = byOnes[k];
                             for (let i = 0; i < patterns.length; i++) {
                                 const source = patterns[i];
@@ -5932,8 +5991,8 @@ body {
                             return false;
                         }
                         const current = bsCustomForbidden.join(', ');
-                        const promptText = 'Nhập các dãy random 5 ô muốn LOẠI, cách nhau bằng dấu phẩy.\n'
-                            + 'Ví dụ: 10101, 01010, 10010\n\n'
+                        const promptText = 'Nhập các dãy random 6 ô muốn LOẠI, cách nhau bằng dấu phẩy.\n'
+                            + 'Ví dụ: 101010, 010101, 100100\n\n'
                             + 'Đã cấm cố định sẵn: ' + BS_FORBIDDEN.join(', ') + '\n'
                             + 'Để trống = xoá toàn bộ danh sách tự thêm.';
                         let text = null;
@@ -5944,7 +6003,7 @@ body {
                         }
                         const parsed = bsParseCustomForbiddenText(text);
                         if (parsed.invalid.length) {
-                            bsCustomStatus('Dãy không hợp lệ: ' + parsed.invalid.join(', ') + ' · mỗi dãy phải đúng 5 ký tự 0/1', 'err');
+                            bsCustomStatus('Dãy không hợp lệ: ' + parsed.invalid.join(', ') + ' · mỗi dãy phải đúng ' + BS_LEN + ' ký tự 0/1', 'err');
                             return false;
                         }
                         const leaves = bsCustomForbiddenLeavesOption(parsed.valid);
@@ -6060,7 +6119,7 @@ body {
                                 html += '<span class="bs-cell ' + (v ? 'lon' : 'nho') + '" title="'
                                       + (v ? 'LỚN (5-9)' : 'NHỎ (0-4)') + '">' + v + '</span>';
                             } else {
-                                html += '<span class="bs-cell bs-empty" title="chưa đủ 5 số">·</span>';
+                                html += '<span class="bs-cell bs-empty" title="chưa đủ ' + bsCount() + ' số">·</span>';
                             }
                         }
                         box.innerHTML = html;
@@ -6091,7 +6150,7 @@ body {
                                                            : 'Nhỏ ít hơn → 0 đứng trước')))))
                                + (bsAdded === null ? ''
                                   : ('  ·  🔁 ĐỔI 1 số thành ' + (bsAdded ? '1 (LỚN)' : '0 (NHỎ)')
-                                     + ' vì 5 số gốc toàn ' + (bsAdded ? 'NHỎ (<5)' : 'LỚN (≥5)')))
+                                     + ' vì ' + bsCount() + ' số gốc toàn ' + (bsAdded ? 'NHỎ (<5)' : 'LỚN (≥5)')))
                                + (bsShuffled ? '  ·  🔀 đã xáo' : ''))
                             : '· chưa có số trong kho ·';
                     }
@@ -6293,7 +6352,7 @@ body {
                        Điền xong: copy xuống 4 ô copy + tra đoạn luôn (1 dòng kết quả + 5 ô tự random),
                        và GIỮ NGUYÊN số trong 4 ô nhập để nhìn thấy số vừa lấy. */
                     /* 🔘 Nút trạng thái riêng (nút thứ 2): chỉ để báo đã lấy 4 số thành công hay chưa.
-                       Nút bấm chính luôn giữ nguyên chữ '⚡ Lấy 4 số mới nhất'. */
+                       Nút bấm chính luôn giữ nguyên chữ '⚡ Lấy 3 số mới nhất'. */
                     function setTakeLatest4Status(state) {
                         try {
                             const el = document.getElementById('btnTakeLatest4Status');
@@ -6310,13 +6369,13 @@ body {
                         if (takeLatest4Busy) return false;
                         takeLatest4Busy = true;
                         const button = document.getElementById('btnTakeLatest4') || btn;
-                        const BTN_TEXT = '⚡ Lấy 4 số mới nhất';
+                        const BTN_TEXT = '⚡ Lấy 3 số mới nhất';
                         let filled = false;
                         if (button) { button.disabled = true; button.textContent = BTN_TEXT; }
                         setTakeLatest4Status('loading');
                         try { refreshGameWallet(true); } catch (e) {}
                         try {
-                            const n = segPrefixLen();   // chế độ gọn đang cố định = 4 ô
+                            const n = segPrefixLen();   // chế độ gọn đang cố định = 3 ô
                             // 1) Lấy kỳ VỪA RƠI từ game trước (nếu có token còn sống).
                             //    Đang có lượt lấy chạy dở (app tự lấy mỗi 1s) thì chờ lượt đó xong;
                             //    tự gọi mới thì chờ tối đa ~4s rồi dùng dữ liệu mới nhất đang có -> bấm là điền ngay, không treo.
@@ -6520,7 +6579,7 @@ body {
                         const info = document.getElementById('segSortInfo');
                         if (!info) return;
                         info.textContent = segSortMode === 'sum'
-                            ? 'Tổng 5 số phía sau lớn nhất trên cùng · trùng thì xếp theo ID kỳ xổ'
+                            ? 'Tổng ' + SEG_TAIL + ' số phía sau lớn nhất trên cùng · trùng thì xếp theo ID kỳ xổ'
                             : (segSortMode === 'value'
                                 ? 'Số lớn nhất trên cùng, số nhỏ nhất dưới · trùng số thì xếp theo ID kỳ xổ'
                                 : 'Kỳ lớn nhất trên cùng, bé dần xuống dưới (theo ID kỳ xổ)');
@@ -6709,7 +6768,7 @@ body {
                             if (!segs.length) {
                                 html += '<div class="ch-empty">Không có đoạn nào — thử dãy số khác hoặc bấm "⬇️ Tải 100 trang".</div>';
                             } else {
-                                html += '<div class="dt-sum">🔎 <b>' + cntRows.length + '</b> dãy 5 số phía sau'
+                                html += '<div class="dt-sum">🔎 <b>' + cntRows.length + '</b> dãy ' + SEG_TAIL + ' số phía sau'
                                     + ' · 🔗 liền kề TRÙNG nhau (từng vị trí cùng < 5 hoặc cùng ≥ 5): <b class="dt-rest">' + soCap + '</b> cặp'
                                     + (chuoiDai >= 2 ? ' · dài nhất ' + chuoiDai + ' cặp liền nhau' : '')
                                     + (segs.length > LIMIT ? ' · chỉ tính trên ' + LIMIT + ' dãy đang hiện' : '')
@@ -7797,9 +7856,9 @@ body {
                     renderCellHistory();         // vẽ ô lịch sử SAU khi đã nạp kho 5000 trang + bảng
                     // khôi phục "Số ô nhập" đã chọn (mặc định 4 ô)
                     try {
-                        const sv2 = 4;   // CHE DO GON: co dinh 4 o nhap (khong dung lua chon da luu)
+                        const sv2 = 3;   // CHE DO GON: co dinh 3 o nhap (khong dung lua chon da luu)
                         const sel2 = document.getElementById('segLen');
-                        if (sel2) sel2.value = '4';   // CHE DO GON: luon 4 o nhap + 4 o copy
+                        if (sel2) sel2.value = '3';   // CHE DO GON: luon 3 o nhap + 3 o copy
                     } catch(e){}
                     try { renderSegInputs(false); } catch(e){}
                     // khôi phục cách sắp xếp đã lưu (mặc định: số lớn nhất trên cùng)
@@ -7859,14 +7918,14 @@ body {
                         try { d = bsDigitsNewest(); } catch (e) { d = ['LỖI: ' + e.message]; }
                         const box = document.getElementById('segBigSmall');
                         const info = {
-                            'Số ô (luôn 5)': bsCount() + ' ô',
+                            'Số ô': bsCount() + ' ô',
                             'Đã đổi số?': (bsAdded === null ? 'không'
-                                : ('CÓ · đổi 1 số thành ' + bsAdded + (bsAdded ? ' (LỚN, vì 5 số toàn NHỎ <5)' : ' (NHỎ, vì 5 số toàn LỚN ≥5)'))),
+                                : ('CÓ · đổi 1 số thành ' + bsAdded + (bsAdded ? ' (LỚN, vì các số toàn NHỎ <5)' : ' (NHỎ, vì các số toàn LỚN ≥5)'))),
                             'Đang hiện (0/1)': bsCurDigits.join(' ') || '(trống)',
                             'Kho (kỳ)': (typeof gameArchive !== 'undefined') ? gameArchive.length : '(chưa có)',
                             'Bảng (ô có số)': (typeof boardCount !== 'undefined') ? boardCount : '?',
                             'Lịch sử ô (5,10)': (typeof cellHistory !== 'undefined') ? cellHistory.length : '?',
-                            '5 số lấy được': d.join(' ') || '(trống)',
+                            'Các số lấy được': d.join(' ') || '(trống)',
                             'Khung #segBigSmall': box ? (box.innerHTML ? 'đã có nội dung' : 'TRỐNG') : 'KHÔNG THẤY',
                             'Nguồn số': bsSrc || '(chưa có)',
                             'Ghim theo kết quả?': bsPinned ? 'CÓ' : 'không',
@@ -7914,4 +7973,4 @@ body {
                         });
                 </script>
    
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8e73cfb9f220f',t:'MTc5MjUwODU0Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
