@@ -1034,6 +1034,33 @@ body {
 /* Chua co ket qua random tu doan tra duoc -> an han hang 5 o 0/1 */
 #dataTablePanel #segBsWrap { display: none !important; }
 #dataTablePanel #segBsWrap.bs-random-ready { display: block !important; }
+#dataTablePanel #bsFormulaBadge {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  max-width: calc(100% - 16px);
+  margin: 0 auto 7px;
+  padding: 4px 11px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  border: 1px solid rgba(253,224,71,.82);
+  background: linear-gradient(135deg, rgba(88,28,135,.96), rgba(76,29,149,.92) 55%, rgba(49,10,101,.96));
+  color: #fef3c7;
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 950;
+  letter-spacing: .09em;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,.55);
+  box-shadow: 0 4px 12px rgba(0,0,0,.32), 0 0 13px rgba(168,85,247,.26), inset 0 1px 0 rgba(255,255,255,.22);
+}
+#dataTablePanel #bsFormulaBadge[data-formula-mode="2"] {
+  border-color: rgba(103,232,249,.88);
+  background: linear-gradient(135deg, rgba(8,145,178,.96), rgba(3,105,161,.94) 55%, rgba(12,74,110,.97));
+  color: #ecfeff;
+  box-shadow: 0 4px 12px rgba(0,0,0,.32), 0 0 13px rgba(34,211,238,.28), inset 0 1px 0 rgba(255,255,255,.24);
+}
 
 @media (max-width: 520px) {
   #takeLatestRow { gap: 8px; margin-bottom: 12px; }
@@ -2466,6 +2493,28 @@ body {
   transition: transform .18s ease;
 }
 #betWaitOverlay.is-show .bet-wait-card { transform: translateY(0) scale(1); }
+#betWaitBalance {
+  display: inline-flex;
+  max-width: 100%;
+  margin: 0 auto 11px;
+  padding: 7px 13px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid rgba(253,224,71,.52);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(245,158,11,.22), rgba(146,64,14,.20));
+  color: #fef3c7;
+  font-size: clamp(16px, 5vw, 21px);
+  line-height: 1.15;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .2px;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 5px rgba(0,0,0,.48);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 8px 20px rgba(0,0,0,.28);
+}
+#betWaitBalance:not(.is-known) { color: #cbd5e1; border-color: rgba(203,213,225,.34); }
 #betWaitTitle {
   font-size: clamp(19px, 6vw, 28px);
   line-height: 1.12;
@@ -2607,6 +2656,19 @@ body {
   animation: betCycleButtonPulse 1.15s ease-in-out infinite alternate;
 }
 #dataTablePanel #betPlacePanel button#btnAutoCycle.is-stopping { filter: saturate(.72) brightness(.88); animation: none; }
+#dataTablePanel #betPlacePanel button#btnAutoCycle.is-win-auto-start-pending {
+  border-color: rgba(254,240,138,.96) !important;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255,255,255,.34), rgba(255,255,255,0) 42%),
+    linear-gradient(135deg,#ca8a04 0%,#16a34a 58%,#0f766e 100%) !important;
+  box-shadow:
+    0 5px 0 #713f12,
+    0 0 20px rgba(250,204,21,.34),
+    0 11px 22px rgba(0,0,0,.34),
+    inset 0 1px 0 rgba(255,255,255,.38),
+    inset 0 -7px 13px rgba(0,0,0,.24) !important;
+  animation: betCycleButtonPulse 1.15s ease-in-out infinite alternate;
+}
 #dataTablePanel #betPlacePanel button#btnAutoCycle:disabled { cursor: not-allowed; opacity: .55; filter: grayscale(.35) brightness(.78); box-shadow: none; animation: none; }
 /* Khi kỳ còn <= 6s: nút bắt đầu tự chạy bị che mờ/khóa cho tới kỳ mới. */
 #dataTablePanel #betPlacePanel button#btnAutoCycle.is-cycle-closed:disabled {
@@ -3086,6 +3148,229 @@ body {
   filter: grayscale(.52) saturate(.42) brightness(.62) contrast(.94) !important;
 }
 </style>
+<style id="account-lower-frame-style">
+/* Khung trên chỉ giữ số dư + token; đồng hồ chờ chỉ phủ tối khung dưới. */
+#dataTablePanel #accountFrame {
+  position: sticky;
+  top: max(6px, env(safe-area-inset-top));
+  z-index: 999998;
+  display: flex !important;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 10px;
+  padding: 10px;
+  border: 1px solid rgba(250,204,21,.58);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(250,204,21,.16), rgba(250,204,21,0) 42%),
+    linear-gradient(180deg, rgba(35,31,78,.98), rgba(8,13,32,.98));
+  box-shadow:
+    0 14px 32px rgba(0,0,0,.38),
+    0 0 24px rgba(250,204,21,.10),
+    inset 0 1px 0 rgba(255,255,255,.11);
+}
+#dataTablePanel #accountFrame .account-balance-row,
+#dataTablePanel #accountFrame .account-token-row {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+#dataTablePanel #accountFrame #gameBalance {
+  display: flex !important;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none !important;
+  min-width: 0;
+  min-height: 60px;
+  padding: 10px 14px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(253,224,71,.72);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(113,83,10,.96), rgba(52,39,5,.98));
+  color: #fef3c7 !important;
+  font-size: clamp(24px, 7.6vw, 36px) !important;
+  line-height: 1.08;
+  font-weight: 950;
+  letter-spacing: .2px;
+  text-align: center;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 3px 7px rgba(0,0,0,.52);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.34),
+    0 0 22px rgba(250,204,21,.14),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+#dataTablePanel #accountFrame .virtual-bankroll-controls {
+  display: flex;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+#dataTablePanel #accountFrame #virtualCapitalInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 43px;
+  box-sizing: border-box;
+  padding: 7px 11px;
+  border: 1px solid rgba(253,224,71,.55);
+  border-radius: 12px;
+  background: rgba(2,6,23,.92);
+  color: #fef3c7;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 800;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+#dataTablePanel #accountFrame #virtualCapitalInput:focus {
+  border-color: #fde68a;
+  box-shadow: 0 0 0 2px rgba(250,204,21,.22);
+}
+#dataTablePanel #accountFrame button#btnSetVirtualCapital {
+  flex: 0 0 auto;
+  min-width: 96px;
+  min-height: 43px;
+  box-sizing: border-box;
+  padding: 7px 12px;
+  border: 1px solid rgba(110,231,183,.78);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #059669, #065f46);
+  color: #ecfdf5;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.18);
+  -webkit-tap-highlight-color: transparent;
+}
+#dataTablePanel #accountFrame button#btnSetVirtualCapital:active { transform: translateY(1px); }
+#dataTablePanel #accountFrame #virtualBankrollStats {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 2px 4px 0;
+  color: #bfdbfe;
+  font-size: 12.5px;
+  line-height: 1.35;
+  font-weight: 750;
+  text-align: center;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+#dataTablePanel #accountFrame button#btnTokenSetup {
+  display: flex !important;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 47px;
+  padding: 8px 12px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid rgba(148,163,184,.52);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(30,41,59,.96), rgba(8,15,32,.98));
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: clamp(15px, 4.6vw, 19px) !important;
+  line-height: 1.15;
+  font-weight: 950;
+  letter-spacing: .15px;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-tap-highlight-color: transparent;
+}
+#dataTablePanel #accountFrame button#btnTokenSetup.on {
+  border-color: rgba(110,231,183,.82);
+  background: linear-gradient(180deg, rgba(6,95,70,.94), rgba(4,54,42,.98));
+  color: #d1fae5;
+}
+#dataTablePanel #accountFrame button#btnTokenSetup.needs-token {
+  border-color: rgba(254,202,202,.98);
+  background: linear-gradient(180deg, #ef4444, #991b1b);
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(248,113,113,.24), 0 0 22px rgba(220,38,38,.48), inset 0 1px 0 rgba(255,255,255,.30);
+  animation: tokenNeedPulse .8s ease-in-out infinite alternate;
+}
+#dataTablePanel #accountFrame button#btnTokenSetup:active { transform: translateY(1px); }
+#dataTablePanel #accountFrame button#btnTokenSetup:focus-visible {
+  outline: 2px solid #fde68a;
+  outline-offset: 2px;
+}
+#dataTablePanel #lowerAppFrame {
+  position: relative;
+  z-index: auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid rgba(167,139,250,.38);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(15,23,42,.34), rgba(2,6,23,.22));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 12px 28px rgba(0,0,0,.20);
+}
+#dataTablePanel #lowerFrameMeta {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 8px;
+}
+#dataTablePanel #lowerFrameMeta #dataTableCount {
+  display: inline-flex !important;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: 0;
+}
+#betWaitOverlay {
+  top: var(--bet-wait-top, 0px);
+}
+#betWaitOverlay .bet-wait-card {
+  max-height: calc(100dvh - var(--bet-wait-top, 0px) - 36px);
+}
+#betWaitBalance {
+  padding: 10px 18px;
+  border-width: 2px;
+  margin-bottom: 14px;
+  font-size: clamp(25px, 8vw, 36px);
+  line-height: 1.08;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  #dataTablePanel #accountFrame { padding: 8px; border-radius: 16px; gap: 7px; }
+  #dataTablePanel #accountFrame #gameBalance {
+    min-height: 56px;
+    padding: 9px 10px;
+    border-radius: 14px;
+    font-size: clamp(23px, 7.8vw, 32px) !important;
+  }
+  #dataTablePanel #accountFrame button#btnTokenSetup { min-height: 44px; }
+  #dataTablePanel #lowerAppFrame { padding: 6px; border-radius: 17px; }
+  #betWaitBalance { font-size: clamp(24px, 8.4vw, 34px); }
+}
+@media (max-width: 360px) {
+  #betWaitOverlay .bet-wait-card {
+    max-height: calc(100dvh - var(--bet-wait-top, 0px) - 20px);
+  }
+}
+@media (max-width: 340px) {
+  #dataTablePanel #accountFrame #gameBalance { font-size: 22px !important; }
+  #betWaitBalance { font-size: 23px; padding-inline: 12px; }
+}
+</style>
 </head>
 
     <body>
@@ -3111,11 +3396,22 @@ body {
 
                 <!-- 📋 BẢNG DỮ LIỆU GAME + TRA ĐOẠN 5 SỐ -->
                 <div id="dataTablePanel" class="cell-history-panel" style="background:#10131f;border-color:#a78bfa;width:560px;max-width:98%">
-                    <div class="ch-head" style="color:#a78bfa;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px">
-                        <span class="gon-hide" style="display:none!important">📋 Tra đoạn 5 số trong kho</span>
-                        <span id="gameBalance" class="game-balance is-wait" aria-live="polite" title="Số dư ví trong game — bấm để làm mới">Số dư: --</span>
-                        <span class="ch-count" id="dataTableCount">0 kỳ</span>
-                    </div>
+                    <section id="accountFrame" aria-label="Vốn ảo và token lấy số game">
+                        <div class="account-balance-row">
+                            <span id="gameBalance" class="game-balance is-wait" aria-live="polite" title="Vốn ảo lưu trong HTML — bấm để sửa số vốn">Vốn ảo: --</span>
+                        </div>
+                        <div class="virtual-bankroll-controls">
+                            <input id="virtualCapitalInput" type="text" inputmode="decimal" autocomplete="off" value="1000000" aria-label="Số vốn ảo" title="Nhập số vốn ảo, ví dụ 1000000">
+                            <button type="button" id="btnSetVirtualCapital" title="Đặt lại vốn ảo và xoá thống kê/lịch sử ảo cũ">Đặt vốn</button>
+                        </div>
+                        <div id="virtualBankrollStats" aria-live="polite">Vốn ảo trong HTML · không đặt cược tiền thật · trả thắng ×1.96</div>
+                        <div class="account-token-row">
+                            <button type="button" id="btnTokenSetup" title="Token chỉ dùng để lấy kỳ và số kết quả từ game; app không gửi lệnh cược thật">🔑 Nhập token lấy số</button>
+                        </div>
+                    </section>
+                    <section id="lowerAppFrame" aria-label="Lấy số, tra đoạn và đặt cược">
+                    <div id="lowerFrameMeta"><span class="ch-count" id="dataTableCount">0 kỳ</span></div>
+                    <span class="gon-hide" style="display:none!important">📋 Tra đoạn 5 số trong kho</span>
                     <div class="gon-hide" style="display:none!important">
                         <button class="btn-mini" onclick="gameLoad100Pages()" style="background:#1e40af;border-color:#60a5fa;font-weight:bold">⬇️ Tải 100 trang</button>
                         <button class="btn-mini" onclick="clearSegInput()">🔄 Vẽ lại</button>
@@ -3202,6 +3498,7 @@ body {
                         </div>
                         <div id="segBsWrap">
                             <div class="bs-title" id="segBsTitle">🔢 LỚN / NHỎ — 7 số CUỐI BẢNG (mới nhất)</div>
+                            <div id="bsFormulaBadge" data-formula-mode="1" title="Công thức đang dùng cho dãy 7 ô">⚗️ CÔNG THỨC 1</div>
                             <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
                                 <span id="segBigSmall" style="display:flex;gap:8px"></span>
                             </div>
@@ -3209,19 +3506,17 @@ body {
                             <div id="segBsLabel" style="display:none"></div>
                         </div>
                         <div id="betPlacePanel">
-                            <div class="manual-bet-title"><span>🎯 Đặt cược thủ công</span><small>Chọn LỚN/NHỎ → chạm tiền là đặt ngay</small></div>
+                            <div class="manual-bet-title"><span>🎯 Đặt cược ảo</span><small>Tự chạy theo dãy 7 ô · không cược tiền thật</small></div>
                             <div class="bet-issue-row">
                                 <span id="betIssueText">Kỳ: --</span>
                                 <span id="betIssueNote">⏳ Chờ kỳ</span>
-                                <button type="button" id="btnTokenSetup" title="Bấm để dán/cập nhật token game">🔑 Nhập token</button>
                             </div>
                             <div class="bet-bigsmall" id="betBigSmallRow" aria-label="Chọn Lớn hoặc Nhỏ"></div>
                             <div class="bet-chip-row bet-multiple-row" id="betMultipleRow" aria-label="Chạm mức tiền để đặt cược ngay"></div>
                             <div id="betPlaceStatus" class="bet-status" aria-live="polite">--</div>
-                            <button type="button" id="btnAutoCycle" title="Tự bấm LỚN/NHỎ theo ô đang sáng trong dãy 7 ô đã xáo trộn, rồi tự bấm mức cược tương ứng. Thắng thì dừng và quay về 1K; thua ở 180K thì báo chu kỳ thất bại. Bấm lần nữa để dừng.">▶ TỰ CHẠY CHU KỲ</button>
+                            <button type="button" id="btnAutoCycle" title="Tự đặt cược ẢO bằng vốn trong HTML theo ô đang sáng của dãy 7 ô và mức tương ứng. App chỉ dùng số/kỳ của game để tính thắng thua, không gửi lệnh cược thật. Khi thắng, app tự lấy bộ 3 số mới và tự bật lại chu kỳ; thua ở 180K thì báo chu kỳ thất bại. Bấm lần nữa để dừng.">▶ TỰ CHẠY CHU KỲ ẢO</button>
                             <div id="betResultPopupBackdrop" aria-hidden="true"></div>
                             <div id="betResultPopup" aria-live="polite" aria-hidden="true"><div id="betResultPopupTitle">THẮNG</div><div id="betResultPopupDetail"></div></div>
-                            <div id="betWaitOverlay" aria-live="polite" aria-hidden="true"><div class="bet-wait-card"><div id="betWaitTitle">ĐÃ ĐẶT</div><div id="betWaitClock"><span id="betWaitSeconds">--</span><small>GIÂY</small></div><div id="betWaitDetail">Đang chờ kết quả…</div><button type="button" id="betWaitHideBtn" title="Chỉ dùng khi chờ quá lâu để kiểm tra token hoặc mạng">Ẩn tạm để kiểm tra token/mạng</button></div></div>
                             <button type="button" id="btnSleepScreen" title="Giữ app chạy và phủ màn hình đen thay vì bấm nút nguồn tắt màn hình">🌙 MÀN ĐEN GIỮ CHẠY</button>
                             <div id="betSleepOverlay" aria-hidden="true"><div class="bet-sleep-card"><div class="bet-sleep-title">ĐANG CHẠY</div><div id="betSleepStatus">Đang giữ app chạy…</div><div class="bet-sleep-hint">Chạm giữ 1 giây để hiện app</div></div></div>
                         </div>
@@ -3245,14 +3540,16 @@ body {
                         <div id="history500Status" aria-live="polite"></div>
                     </details>
                     <details class="compact-fold" id="betHistoryFold">
-                        <summary><span>🧾 Lịch sử cược WinGo</span><small>Chạm để mở / thu gọn</small></summary>
+                        <summary><span>🧾 Lịch sử cược ảo</span><small>Chạm để mở / thu gọn</small></summary>
                         <div id="gameTxPanel" aria-live="polite">
                             <div class="gtx-section">
-                                <div class="gtx-head"><span>Kết quả cược WinGo</span><span style="display:flex;gap:6px;align-items:center"><span class="gtx-note" id="betTxNote">--</span><button type="button" class="btn-mini" id="btnNetMode" onclick="apiToggleNetMode()" title="">🌐 Trực tiếp</button><button type="button" class="btn-mini" id="btnLoadBet500" onclick="gtxLoadBetHistory500()" title="Tải 500 cược gần nhất từ game">⟳ 500</button></span></div>
+                                <div class="gtx-head"><span>Kết quả cược ảo</span><span style="display:flex;gap:6px;align-items:center"><span class="gtx-note" id="betTxNote">--</span><button type="button" class="btn-mini" id="btnNetMode" onclick="apiToggleNetMode()" title="">🌐 Trực tiếp</button><button type="button" class="btn-mini" id="btnLoadBet500" onclick="gtxLoadBetHistory500()" title="Làm mới tối đa 500 cược ảo lưu trong HTML">⟳ 500 ảo</button></span></div>
                                 <div id="betTxList" class="gtx-list"><div class="gtx-empty">Đang chờ dữ liệu…</div></div>
                             </div>
                         </div>
                     </details>
+                    <div id="betWaitOverlay" aria-live="polite" aria-hidden="true"><div class="bet-wait-card"><div id="betWaitBalance">💰 Vốn ảo: --</div><div id="betWaitTitle">ĐÃ ĐẶT</div><div id="betWaitClock"><span id="betWaitSeconds">--</span><small>GIÂY</small></div><div id="betWaitDetail">Đang chờ kết quả…</div><button type="button" id="betWaitHideBtn" title="Chỉ dùng khi chờ quá lâu để kiểm tra token hoặc mạng">Ẩn tạm để kiểm tra token/mạng</button></div></div>
+                    </section>
                 </div>
 
                 <!-- Các phần tử ẩn cần cho logic JS (không hiện UI) -->
@@ -3616,6 +3913,14 @@ body {
                             else if (typeof parsed === 'string' && !out.token) out.token = extractToken(parsed);
                         } catch (e) {}
                         const jwts = raw.match(/eyJ[A-Za-z0-9\-_]+(?:\.[A-Za-z0-9\-_]+){1,3}/g) || [];
+                        if (!out.refreshToken) {
+                            const rmLabel = raw.match(/refresh[_ ]?token["']?\s*(?:[:=]\s*)?["']?\s*(eyJ[A-Za-z0-9\-_]+(?:\.[A-Za-z0-9\-_]+){1,3})/i);
+                            if (rmLabel) out.refreshToken = cleanAuthSecret(rmLabel[1]);
+                        }
+                        if (!out.token) {
+                            const amLabel = raw.match(/(?:^|[^A-Za-z])(?:access[_ ]?token|token)["']?\s*(?:[:=]\s*)?["']?\s*(eyJ[A-Za-z0-9\-_]+(?:\.[A-Za-z0-9\-_]+){1,3})/i);
+                            if (amLabel) out.token = amLabel[1];
+                        }
                         if (!out.token && jwts.length) out.token = jwts[0];
                         if (!out.refreshToken) {
                             const rm = raw.match(/refresh[_ ]?token["']?\s*[:=]\s*["']?([A-Za-z0-9._\-+/=]+)/i);
@@ -3663,10 +3968,51 @@ body {
                         try { return 'đến ' + new Date(exp).toLocaleTimeString('vi-VN', { hour12: false }); }
                         catch (e) { return 'đến ' + new Date(exp).toISOString(); }
                     }
+                    function refreshTokenInfo(value) {
+                        const refresh = cleanAuthSecret(value === undefined ? getRefreshToken() : value);
+                        if (!refresh) {
+                            return {
+                                present: false,
+                                usable: false,
+                                truncated: false,
+                                expired: false,
+                                expMs: 0,
+                                text: 'thiếu refreshToken'
+                            };
+                        }
+                        const expMs = tokenExpMs(refresh);
+                        const looksJwt = refresh.indexOf('eyJ') === 0;
+                        const parts = refresh.split('.');
+                        const truncated = refresh.indexOf('…') >= 0
+                            || refresh.indexOf('...') >= 0
+                            || (looksJwt && parts.length !== 3)
+                            || (looksJwt && !expMs);
+                        const expired = !!expMs && expMs <= Date.now();
+                        let text = '';
+                        if (truncated) text = 'refreshToken có dấu hiệu bị cắt/không đọc được hạn';
+                        else if (expired) text = 'refreshToken đã hết hạn ' + tokenExpiryText(refresh);
+                        else if (expMs) text = 'refreshToken ' + tokenExpiryText(refresh);
+                        else text = 'refreshToken không rõ hạn';
+                        return {
+                            present: true,
+                            usable: !truncated && !expired,
+                            truncated: truncated,
+                            expired: expired,
+                            expMs: expMs,
+                            text: text
+                        };
+                    }
+                    function hasUsableRefreshToken(value) {
+                        try { return !!refreshTokenInfo(value).usable; }
+                        catch (e) { return !!getRefreshToken(); }
+                    }
                     function refreshErrorSummary(e) {
                         if (!e) return '';
                         if (e.status) return 'HTTP ' + e.status;
-                        if (e.code !== undefined && e.code !== null && e.code !== '') return 'mã ' + e.code;
+                        if (e.code !== undefined && e.code !== null && e.code !== '') {
+                            const msg = String(e.message || '').replace(/\s+/g, ' ').trim();
+                            return 'mã ' + e.code + (msg && msg.indexOf('RefreshToken trả mã') !== 0 ? (': ' + msg.slice(0, 80)) : '');
+                        }
                         if (e.kind === 'net') return 'mất kết nối/CORS';
                         if (e.kind) return String(e.kind);
                         return String(e.message || 'lỗi không rõ').slice(0, 80);
@@ -3732,11 +4078,13 @@ body {
                         const el = document.getElementById('tokenInput');
                         if (!el) return;
                         const bundle = parseAuthBundle(el.value);
+                        const previousSavedToken = extractToken(currentToken || '');
                         currentToken = bundle.token || '';
                         if (!currentToken) { setStatus('⚠️ Ô token đang trống.'); return; }
                         storeAuthBundle(bundle, { syncFirebase: false });
                         if (fbDB && !applyingRemote) writeToFirebase();
-                        setStatus('Đã lưu token ✓ — app TỰ tải nền 5000 trang, không cần bấm nút.');
+                        const saveBundleWarning = gtxAuthBundleWarning(currentToken, bundle, previousSavedToken);
+                        setStatus(saveBundleWarning || 'Đã lưu token ✓ — app TỰ tải nền 5000 trang, không cần bấm nút.');
                         autoStartBulkLoad('saveToken');
                     }
                     
@@ -3775,13 +4123,19 @@ body {
                             const text = await navigator.clipboard.readText();
                             const bundle = parseAuthBundle(text);
                             const tok = bundle.token;
-                            if (tok && tok.indexOf('eyJ') === 0) {
+                            const incomingRefreshInfo = refreshTokenInfo(bundle.refreshToken || '');
+                            let previousClipboardToken = '';
+                            try { previousClipboardToken = extractToken(getToken() || ''); } catch (e) {}
+                            const sameClipboardToken = !!tok && !!previousClipboardToken && tok === previousClipboardToken;
+                            if (tok && tok.indexOf('eyJ') === 0 && (incomingRefreshInfo.usable || (sameClipboardToken && hasUsableRefreshToken()))) {
                                 const el = document.getElementById('tokenInput');
                                 if (el) el.value = text;
                                 storeAuthBundle(bundle, { syncFirebase: false });
                                 if (fbDB && !applyingRemote) writeToFirebase();
                                 setStatus('✓ Đã lấy token từ clipboard!');
                                 autoStartBulkLoad('clipboard');
+                            } else if (tok && tok.indexOf('eyJ') === 0) {
+                                setStatus('⚠️ Clipboard mới có access token, chưa có refreshToken dùng được — chưa lưu để tránh hết hạn sau khoảng 15 phút. Hãy sao chép gói JSON token + refreshToken + tokenHeader.');
                             } else {
                                 setStatus('Clipboard không có token hợp lệ (eyJ...).');
                             }
@@ -3811,7 +4165,7 @@ body {
                             http: 'HTTP ' + (status || '?') + ': 401 = token hết hạn (dán token mới) · 403/429/503 = bị chặn hoặc giới hạn tần suất (chờ vài phút, giảm tốc).',
                             html: 'API trả về TRANG HTML (challenge Cloudflare) → mở trang game thật 1 lần rồi lấy lại token.',
                             json: 'Phản hồi không phải JSON hợp lệ.',
-                            auth: 'Token hết hạn/sai → bấm ô Số dư để dán token mới.'
+                            auth: 'Token hết hạn/sai → bấm “Nhập token lấy số” để dán token mới.'
                         })[kind] || '';
                         return e;
                     }
@@ -4028,10 +4382,12 @@ body {
                     async function apiPost(url, body, opts) {
                         opts = opts || {};
                         const urlText = String(url || '');
-                        const bypassBreaker = urlText === String(CFG.apiBet || '')
-                            || urlText === String(CFG.apiIssue || '')
+                        if (urlText === String(CFG.apiBet || '')
                             || urlText === String(CFG.apiBalance || '')
-                            || urlText === String(CFG.apiMyBets || '')
+                            || urlText === String(CFG.apiMyBets || '')) {
+                            throw apiError('api', 'Chế độ vốn ảo đã tắt endpoint cược thật/ví/lịch sử cược của game', 0);
+                        }
+                        const bypassBreaker = urlText === String(CFG.apiIssue || '')
                             || opts.authMode === 'refresh'
                             || urlText.indexOf('/RefreshToken') >= 0;
                         if (!bypassBreaker && Date.now() < apiCircuitUntil) {
@@ -5057,7 +5413,7 @@ body {
                         const sign = n < 0 ? '-' : '';
                         const a = Math.abs(n);
                         const frac = Math.abs(a - Math.round(a)) > 0.000001;
-                        return sign + '₫' + a.toLocaleString('en-US', {
+                        return sign + a.toLocaleString('en-US', {
                             minimumFractionDigits: frac ? 2 : 0,
                             maximumFractionDigits: 2
                         });
@@ -5137,14 +5493,420 @@ body {
                         const box = document.getElementById(id);
                         return !!(box && box.querySelector('.gtx-row'));
                     }
+                    function gtxSyncWaitBalance(state, amount, title) {
+                        const waitEl = document.getElementById('betWaitBalance');
+                        if (!waitEl) return '';
+                        let balance = state === 'ok' ? gtxParseMoney(amount) : NaN;
+                        if (!Number.isFinite(balance)) {
+                            try { balance = Number(gtxLastBalance); } catch (e) { balance = NaN; }
+                        }
+                        const text = '💰 Vốn ảo: ' + (Number.isFinite(balance) ? gtxFmtMoney(balance) : '--');
+                        if (waitEl.textContent !== text) waitEl.textContent = text;
+                        waitEl.classList.toggle('is-known', Number.isFinite(balance));
+                        waitEl.title = title || 'Vốn ảo lưu trong HTML';
+                        return text;
+                    }
                     function gtxSetBalance(state, amount, title, label) {
+                        try { gtxSyncWaitBalance(state, amount, title); } catch (e) {}
                         const el = document.getElementById('gameBalance');
                         if (!el) return;
                         el.classList.remove('is-wait', 'is-loading', 'is-ok', 'is-err');
                         el.classList.add(state === 'ok' ? 'is-ok' : (state === 'err' ? 'is-err'
                             : (state === 'loading' ? 'is-loading' : 'is-wait')));
-                        el.textContent = label ? String(label) : ('Số dư: ' + (state === 'ok' ? gtxFmtMoney(amount) : '--'));
-                        el.title = title || 'Số dư ví trong game — bấm để làm mới';
+                        el.textContent = label ? String(label) : ('Vốn ảo: ' + (state === 'ok' ? gtxFmtMoney(amount) : '--'));
+                        el.title = title || 'Vốn ảo lưu trong HTML — bấm để sửa số vốn';
+                    }
+                    /* ===== VỐN ẢO TRONG HTML (KHÔNG CƯỢC TIỀN THẬT) =====
+                       App chỉ lấy kỳ + số kết quả của game. Lệnh cược được trừ/cộng
+                       vào vốn lưu ở localStorage và quyết toán theo số game:
+                       0-4 = NHỎ, 5-9 = LỚN, thắng nhận tổng x1.96 (lãi +0.96 lần cược). */
+                    const LS_VIRTUAL_BANKROLL = 'vn168_virtual_bankroll_v1';
+                    const VIRTUAL_DEFAULT_CAPITAL = 1000000;
+                    const VIRTUAL_PAYOUT_MULTIPLIER = 1.96;
+                    let virtualBankroll = null;
+                    let virtualBankrollLoaded = false;
+                    let virtualBankrollAuditScheduled = false;
+                    function vbRoundMoney(v) {
+                        const n = gtxParseMoney(v);
+                        return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
+                    }
+                    function vbDefaultState() {
+                        return {
+                            balance: VIRTUAL_DEFAULT_CAPITAL,
+                            initial: VIRTUAL_DEFAULT_CAPITAL,
+                            totalStaked: 0,
+                            totalReturned: 0,
+                            totalProfit: 0,
+                            wins: 0,
+                            losses: 0,
+                            bets: 0,
+                            ledger: [],
+                            updatedAt: 0
+                        };
+                    }
+                    function vbNormalizeEntry(raw) {
+                        raw = raw || {};
+                        const count = Number(raw.count) || 0;
+                        const total = vbRoundMoney(raw.total || (count * 1000));
+                        const settled = raw.status === 'settled' || raw.win === true || raw.win === false;
+                        return {
+                            oid: String(raw.oid || ''),
+                            issue: String(raw.issue || ''),
+                            bit: Number(raw.bit) === 1 ? 1 : 0,
+                            count: count,
+                            total: total,
+                            placedAt: Number(raw.placedAt) || 0,
+                            deadlineMs: Number(raw.deadlineMs) || 0,
+                            formula: Number(raw.formula) === 2 ? 2 : (Number(raw.formula) === 1 ? 1 : 0),
+                            status: settled ? 'settled' : 'pending',
+                            win: typeof raw.win === 'boolean' ? raw.win : null,
+                            resultNumber: (raw.resultNumber === undefined || raw.resultNumber === null) ? '' : String(raw.resultNumber),
+                            profit: settled ? vbRoundMoney(raw.profit) : 0,
+                            payout: settled ? vbRoundMoney(raw.payout) : 0,
+                            settledAt: Number(raw.settledAt) || 0
+                        };
+                    }
+                    function vbLoad() {
+                        if (virtualBankrollLoaded && virtualBankroll) return virtualBankroll;
+                        virtualBankrollLoaded = true;
+                        let raw = null;
+                        try { raw = JSON.parse(localStorage.getItem(LS_VIRTUAL_BANKROLL) || 'null'); } catch (e) {}
+                        if (!raw || typeof raw !== 'object') {
+                            virtualBankroll = vbDefaultState();
+                            try { vbSave(); } catch (e) {}
+                            return virtualBankroll;
+                        }
+                        let initial = vbRoundMoney(raw.initial);
+                        if (!(initial > 0)) initial = VIRTUAL_DEFAULT_CAPITAL;
+                        let balance = (raw.balance === undefined || raw.balance === null) ? initial : vbRoundMoney(raw.balance);
+                        const ledger = (Array.isArray(raw.ledger) ? raw.ledger : []).map(vbNormalizeEntry)
+                            .filter(function (x) { return !!x.issue && x.count > 0 && x.total > 0; })
+                            .sort(function (a, b) { return (Number(b.placedAt) || 0) - (Number(a.placedAt) || 0); })
+                            .slice(0, 500);
+                        virtualBankroll = {
+                            balance: Math.max(0, balance),
+                            initial: initial,
+                            totalStaked: Math.max(0, vbRoundMoney(raw.totalStaked)),
+                            totalReturned: Math.max(0, vbRoundMoney(raw.totalReturned)),
+                            totalProfit: vbRoundMoney(raw.totalProfit),
+                            wins: Math.max(0, Number(raw.wins) || 0),
+                            losses: Math.max(0, Number(raw.losses) || 0),
+                            bets: Math.max(0, Number(raw.bets) || 0),
+                            ledger: ledger,
+                            updatedAt: Number(raw.updatedAt) || 0
+                        };
+                        return virtualBankroll;
+                    }
+                    function vbSave() {
+                        if (!virtualBankroll) vbLoad();
+                        if (!virtualBankroll) return false;
+                        virtualBankroll.balance = Math.max(0, vbRoundMoney(virtualBankroll.balance));
+                        virtualBankroll.ledger = (virtualBankroll.ledger || []).map(vbNormalizeEntry)
+                            .sort(function (a, b) { return (Number(b.placedAt) || 0) - (Number(a.placedAt) || 0); })
+                            .slice(0, 500);
+                        virtualBankroll.updatedAt = Date.now();
+                        try { localStorage.setItem(LS_VIRTUAL_BANKROLL, JSON.stringify(virtualBankroll)); } catch (e) {}
+                        return true;
+                    }
+                    function vbBalance() {
+                        const s = vbLoad();
+                        return s ? Math.max(0, vbRoundMoney(s.balance)) : 0;
+                    }
+                    function vbProfitFor(total, win) {
+                        const stake = Math.max(0, vbRoundMoney(total));
+                        return win ? vbRoundMoney(stake * (VIRTUAL_PAYOUT_MULTIPLIER - 1)) : -stake;
+                    }
+                    function vbHistoryRows() {
+                        const s = vbLoad();
+                        return ((s && s.ledger) || []).map(function (entry) {
+                            let addTime = '';
+                            try { addTime = entry.placedAt ? new Date(entry.placedAt).toISOString() : ''; } catch (e) {}
+                            return {
+                                virtual: true,
+                                orderNumber: entry.oid,
+                                issueNumber: entry.issue,
+                                selectType: entry.bit ? 'big' : 'small',
+                                betCount: entry.count,
+                                amount: entry.total,
+                                number: entry.resultNumber || '',
+                                state: entry.status === 'settled' ? (entry.win ? 1 : 0) : 2,
+                                profitAmount: entry.status === 'settled' ? entry.profit : '',
+                                addTime: addTime
+                            };
+                        });
+                    }
+                    function vbRenderHistory() {
+                        const rows = vbHistoryRows();
+                        try { gtxBetHistoryRows = rows; } catch (e) {}
+                        try { renderBetTx(null); } catch (e) {}
+                        try { gtxSetNote('betTxNote', rows.length + ' cược ảo · ' + gtxClock(new Date())); } catch (e) {}
+                        return rows;
+                    }
+                    function vbRenderBalance() {
+                        const s = vbLoad();
+                        if (!s) return 0;
+                        const balance = vbBalance();
+                        try {
+                            gtxBalanceOk = true;
+                            gtxLastBalance = balance;
+                        } catch (e) {}
+                        try {
+                            gtxSetBalance('ok', balance,
+                                'Vốn ảo lưu trong HTML · không cược tiền thật · trả thắng x' + VIRTUAL_PAYOUT_MULTIPLIER,
+                                'Vốn ảo: ' + gtxFmtMoney(balance));
+                        } catch (e) {}
+                        try {
+                            const input = document.getElementById('virtualCapitalInput');
+                            if (input && document.activeElement !== input && input.getAttribute('data-dirty') !== '1') {
+                                input.value = String(Math.round(Number(s.initial) || balance));
+                            }
+                        } catch (e) {}
+                        try {
+                            const stats = document.getElementById('virtualBankrollStats');
+                            if (stats) {
+                                const profit = vbRoundMoney(s.totalProfit);
+                                stats.textContent = 'Vốn đầu ' + gtxFmtMoney(s.initial)
+                                    + ' · Lãi/lỗ ' + (profit > 0 ? '+' : '') + gtxFmtMoney(profit)
+                                    + ' · Thắng ' + (Number(s.wins) || 0)
+                                    + ' · Thua ' + (Number(s.losses) || 0)
+                                    + ' · Trả thắng x' + VIRTUAL_PAYOUT_MULTIPLIER;
+                                stats.title = 'Tổng đã cược ảo ' + gtxFmtMoney(s.totalStaked)
+                                    + ' · Tổng đã nhận khi thắng ' + gtxFmtMoney(s.totalReturned)
+                                    + ' · Số lệnh ảo ' + (Number(s.bets) || 0);
+                            }
+                        } catch (e) {}
+                        return balance;
+                    }
+                    function vbRefreshVirtualWallet(force) {
+                        vbRenderBalance();
+                        vbRenderHistory();
+                        let token = '';
+                        try { token = extractToken(getToken() || ''); } catch (e) {}
+                        if (!token) {
+                            try {
+                                gtxNeedsToken = true;
+                                gtxSetNote('betTxNote', 'Lịch sử cược ảo · chờ token để lấy số game');
+                            } catch (e) {}
+                            return false;
+                        }
+                        let alive = true;
+                        try { alive = (typeof tokenAlive !== 'function') || tokenAlive(); } catch (e) {}
+                        if (isTokenExpiredLocally(token) || token === gtxSessionDeadToken || !alive) {
+                            try {
+                                gtxNeedsToken = true;
+                                gtxSetNote('betTxNote', 'Vốn ảo sẵn sàng · token lấy số cần kiểm tra/gia hạn');
+                            } catch (e) {}
+                            return false;
+                        }
+                        try {
+                            gtxNeedsToken = false;
+                            gtxLastToken = token;
+                        } catch (e) {}
+                        return true;
+                    }
+                    function vbFocusCapitalInput() {
+                        try {
+                            const input = document.getElementById('virtualCapitalInput');
+                            if (!input) return false;
+                            input.focus();
+                            if (input.select) input.select();
+                            return true;
+                        } catch (e) { return false; }
+                    }
+                    function vbSetCapital(amount) {
+                        const s = vbLoad();
+                        const n = vbRoundMoney(amount);
+                        if (!(n > 0)) {
+                            try { betSetStatus('Số vốn ảo chưa hợp lệ · hãy nhập ví dụ 1000000', 'err'); } catch (e) {}
+                            return false;
+                        }
+                        if (s && (s.ledger || []).some(function (x) { return x && x.status === 'pending'; })) {
+                            try { betSetStatus('Đang có cược ảo chờ kết quả · chờ quyết toán xong mới đặt lại vốn', 'err'); } catch (e) {}
+                            return false;
+                        }
+                        try {
+                            if ((typeof betPlacing !== 'undefined' && betPlacing)
+                                || (typeof betCycle !== 'undefined' && betCycle && betCycle.active)
+                                || (typeof betAuto !== 'undefined' && betAuto && (betAuto.active || betAuto.starting))
+                                || (typeof betManualHasPendingWatcher === 'function' && betManualHasPendingWatcher())) {
+                                betSetStatus('Hãy dừng tự chạy và chờ cược ảo hiện tại xong trước khi đặt lại vốn', 'err');
+                                return false;
+                            }
+                        } catch (e) {}
+                        virtualBankroll = vbDefaultState();
+                        virtualBankroll.balance = n;
+                        virtualBankroll.initial = n;
+                        vbSave();
+                        try {
+                            const input = document.getElementById('virtualCapitalInput');
+                            if (input) input.setAttribute('data-dirty', '0');
+                        } catch (e) {}
+                        vbRenderBalance();
+                        vbRenderHistory();
+                        try { betManualSetSuggestedIndex(0, true); } catch (e) {}
+                        try { betSetStatus('💰 Đã đặt vốn ảo: ' + gtxFmtMoney(n) + ' · bắt đầu từ mức 1K', 'ok'); } catch (e) {}
+                        return true;
+                    }
+                    function vbSetCapitalClicked() {
+                        const input = document.getElementById('virtualCapitalInput');
+                        return vbSetCapital(input ? input.value : '');
+                    }
+                    function vbMakeOid(meta) {
+                        return 'VAO-' + Date.now().toString(36).toUpperCase()
+                            + '-' + Math.floor(Math.random() * 1679616).toString(36).toUpperCase()
+                            + '-' + String((meta && meta.issue) || '').slice(-6);
+                    }
+                    function vbPlaceBet(meta) {
+                        const s = vbLoad();
+                        if (!s || !meta || !meta.issue) return null;
+                        const total = vbRoundMoney(meta.total);
+                        const issue = String(meta.issue || '');
+                        const bit = Number(meta.bit) === 1 ? 1 : 0;
+                        const count = Number(meta.count) || 0;
+                        if (!(total > 0) || !(count > 0)) return null;
+                        const duplicate = (s.ledger || []).filter(function (x) {
+                            return x && x.status === 'pending' && x.issue === issue && Number(x.bit) === bit && Number(x.count) === count;
+                        })[0];
+                        if (duplicate) return duplicate;
+                        if (vbRoundMoney(s.balance) < total) return null;
+                        const entry = vbNormalizeEntry({
+                            oid: vbMakeOid(meta),
+                            issue: issue,
+                            bit: bit,
+                            count: count,
+                            total: total,
+                            placedAt: Number(meta.placedAt) || Date.now(),
+                            deadlineMs: Number(meta.deadlineMs) || 0,
+                            formula: Number(meta.formula) === 2 ? 2 : (Number(meta.formula) === 1 ? 1 : 0),
+                            status: 'pending',
+                            win: null
+                        });
+                        s.balance = vbRoundMoney(s.balance - total);
+                        s.totalStaked = vbRoundMoney((Number(s.totalStaked) || 0) + total);
+                        s.bets = (Number(s.bets) || 0) + 1;
+                        s.ledger.unshift(entry);
+                        vbSave();
+                        vbRenderBalance();
+                        vbRenderHistory();
+                        return entry;
+                    }
+                    function vbSettleWatcher(watcher, outcome, row) {
+                        const s = vbLoad();
+                        if (!s || !watcher || !outcome) return null;
+                        const oid = String(watcher.oid || '');
+                        let entry = (s.ledger || []).filter(function (x) { return x && oid && x.oid === oid; })[0] || null;
+                        if (!entry) {
+                            entry = vbNormalizeEntry({
+                                oid: oid || vbMakeOid(watcher),
+                                issue: watcher.issue,
+                                bit: watcher.bit,
+                                count: watcher.count,
+                                total: watcher.total,
+                                placedAt: watcher.placedAt || Date.now(),
+                                deadlineMs: watcher.deadlineMs || 0,
+                                formula: watcher.formula || 0,
+                                status: 'pending',
+                                win: null
+                            });
+                            s.ledger.unshift(entry);
+                            s.totalStaked = vbRoundMoney((Number(s.totalStaked) || 0) + entry.total);
+                            s.bets = (Number(s.bets) || 0) + 1;
+                        }
+                        if (entry.status === 'settled') {
+                            return { entry: entry, profit: entry.profit, payout: entry.payout, duplicate: true };
+                        }
+                        const win = !!outcome.win;
+                        const profit = vbProfitFor(entry.total, win);
+                        const payout = win ? vbRoundMoney(entry.total * VIRTUAL_PAYOUT_MULTIPLIER) : 0;
+                        entry.status = 'settled';
+                        entry.win = win;
+                        entry.resultNumber = (row && row.number !== undefined && row.number !== null) ? String(row.number) : entry.resultNumber;
+                        entry.profit = profit;
+                        entry.payout = payout;
+                        entry.settledAt = Date.now();
+                        if (payout > 0) s.balance = vbRoundMoney((Number(s.balance) || 0) + payout);
+                        s.totalReturned = vbRoundMoney((Number(s.totalReturned) || 0) + payout);
+                        s.totalProfit = vbRoundMoney((Number(s.totalProfit) || 0) + profit);
+                        if (win) s.wins = (Number(s.wins) || 0) + 1;
+                        else s.losses = (Number(s.losses) || 0) + 1;
+                        vbSave();
+                        vbRenderBalance();
+                        vbRenderHistory();
+                        return { entry: entry, profit: profit, payout: payout, duplicate: false };
+                    }
+                    function vbSyntheticRows(drawRows, watchers) {
+                        const digitByIssue = {};
+                        (drawRows || []).forEach(function (row) {
+                            try {
+                                const issue = String(rowIssue(row) || '').trim();
+                                const digit = valueToDigit(rowBitValue(row));
+                                if (issue && digit !== null && digit !== undefined && digit !== '') digitByIssue[issue] = String(digit);
+                            } catch (e) {}
+                        });
+                        const out = [];
+                        (watchers || []).forEach(function (w) {
+                            if (!w || !w.issue) return;
+                            const digit = digitByIssue[String(w.issue)];
+                            if (digit === undefined) return;
+                            const n = Number(digit);
+                            if (!Number.isFinite(n)) return;
+                            const bit = Number(w.bit) === 1 ? 1 : 0;
+                            const win = bit ? (n >= 5) : (n < 5);
+                            let addTime = '';
+                            try { addTime = w.placedAt ? new Date(Number(w.placedAt)).toISOString() : ''; } catch (e) {}
+                            out.push({
+                                virtual: true,
+                                orderNumber: String(w.oid || ''),
+                                issueNumber: String(w.issue || ''),
+                                selectType: bit ? 'big' : 'small',
+                                betCount: Number(w.count) || 0,
+                                amount: Number(w.total) || ((Number(w.count) || 0) * 1000),
+                                number: String(n),
+                                state: win ? 1 : 0,
+                                profitAmount: vbProfitFor(Number(w.total) || ((Number(w.count) || 0) * 1000), win),
+                                addTime: addTime
+                            });
+                        });
+                        return out;
+                    }
+                    function vbAuditStartupOnce() {
+                        try {
+                            const rows = vbHistoryRows().filter(function (r) { return Number(r.state) !== 2; });
+                            if (!rows.length || typeof bsFormulaAuditRecent30 !== 'function') return false;
+                            bsFormulaAuditRecent30(rows, {
+                                source: 'app-open',
+                                startupOnce: true,
+                                forceScan: true
+                            });
+                            return true;
+                        } catch (e) { return false; }
+                    }
+                    function vbInitControls() {
+                        try {
+                            const btn = document.getElementById('btnSetVirtualCapital');
+                            if (btn && btn.getAttribute('data-bound') !== '1') {
+                                btn.setAttribute('data-bound', '1');
+                                btn.addEventListener('click', function () { vbSetCapitalClicked(); });
+                            }
+                            const input = document.getElementById('virtualCapitalInput');
+                            if (input && input.getAttribute('data-bound') !== '1') {
+                                input.setAttribute('data-bound', '1');
+                                input.addEventListener('input', function () { input.setAttribute('data-dirty', '1'); });
+                                input.addEventListener('keydown', function (ev) {
+                                    if (ev && (ev.key === 'Enter' || ev.keyCode === 13)) {
+                                        try { ev.preventDefault(); } catch (e) {}
+                                        vbSetCapitalClicked();
+                                    }
+                                });
+                            }
+                        } catch (e) {}
+                        vbRenderBalance();
+                        vbRenderHistory();
+                        if (!virtualBankrollAuditScheduled) {
+                            virtualBankrollAuditScheduled = true;
+                            setTimeout(function () { vbAuditStartupOnce(); }, 1500);
+                        }
+                        return true;
                     }
                     function gtxIsSessionError(e) {
                         return !!(e && (e.kind === 'auth' || e.kind === 'session' || e.kind === 'elsewhere'));
@@ -5152,17 +5914,12 @@ body {
                     function gtxShowTokenProblem(text) {
                         const msg = text || 'Token hết hạn';
                         gtxNeedsToken = true;
-                        if (!gtxBalanceOk) {
-                            const codeMatch = msg.match(/mã\s*\d+/i);
-                            const balanceLabel = '🔑 Nhập token' + (codeMatch ? (' · ' + codeMatch[0]) : '');
-                            gtxSetBalance('err', null, msg + ' — bấm ô Số dư để dán token mới', balanceLabel);
-                        } else {
-                            const el = document.getElementById('gameBalance');
-                            if (el) el.title = msg + ' — bấm ô Số dư để dán token mới';
-                        }
+                        try { vbRenderBalance(); } catch (e) {}
+                        const el = document.getElementById('gameBalance');
+                        if (el) el.title = msg + ' — bấm “Nhập token lấy số” để dán token mới; vốn ảo vẫn giữ nguyên';
                         gtxSetNote('betTxNote', msg);
                         gtxSetNote('betIssueNote', msg);
-                        if (!gtxHasRows('betTxList')) gtxSetEmpty('betTxList', msg + ' — bấm Số dư để dán token mới');
+                        if (!gtxHasRows('betTxList')) gtxSetEmpty('betTxList', msg + ' — bấm “Nhập token lấy số” để dán token mới');
                         try { betRender(); } catch (e) {}
                     }
                     async function gtxApiPost(url, params) {
@@ -5196,11 +5953,20 @@ body {
                         return res;
                     }
                     function gtxTokenDiagText(token) {
-                        const refresh = getRefreshToken();
-                        const refreshText = !refresh
-                            ? 'thiếu refreshToken'
-                            : (tokenExpMs(refresh) ? ('refreshToken ' + tokenExpiryText(refresh)) : 'refreshToken không đọc được hạn (có thể bị cắt)');
-                        return tokenExpiryText(token) + ' · ' + refreshText;
+                        const info = refreshTokenInfo();
+                        return tokenExpiryText(token) + ' · ' + info.text;
+                    }
+                    function gtxAuthBundleWarning(storedToken, incomingBundle, previousToken) {
+                        const info = refreshTokenInfo();
+                        const incomingRefresh = incomingBundle ? cleanAuthSecret(incomingBundle.refreshToken || '') : '';
+                        const incomingToken = incomingBundle ? extractToken(incomingBundle.token || '') : extractToken(storedToken || '');
+                        if (!incomingRefresh && info.usable && previousToken && incomingToken && previousToken !== incomingToken) {
+                            return '⚠️ Gói vừa dán không có refreshToken; app đang giữ refreshToken của phiên trước nên chưa chắc gia hạn được. Hãy dán gói JSON gồm token + refreshToken + tokenHeader.';
+                        }
+                        if (info.usable) return '';
+                        return '⚠️ Đã nhận access token nhưng ' + info.text
+                            + ' · access token hết hạn ' + tokenExpiryText(storedToken)
+                            + ' và app chưa thể tự gia hạn. Hãy dán gói JSON gồm token + refreshToken + tokenHeader.';
                     }
                     async function gtxValidateImportedToken(importSeq, importedToken) {
                         let token = extractToken(importedToken || '');
@@ -5231,6 +5997,14 @@ body {
                         try { await loadBetConfig(true); } catch (e) {}
                         try { await refreshBetIssue(true); } catch (e) {}
                         try { betRender(); } catch (e) {}
+                        if (ok) {
+                            try { token = extractToken(getToken() || token); } catch (e) {}
+                            const bundleWarning = gtxAuthBundleWarning(token, null, '');
+                            if (bundleWarning) {
+                                gtxSetNote('betTxNote', bundleWarning);
+                                try { betSetStatus(bundleWarning, 'err'); } catch (e) {}
+                            }
+                        }
                         try {
                             if (typeof autoStartBulkLoad === 'function') autoStartBulkLoad('token đã kiểm tra');
                         } catch (e) {}
@@ -5242,6 +6016,8 @@ body {
                             gtxShowTokenProblem('Token không hợp lệ');
                             return false;
                         }
+                        let previousToken = '';
+                        try { previousToken = extractToken(getToken() || ''); } catch (e) {}
                         try { if (typeof betAuto !== 'undefined' && betAuto.active) betAutoStop('Đã dừng tự động vì đổi token'); } catch (e) {}
                         const importSeq = ++gtxTokenImportSeq;
                         const el = document.getElementById('tokenInput');
@@ -5264,8 +6040,12 @@ body {
                             return false;
                         }
                         const diag = gtxTokenDiagText(stored);
+                        const bundleWarning = gtxAuthBundleWarning(stored, bundle, previousToken);
                         gtxSetBalance('loading', null, 'Đã nhận token · ' + diag + ' · đang kiểm tra');
-                        gtxSetNote('betTxNote', 'Đã nhận token · ' + diag);
+                        gtxSetNote('betTxNote', bundleWarning || ('Đã nhận token · ' + diag));
+                        if (bundleWarning) {
+                            try { betSetStatus(bundleWarning, 'err'); } catch (e) {}
+                        }
                         gtxSetEmpty('betTxList', 'Đang kiểm tra token…');
                         setTimeout(function () {
                             try {
@@ -5278,51 +6058,35 @@ body {
                     function gtxPromptNewToken(customMsg) {
                         let text = '';
                         try {
-                            text = window.prompt(customMsg || 'Dán token game mới (eyJ...) vào đây:', '') || '';
+                            text = window.prompt(customMsg || 'Dán GÓI JSON gồm token + refreshToken + tokenHeader để tự gia hạn. Nếu chỉ dán token eyJ..., app chỉ chạy đến khi access token hết hạn (thường khoảng 15 phút):', '') || '';
                         } catch (e) {}
                         if (!text) return false;
                         return gtxAcceptTokenText(text);
                     }
                     async function gtxTokenSetupClicked(reason) {
+                        let clipboardWarning = '';
                         try {
                             if (navigator.clipboard && navigator.clipboard.readText) {
                                 const text = await navigator.clipboard.readText();
                                 const bundle = parseAuthBundle(text);
-                                const clipboardExpired = !!bundle.token && isTokenExpiredLocally(bundle.token);
-                                if (bundle.token && (!clipboardExpired || bundle.refreshToken || getRefreshToken())) {
+                                const incomingRefreshInfo = refreshTokenInfo(bundle.refreshToken || '');
+                                let currentToken = '';
+                                try { currentToken = extractToken(getToken() || ''); } catch (e) {}
+                                const sameToken = !!bundle.token && !!currentToken && bundle.token === currentToken;
+                                if (bundle.token && (incomingRefreshInfo.usable || (sameToken && hasUsableRefreshToken()))) {
                                     return gtxAcceptTokenText(text);
+                                }
+                                if (bundle.token) {
+                                    clipboardWarning = 'Clipboard mới có access token, chưa có refreshToken dùng được nên app không tự nhận để tránh hết hạn sau khoảng 15 phút.';
                                 }
                             }
                         } catch (e) {}
-                        return gtxPromptNewToken((reason ? (reason + '\n\n') : '') + 'Dán token (eyJ...) hoặc gói token+refreshToken để bật tự gia hạn:');
+                        return gtxPromptNewToken((reason ? (reason + '\n\n') : '') + (clipboardWarning ? (clipboardWarning + String.fromCharCode(10, 10)) : '') + 'Dán GÓI JSON gồm token + refreshToken + tokenHeader để bật tự gia hạn. Nếu chỉ dán token eyJ..., app chỉ chạy đến khi access token hết hạn (thường khoảng 15 phút):');
                     }
                     async function gtxBalanceClicked() {
-                        let tok = '';
-                        try { tok = extractToken(getToken() || ''); } catch (e) {}
-                        let needsSetup = false;
-                        try { needsSetup = betTokenNeedsSetupUi(); } catch (e) {}
-                        if (!tok || needsSetup) {
-                            gtxSetBalance('loading', null, 'Đang lấy/gia hạn token từ Firebase…');
-                            let recovered = false;
-                            try { recovered = await betRecoverTokenBeforePrompt(); } catch (e) {}
-                            let stillNeedsSetup = false;
-                            try { stillNeedsSetup = betTokenNeedsSetupUi(); } catch (e) {}
-                            if (recovered && stillNeedsSetup) {
-                                try {
-                                    const okBalance = await refreshGameBalanceOnly(true);
-                                    if (okBalance) stillNeedsSetup = betTokenNeedsSetupUi();
-                                } catch (e) {}
-                            }
-                            if (!recovered || stillNeedsSetup) {
-                                gtxTokenSetupClicked(betTokenProblemReason());
-                                return;
-                            }
-                        }
-                        try {
-                            const p = refreshGameBalanceOnly(true);
-                            if (p && p.catch) p.catch(function () {});
-                        } catch (e) {}
-                        try { refreshGameWallet(false); } catch (e) {}
+                        try { vbRenderBalance(); } catch (e) {}
+                        try { vbFocusCapitalInput(); } catch (e) {}
+                        try { betSetStatus('Nhập số vốn ở ô bên dưới rồi bấm “Đặt vốn” · token chỉ dùng để lấy số game', ''); } catch (e) {}
                     }
                                         function gtxChoice(item) {
                         const raw = String(item && item.selectType !== undefined && item.selectType !== null ? item.selectType : '').trim();
@@ -5364,16 +6128,28 @@ body {
                         return tb - ta;
                     }
                     function gtxMergeBetRows(rows) {
-                        const list = rows || [];
+                        const list = (rows || []).filter(function (row) { return !!(row && row.virtual); });
                         if (!list.length) return;
                         const map = new Map();
                         for (let i = 0; i < gtxBetHistoryRows.length; i++) map.set(gtxBetRowKey(gtxBetHistoryRows[i]), gtxBetHistoryRows[i]);
                         for (let i = 0; i < list.length; i++) { if (list[i]) map.set(gtxBetRowKey(list[i]), list[i]); }
                         gtxBetHistoryRows = Array.from(map.values()).sort(gtxBetRowCmp).slice(0, GTX_SHOW);
                         try { betManualCheckResults(gtxBetHistoryRows); } catch (e) {}
+                        try {
+                            bsFormulaAuditRecent30(gtxBetHistoryRows, {
+                                source: 'app-open',
+                                startupOnce: true,
+                                forceScan: true
+                            });
+                        } catch (e) {}
                         renderBetTx(null);
                     }
                     async function gtxLoadBetHistory500() {
+                        try {
+                            const rows = vbRenderHistory();
+                            gtxSetNote('betTxNote', rows.length + '/500 cược ảo · ' + gtxClock(new Date()));
+                            return true;
+                        } catch (e) { return false; }
                         if (gtxBetHistoryBusy) return false;
                         let token = '';
                         try { token = extractToken(getToken() || ''); } catch (e) {}
@@ -5413,7 +6189,7 @@ body {
                         if (!box) return;
                         if (rows && rows.length) { gtxMergeBetRows(rows); return; }   // co du lieu moi -> GOP vao lich su 500 roi ve lai
                         const list = gtxBetHistoryRows.slice(0, GTX_SHOW);
-                        if (!list.length) { gtxBetHistorySig = ''; gtxSetEmpty('betTxList', 'Chưa có cược nào'); return; }
+                        if (!list.length) { gtxBetHistorySig = ''; gtxSetEmpty('betTxList', 'Chưa có cược ảo nào'); return; }
                         let sig = list.length + '';
                         for (let i2 = 0; i2 < list.length; i2++) sig += '|' + gtxBetRowKey(list[i2]) + ':' + String(list[i2].state) + ':' + String(list[i2].profitAmount);
                         if (sig === gtxBetHistorySig && box.querySelector('.gtx-row')) return;   // khong co gi doi -> khoi ve lai, giu nguyen vi tri cuon
@@ -5496,13 +6272,18 @@ body {
                     let betStatusMsg = '';
                     let betStatusKind = '';
                     let betPanelReady = false;
-                    const LS_MANUAL_BET_WATCH = 'vn168_manual_bet_watch_v1';
+                    const LS_MANUAL_BET_WATCH = 'vn168_virtual_bet_watch_v1';
                     let betManualWatchers = [];
                     let betManualWatchLoaded = false;
                     let betManualPollBusy = false;
                     let betManualPollLastTry = 0;
                     let betWinTakeLatestBusy = false;
                     let betWinTakeLatestLastKey = '';
+                    let betWinAutoStartTimer = null;
+                    let betWinAutoStartKey = '';
+                    let betWinAutoStartDeadline = 0;
+                    let betWinAutoStartLastKey = '';
+                    let betWinAutoStartWaitReason = '';
                     let betResultPopupTimer = null;
                     let betResultPopupNextTimer = null;
                     let betResultPopupShowing = false;
@@ -5514,6 +6295,7 @@ body {
                         phase: 'idle',
                         pattern: [],
                         patternKey: '',
+                        formula: 1,
                         stepIndex: 0,
                         startedAt: 0,
                         nextActionAt: 0,
@@ -5579,7 +6361,7 @@ body {
                     }
                     function betSummaryText() {
                         if (betAuto.active) return betAutoProgressText(false);
-                        if (betTokenNeedsSetupUi()) return '🔑 Token hết hạn · bấm “Nhập token” để dán token mới';
+                        if (betTokenNeedsSetupUi()) return '🔑 ' + betTokenProblemReason() + ' Bấm “Nhập token” để dán gói JSON token + refreshToken + tokenHeader.';
                         let currentLevel = 1;
                         let guide = null;
                         try {
@@ -5695,6 +6477,8 @@ body {
                                     total: Number(w.total) || 0,
                                     placedAt: Number(w.placedAt) || 0,
                                     deadlineMs: Number(w.deadlineMs) || 0,
+                                    formula: Number(w.formula) === 2 ? 2 : (Number(w.formula) === 1 ? 1 : 0),
+                                    virtual: !!(w.virtual || String(w.oid || '').indexOf('VAO-') === 0),
                                     acct: String(w.acct || '')
                                 };
                             }).filter(function (w) { return !!w.issue && w.placedAt > cutoff; }).slice(-20);
@@ -5857,9 +6641,42 @@ body {
                         try { clockEl.style.animationDelay = (-phaseMs) + 'ms, 0ms'; } catch (e) {}
                         return true;
                     }
+                    function betWaitSyncOverlayBounds(overlay) {
+                        if (!overlay) return 0;
+                        let top = 0;
+                        let accountBottom = 0;
+                        let lowerTop = 0;
+                        try {
+                            const account = document.getElementById('accountFrame');
+                            if (account && typeof account.getBoundingClientRect === 'function') {
+                                accountBottom = Math.ceil(Number(account.getBoundingClientRect().bottom) || 0) + 2;
+                            }
+                            const lower = document.getElementById('lowerAppFrame');
+                            if (lower && typeof lower.getBoundingClientRect === 'function') {
+                                lowerTop = Math.ceil(Number(lower.getBoundingClientRect().top) || 0);
+                            }
+                            top = Math.max(accountBottom, lowerTop);
+                            const viewportH = Number(window.innerHeight)
+                                || Number(document.documentElement && document.documentElement.clientHeight)
+                                || 0;
+                            if (viewportH > 0) {
+                                const maxTop = Math.max(0, viewportH - 180);
+                                top = Math.min(top, maxTop);
+                            }
+                            top = Math.max(0, Math.ceil(Number(top) || 0));
+                        } catch (e) { top = 0; }
+                        try { overlay.style.setProperty('--bet-wait-top', top + 'px'); } catch (e) {}
+                        try {
+                            overlay.setAttribute('data-wait-top', String(top));
+                            overlay.setAttribute('data-account-bottom', String(Math.max(0, accountBottom)));
+                            overlay.setAttribute('data-lower-frame-top', String(Math.max(0, lowerTop)));
+                        } catch (e) {}
+                        return top;
+                    }
                     function betWaitRender() {
                         const overlay = document.getElementById('betWaitOverlay');
                         if (!overlay) return;
+                        try { betWaitSyncOverlayBounds(overlay); } catch (e) {}
                         const state = betWaitSyncState();
                         const resultActive = !!(betResultPopupShowing || betResultPopupQueue.length);
                         const pending = betManualHasPendingWatcher();
@@ -5872,6 +6689,10 @@ body {
                         overlay.classList.toggle('is-big', !!(state && state.key === 'big'));
                         overlay.classList.toggle('is-small', !!(state && state.key === 'small'));
                         overlay.setAttribute('aria-hidden', show ? 'false' : 'true');
+                        try {
+                            const waitBalanceText = gtxSyncWaitBalance('', null);
+                            if (waitBalanceText) overlay.setAttribute('data-wait-balance', waitBalanceText);
+                        } catch (e) {}
                         if (!show || !state) {
                             overlay.classList.remove('is-overdue');
                             const hiddenClock = document.getElementById('betWaitClock');
@@ -5964,6 +6785,8 @@ body {
                         index = Math.max(0, Math.min(BET_MULTIPLES_CUSTOM.length - 1, parseInt(index, 10) || 0));
                         const ready = !!(pattern && pattern.length === BET_MULTIPLES_CUSTOM.length);
                         const bit = ready ? (Number(pattern[index]) === 1 ? 1 : 0) : null;
+                        let formula = 1;
+                        try { formula = bsFormulaDisplayedMode(); } catch (e) {}
                         return {
                             ready: ready,
                             pattern: ready ? pattern.slice() : [],
@@ -5972,13 +6795,14 @@ body {
                             key: ready ? (bit ? 'big' : 'small') : '',
                             label: ready ? (bit ? 'LỚN' : 'NHỎ') : '',
                             level: BET_MULTIPLES_CUSTOM[index] || 1,
+                            formula: formula,
                             paused: !!(betSideBlinkPaused() || betManualSuggestedBlinkPaused())
                         };
                     }
                     function betSyncPatternGuide(refreshBetPanel) {
                         if (betPatternGuideSyncing) {
                             return betPatternGuideLastState || {
-                                ready: false, pattern: [], index: 0, bit: null, key: '', label: '', level: 1, paused: true
+                                ready: false, pattern: [], index: 0, bit: null, key: '', label: '', level: 1, formula: 1, paused: true
                             };
                         }
                         betPatternGuideSyncing = true;
@@ -5990,6 +6814,7 @@ body {
                                 box.classList.toggle('has-guide-current', state.ready);
                                 box.setAttribute('data-guide-index', state.ready ? String(state.index) : '');
                                 box.setAttribute('data-guide-bit', state.ready ? String(state.bit) : '');
+                                box.setAttribute('data-guide-formula', state.ready ? String(state.formula || 1) : '');
                                 const cells = box.querySelectorAll('.bs-cell');
                                 for (let i = 0; i < cells.length; i++) {
                                     const empty = cells[i].classList.contains('bs-empty');
@@ -6001,7 +6826,7 @@ body {
                                     cells[i].setAttribute('data-guide-current', current ? '1' : '0');
                                     cells[i].setAttribute('data-guide-dimmed', dimmed ? '1' : '0');
                                     if (current) {
-                                        cells[i].title = '👉 Ô hiện tại ' + (state.index + 1) + '/7 · '
+                                        cells[i].title = '👉 Ô hiện tại ' + (state.index + 1) + '/7 · Công thức ' + (state.formula || 1) + ' · '
                                             + state.bit + ' = ' + state.label + ' · mức ' + state.level + 'K';
                                     } else if (dimmed) {
                                         cells[i].title = 'Đang làm mờ · chỉ ô ' + (state.index + 1) + '/7 đang sáng';
@@ -6009,8 +6834,8 @@ body {
                                 }
                             }
                             const signature = state.ready
-                                ? (state.pattern.join('') + '|' + state.index + '|' + state.bit + '|' + (state.paused ? 'p' : 'a'))
-                                : ('none|' + state.index + '|' + (state.paused ? 'p' : 'a'));
+                                ? (state.pattern.join('') + '|' + state.index + '|' + state.bit + '|' + (state.formula || 1) + '|' + (state.paused ? 'p' : 'a'))
+                                : ('none|' + state.index + '|' + (state.formula || 1) + '|' + (state.paused ? 'p' : 'a'));
                             const changed = signature !== betPatternGuideSignature;
                             betPatternGuideSignature = signature;
                             if (refreshBetPanel && changed) {
@@ -6107,12 +6932,24 @@ body {
                             total: Number(w && w.total) || 0,
                             placedAt: Number(w && w.placedAt) || Date.now(),
                             deadlineMs: Number(w && w.deadlineMs) || 0,
+                            formula: Number(w && w.formula) === 2 ? 2 : (Number(w && w.formula) === 1 ? 1 : 0),
+                            virtual: !!((w && w.virtual) || String((w && w.oid) || '').indexOf('VAO-') === 0),
                             acct: String((w && w.acct) || betManualAccountKey())
                         };
+                        if (item.virtual) item.acct = '';
                         if (!item.issue) return false;
                         if (item.oid && betManualWatchers.some(function (x) { return x.oid === item.oid; })) return false;
                         betManualWatchers.push(item);
                         betManualSaveWatchers();
+                        try {
+                            if (item.formula === 1 || item.formula === 2) {
+                                bsFormulaLedgerUpsert(Object.assign({}, item, {
+                                    win: null,
+                                    settledAt: 0,
+                                    source: item.virtual ? 'virtual-watcher' : 'watcher'
+                                }));
+                            }
+                        } catch (e) {}
                         return true;
                     }
                     function betSetResultPopupBackdrop(on) {
@@ -6197,7 +7034,8 @@ body {
                         }
                         return null;
                     }
-                    async function betTakeLatestAfterWin(watcher) {
+                    async function betTakeLatestAfterWin(watcher, opts) {
+                        opts = opts || {};
                         const issue = String((watcher && watcher.issue) || '').trim();
                         const key = String((watcher && watcher.oid) || issue).trim();
                         if (!issue || !key || betWinTakeLatestBusy || betWinTakeLatestLastKey === key) return false;
@@ -6206,17 +7044,33 @@ body {
                         try {
                             await sleep(650);
                             let ok = false;
-                            for (let attempt = 0; attempt < 5; attempt++) {
+                            const takeStartedAt = Date.now();
+                            while (!ok && Date.now() - takeStartedAt < 45000) {
                                 try {
                                     ok = !!(await lay4SoMoiNhat(null, { fromWin: true, expectedIssue: issue }));
                                 } catch (e) { ok = false; }
                                 if (ok) break;
-                                if (attempt < 4) await sleep(800);
+                                await sleep(800);
                             }
                             if (ok) {
                                 try { betRender(); } catch (e) {}
+                                if (opts.autoStartCycle !== false) {
+                                    let winPrefix = '';
+                                    try { winPrefix = (segPrefixDigits() || []).join(''); } catch (e) {}
+                                    try {
+                                        betScheduleAutoCycleAfterWin(key, {
+                                            issue: issue,
+                                            prefix: winPrefix
+                                        });
+                                    } catch (e) {}
+                                }
                             } else {
                                 try { setTakeLatest4Status('err'); } catch (e) {}
+                                if (opts.autoStartCycle !== false) {
+                                    try {
+                                        betSetStatus('🎉 Đã thắng nhưng chưa lấy được bộ 3 số mới · chưa tự bật TỰ CHẠY CHU KỲ', 'err');
+                                    } catch (e) {}
+                                }
                             }
                             return ok;
                         } finally {
@@ -6244,6 +7098,14 @@ body {
                             used.add(gtxBetRowKey(row));
                             const outcome = betManualOutcome(row, w);
                             if (!outcome) return true;
+                            if (w.virtual) {
+                                try {
+                                    const virtualSettlement = vbSettleWatcher(w, outcome, row);
+                                    if (virtualSettlement && Number.isFinite(Number(virtualSettlement.profit))) {
+                                        outcome.profit = Number(virtualSettlement.profit);
+                                    }
+                                } catch (e) {}
+                            }
                             changed = true;
                             found = true;
                             const resultNum = (row.number === null || row.number === undefined) ? '' : String(row.number).trim();
@@ -6262,6 +7124,24 @@ body {
                                 'Kỳ ' + gtxShortIssue(w.issue)
                             ].filter(Boolean).join(' · ');
                             const suggestion = betManualAdvanceSuggested(outcome.win, w);
+                            let formulaSwitch = null;
+                            try {
+                                const settledFormulaEntry = bsFormulaLedgerRecordOutcome(w, row, outcome.win);
+                                const formulaWatcher = Object.assign({}, w, {
+                                    formula: settledFormulaEntry ? settledFormulaEntry.formula : (w.formula || 0)
+                                });
+                                formulaSwitch = bsFormulaOnBetOutcome(outcome.win, formulaWatcher);
+                                if (formulaSwitch) {
+                                    bsFormulaAuditMark({
+                                        key: gtxBetRowKey(row),
+                                        formula: formulaSwitch.from,
+                                        to: formulaSwitch.to,
+                                        placedIndex: formulaSwitch.placedIndex,
+                                        source: 'realtime',
+                                        inference: settledFormulaEntry ? 'ledger' : 'watcher'
+                                    });
+                                }
+                            } catch (e) {}
                             let cycleFinalLoss = false;
                             try {
                                 if (!cycleOutcomeInfo && betCycleMatchesWatcher(w)) {
@@ -6283,14 +7163,32 @@ body {
                                 }
                                 cycleFinalLoss = betCycleIsFinalLoss(outcome.win, w);
                             } catch (e) {}
-                            if (outcome.win && !winTakeWatcher) {
-                                winTakeWatcher = { oid: String(w.oid || ''), issue: String(w.issue || '') };
+                            if (outcome.win) {
+                                let winFromCycle = false;
+                                let winCycleStopRequested = false;
+                                try {
+                                    winFromCycle = !!betCycleMatchesWatcher(w);
+                                    winCycleStopRequested = !!(winFromCycle && betCycle.stopRequested);
+                                } catch (e) {}
+                                if (!winTakeWatcher) {
+                                    winTakeWatcher = {
+                                        oid: String(w.oid || ''),
+                                        issue: String(w.issue || ''),
+                                        fromCycle: winFromCycle,
+                                        autoStartCycle: !winCycleStopRequested
+                                    };
+                                } else if (winCycleStopRequested) {
+                                    winTakeWatcher.autoStartCycle = false;
+                                }
                             }
-                            const nextText = cycleFinalLoss
+                            const baseNextText = cycleFinalLoss
                                 ? 'Đã dừng tự chạy · quay về 1K'
                                 : (suggestion.resetAfterLast
                                     ? 'Hết dãy · quay về 1K'
                                     : (outcome.win ? 'Quay về 1K' : ('Tiếp theo: ' + suggestion.value + 'K')));
+                            const nextText = baseNextText + ((formulaSwitch && formulaSwitch.changed)
+                                ? (' · Thắng ở R' + ((Number(formulaSwitch.placedIndex) || 0) + 1) + ' · chu kỳ sau dùng Công thức ' + formulaSwitch.to)
+                                : '');
                             betShowResultPopup(
                                 outcome.win,
                                 detail + ' · ' + nextText,
@@ -6309,7 +7207,9 @@ body {
                         if (changed) betManualSaveWatchers();
                         if (winTakeWatcher) {
                             try {
-                                const pWinTake = betTakeLatestAfterWin(winTakeWatcher);
+                                const pWinTake = betTakeLatestAfterWin(winTakeWatcher, {
+                                    autoStartCycle: winTakeWatcher.autoStartCycle !== false
+                                });
                                 if (pWinTake && pWinTake.catch) pWinTake.catch(function () {});
                             } catch (e) {}
                         }
@@ -6353,11 +7253,9 @@ body {
                                 if (!betTokenState().ok) return false;
                             }
                             const pageSize = betManualWatchers.some(function (w) { return now - (Number(w.placedAt) || 0) > 45000; }) ? 50 : 10;
-                            const rows = gtxRows(gtxApiData(await gtxApiPost(CFG.apiMyBets, {
-                                pageSize: pageSize, pageNo: 1, typeId: CFG.payload.typeId
-                            })));
-                            if (rows.length) renderBetTx(rows);
-                            else betManualCheckResults(gtxBetHistoryRows);
+                            const fetched = await gameListFetch(1, pageSize);
+                            const rows = vbSyntheticRows((fetched && fetched.rows) || [], betManualWatchers);
+                            if (rows.length) betManualCheckResults(rows);
                             return true;
                         } catch (e) {
                             return false;
@@ -6402,15 +7300,28 @@ body {
                         try { tok = extractToken(getToken() || ''); } catch (e) {}
                         if (!tok) return 'Trang hiện tại chưa có token trong bộ nhớ/Firebase.';
                         if (isTokenExpiredLocally(tok)) {
+                            const info = refreshTokenInfo();
+                            if (!info.present) return 'Token đã hết hạn ' + tokenExpiryText(tok) + ' · thiếu refreshToken.';
+                            if (!info.usable) return 'Token đã hết hạn ' + tokenExpiryText(tok) + ' · ' + info.text + '.';
                             return 'Token đã hết hạn ' + tokenExpiryText(tok)
-                                + (getRefreshToken()
-                                    ? (' · tự gia hạn chưa được' + (lastRefreshTokenError ? (': ' + lastRefreshTokenError) : ''))
-                                    : ' · thiếu refreshToken') + '.';
+                                + ' · có refreshToken nhưng tự gia hạn chưa được'
+                                + (lastRefreshTokenError ? (': ' + lastRefreshTokenError) : '') + '.';
                         }
                         let alive = true;
                         try { alive = (typeof tokenAlive !== 'function') || tokenAlive(); } catch (e) {}
                         if (tok === gtxSessionDeadToken || !alive) return 'API vừa từ chối phiên token hiện tại.';
                         return 'Chưa xác nhận lại được token hiện tại.';
+                    }
+                    function betTokenIssueShortText() {
+                        let tok = '';
+                        try { tok = extractToken(getToken() || ''); } catch (e) {}
+                        if (!tok) return 'Chờ token';
+                        const info = refreshTokenInfo();
+                        if (!info.present) return 'Thiếu refreshToken';
+                        if (info.truncated) return 'refreshToken bị cắt';
+                        if (info.expired) return 'refreshToken hết hạn';
+                        if (lastRefreshTokenError) return 'Gia hạn lỗi: ' + lastRefreshTokenError;
+                        return 'Token hết hạn';
                     }
                     async function betRecoverTokenBeforePrompt() {
                         try { await ensureFreshToken(60000); } catch (e) {}
@@ -6434,8 +7345,8 @@ body {
                         if (betSecondsLeft() <= BET_CLOSE_SECONDS) return { ok: false, reason: 'Đã đóng cược' };
                         const total = betTotal();
                         if (!(total > 0)) return { ok: false, reason: 'Tiền cược chưa hợp lệ' };
-                        if (Number.isFinite(gtxLastBalance) && total > gtxLastBalance) {
-                            return { ok: false, reason: 'Không đủ số dư' };
+                        if (total > vbBalance()) {
+                            return { ok: false, reason: 'Không đủ vốn ảo' };
                         }
                         return { ok: true, total: total };
                     }
@@ -6499,7 +7410,7 @@ body {
                         try { betWaitBeginFromSelection(expectedIssue, betDeadlineMs); } catch (e) {}
                         try { betStopSideBlinkNow(); } catch (e) {}
                         try { betRender(); } catch (e) {}
-                        betSetStatus('Đang đặt ' + betSel.label + ' · ' + gtxFmtMoney(betTotal()) + '…');
+                        betSetStatus('Đang đặt ẢO ' + betSel.label + ' · ' + gtxFmtMoney(betTotal()) + '…');
                         try {
                             const p = placeBet({ skipConfirm: true, expectedIssue: expectedIssue });
                             if (p && p.then) {
@@ -6641,15 +7552,25 @@ body {
                         }
                         const chip = document.getElementById('btnTokenSetup');
                         if (chip) {
-                            const on = !!getRefreshToken();
+                            const refreshInfo = refreshTokenInfo();
+                            const on = !!refreshInfo.usable;
                             const needsToken = betTokenNeedsSetupUi();
-                            const label = needsToken ? '🔑 Nhập token' : ('↻ Gia hạn: ' + (on ? 'Bật' : 'Tắt'));
+                            const label = needsToken
+                                ? '🔑 Nhập token'
+                                : (on ? '↻ Gia hạn: Bật' : ('⚠️ Gia hạn: ' + (refreshInfo.present ? 'Lỗi' : 'Tắt')));
                             if (chip.textContent !== label) chip.textContent = label;
                             chip.classList.toggle('needs-token', needsToken);
                             chip.classList.toggle('on', !needsToken && on);
-                            chip.title = needsToken
-                                ? 'Token hết hạn/chưa có — bấm để dán token mới'
-                                : 'Bấm để dán/cập nhật token game';
+                            if (needsToken) {
+                                chip.title = betTokenProblemReason() + ' Bấm để dán gói JSON token + refreshToken + tokenHeader.';
+                            } else if (on) {
+                                chip.title = 'Tự gia hạn đang bật · ' + refreshInfo.text + ' · bấm để dán/cập nhật gói token';
+                            } else {
+                                let currentTok = '';
+                                try { currentTok = extractToken(getToken() || ''); } catch (e) {}
+                                chip.title = '⚠️ ' + refreshInfo.text + ' · access token ' + tokenExpiryText(currentTok)
+                                    + ' · bấm để dán gói JSON token + refreshToken + tokenHeader';
+                            }
                             if (note) note.classList.toggle('is-token-action', needsToken);
                         }
                         try { betSyncBettingClosedControls(); } catch (e) {}
@@ -6979,7 +7900,7 @@ body {
                             token = extractToken((ensured && ensured !== '__timeout__') ? ensured : (getToken() || ''));
                         } catch (e) {}
                         if (!token || isTokenExpiredLocally(token)) {
-                            betSetIssueError(token ? 'Token hết hạn' : 'Chờ token', 5000);
+                            betSetIssueError(betTokenIssueShortText(), 5000);
                             betRenderCountdown();
                             betScheduleIssueRefresh(2500);
                             return false;
@@ -6993,7 +7914,7 @@ body {
                             let hasRefresh = false;
                             try { hasRefresh = !!getRefreshToken(); } catch (e) {}
                             if (!force && !hasRefresh) {
-                                betSetIssueError('Token hết hạn', 5000);
+                                betSetIssueError(betTokenIssueShortText(), 5000);
                                 betRenderCountdown();
                                 betScheduleIssueRefresh(2500);
                                 return false;
@@ -7047,7 +7968,7 @@ body {
                         if (lastError) {
                             if (gtxIsSessionError(lastError) || (lastError && lastError.kind === 'auth')) {
                                 try { gtxShowTokenProblem(gtxErrText(lastError)); } catch (e) {}
-                                betSetIssueError('Token hết hạn', 5000);
+                                betSetIssueError(betTokenIssueShortText(), 5000);
                             } else {
                                 betSetIssueError('Lỗi kỳ: ' + gtxErrText(lastError), 4500);
                             }
@@ -7544,22 +8465,9 @@ body {
                         betRender();
                     }
                     async function betAutoFetchSettlementRows(pending) {
-                        const firstRows = gtxRows(gtxApiData(await gtxApiPost(CFG.apiMyBets, {
-                            pageSize: 10, pageNo: 1, typeId: CFG.payload.typeId
-                        })));
-                        if (betAutoFindPendingRow(firstRows, pending)) return firstRows;
-                        const now = Date.now();
-                        if (now - pending.placedAt < 45000 || now - (pending.deepSettleLastTry || 0) < 15000) return firstRows;
-                        pending.deepSettleLastTry = now;
-                        let rows = firstRows.slice();
-                        for (let pageNo = 1; pageNo <= 6; pageNo++) {
-                            const pageRows = gtxRows(gtxApiData(await gtxApiPost(CFG.apiMyBets, {
-                                pageSize: 50, pageNo: pageNo, typeId: CFG.payload.typeId
-                            })));
-                            rows = rows.concat(pageRows);
-                            if (betAutoFindPendingRow(rows, pending) || pageRows.length < 50) break;
-                        }
-                        return rows;
+                        const pageSize = (Date.now() - (Number(pending && pending.placedAt) || 0) > 45000) ? 50 : 10;
+                        const fetched = await gameListFetch(1, pageSize);
+                        return vbSyntheticRows((fetched && fetched.rows) || [], [pending]);
                     }
                     async function betAutoCheckSettlement(sessionId) {
                         if (!betAutoCurrent(sessionId) || !betAuto.pending || betAuto.settleBusy) return false;
@@ -7586,10 +8494,7 @@ body {
                                 return false;
                             }
                             const rows = await betAutoFetchSettlementRows(pending);
-                            try {
-                                renderBetTx(rows);
-                                gtxSetNote('betTxNote', gtxBetHistoryRows.length + ' cược gần nhất · ' + gtxClock(new Date()));
-                            } catch (e) {}
+                            try { vbRenderHistory(); } catch (e) {}
                             if (!betAutoCurrent(sessionId) || betAuto.pending !== pending) return false;
                             const row = betAutoFindPendingRow(rows, pending);
                             let win = null;
@@ -7611,7 +8516,18 @@ body {
                                 }
                                 return false;
                             }
-                            try { await refreshGameWallet(true); } catch (e) {}
+                            try {
+                                vbSettleWatcher({
+                                    oid: String(pending.oid || ''),
+                                    issue: String(pending.issue || ''),
+                                    bit: Number(pending.bit) === 1 ? 1 : 0,
+                                    count: Number(pending.count) || 0,
+                                    total: Number(pending.total) || ((Number(pending.count) || 0) * BET_DEFAULT_COIN),
+                                    placedAt: Number(pending.placedAt) || Date.now(),
+                                    virtual: true
+                                }, { win: win }, row);
+                            } catch (e) {}
+                            try { vbRenderBalance(); } catch (e) {}
                             if (!betAutoCurrent(sessionId) || betAuto.pending !== pending) return false;
                             betAutoResolveOutcome(win, row);
                             return true;
@@ -7683,8 +8599,8 @@ body {
                                 return false;
                             }
                             const firstBet = BET_DEFAULT_COIN * betAutoLevelForIndex(0);
-                            if (Number.isFinite(gtxLastBalance) && firstBet > gtxLastBalance) {
-                                betSetStatus('Không đủ số dư cho lệnh đầu tiên', 'err');
+                            if (firstBet > vbBalance()) {
+                                betSetStatus('Không đủ vốn ảo cho lệnh đầu tiên', 'err');
                                 return false;
                             }
                             if (betPlacing) return false;
@@ -7699,7 +8615,7 @@ body {
                                 + 'Thắng: bỏ các ô còn lại, chờ lượt hoán đổi mới và quay về 1k.\n'
                                 + 'Một lượt thua hết tối đa ' + gtxFmtMoney(maxRound) + '. Chu kỳ: chạy 15 phút, nghỉ 2 phút, lặp lại và tự dừng sau 10 tiếng.\n'
                                 + 'App sẽ giữ màn hình sáng khi START; hãy dùng nút “Màn đen giữ chạy” thay vì bấm nút nguồn tắt hẳn màn hình.\n\n'
-                                + 'Bấm OK để app tự đặt cược thật.';
+                                + 'Bấm OK để app tự đặt cược ẢO bằng vốn trong HTML; không gửi lệnh cược thật lên game.';
                             let confirmed = false;
                             try { confirmed = !!window.confirm(text); } catch (e) {}
                             if (!confirmed) {
@@ -7824,11 +8740,14 @@ body {
                             betAuto.placedIssues[placedIssue] = true;
                             betAuto.placedCount++;
                             betAuto.pending = {
+                                oid: String(result.oid || ''),
                                 issue: placedIssue,
                                 index: pendingIndex,
                                 bit: bit,
                                 count: count,
-                                placedAt: Date.now()
+                                total: Number(result.total) || (count * BET_DEFAULT_COIN),
+                                placedAt: Date.now(),
+                                virtual: true
                             };
                             betSel = betAutoChoice(bit);
                             betCount = count;
@@ -7893,33 +8812,44 @@ body {
                         let secondsLeft = 0;
                         try { secondsLeft = betSecondsLeft(); } catch (e) {}
                         const startClosed = !!(!active && (!betIssue || secondsLeft <= BET_CLOSE_SECONDS));
-                        let label = '▶ TỰ CHẠY CHU KỲ';
+                        const winAutoPending = !!(!active && betWinAutoStartKey);
+                        let label = '▶ TỰ CHẠY CHU KỲ ẢO';
                         if (active && betCycle.stopRequested) {
                             label = '⏹ SẼ DỪNG SAU LỆNH NÀY';
                         } else if (active && (betCycle.phase === 'placing' || betCycle.phase === 'waiting')) {
                             label = '⏹ DỪNG · CHỜ Ô ' + (step + 1) + '/7 · ' + level + 'K';
                         } else if (active) {
                             label = '⏹ DỪNG · Ô ' + (step + 1) + '/7 · ' + level + 'K';
+                        } else if (winAutoPending && startClosed) {
+                            label = '▶ THẮNG · CHỜ KỲ MỚI ĐỂ TỰ CHẠY';
+                        } else if (winAutoPending) {
+                            label = '▶ THẮNG · SẮP TỰ CHẠY CHU KỲ';
                         } else if (startClosed) {
                             label = '▶ TỰ CHẠY CHU KỲ · CHỜ KỲ MỚI';
                         }
                         btn.classList.toggle('is-running', active);
                         btn.classList.toggle('is-stopping', !!(active && betCycle.stopRequested));
+                        btn.classList.toggle('is-win-auto-start-pending', winAutoPending);
                         btn.classList.toggle('is-cycle-closed', startClosed);
                         btn.disabled = !!(!active && (betAuto.starting || startClosed));
                         btn.setAttribute('data-cycle-active', active ? '1' : '0');
                         btn.setAttribute('data-cycle-phase', String(betCycle.phase || 'idle'));
                         btn.setAttribute('data-cycle-step', String(step));
                         btn.setAttribute('data-cycle-closed', startClosed ? '1' : '0');
+                        btn.setAttribute('data-win-auto-start-pending', winAutoPending ? '1' : '0');
+                        btn.setAttribute('data-win-auto-start-reason', winAutoPending ? String(betWinAutoStartWaitReason || '') : '');
                         btn.setAttribute('data-cycle-seconds-left', String(secondsLeft));
                         btn.setAttribute('aria-pressed', active ? 'true' : 'false');
                         btn.setAttribute('aria-disabled', btn.disabled ? 'true' : 'false');
                         if (btn.textContent !== label) btn.textContent = label;
                         btn.title = active
                             ? ('Đang tự chạy dãy ' + (betCycle.patternKey || '--') + ' · ô ' + (step + 1) + '/7 · mức ' + level + 'K · bấm để dừng')
-                            : (startClosed
-                                ? ('Đang bị mờ/khóa vì kỳ hiện tại còn ' + secondsLeft + 's · chờ kỳ mới bắt đầu đếm thì nút mới sáng để bấm')
-                                : 'Tự bấm LỚN/NHỎ theo dãy 7 ô đã xáo trộn, rồi tự bấm mức cược tương ứng. Thắng thì dừng và quay về 1K; thua ở 180K thì báo chu kỳ thất bại.');
+                            : (winAutoPending
+                                ? ('Đã thắng và đã lấy bộ 3 số mới · app đang chờ rồi sẽ tự bấm TỰ CHẠY CHU KỲ.'
+                                    + (betWinAutoStartWaitReason ? (' Đang chờ: ' + betWinAutoStartWaitReason + '.') : ''))
+                                : (startClosed
+                                    ? ('Đang bị mờ/khóa vì kỳ hiện tại còn ' + secondsLeft + 's · chờ kỳ mới bắt đầu đếm thì nút mới sáng để bấm')
+                                    : 'Tự đặt cược ẢO theo dãy 7 ô và mức tương ứng bằng vốn trong HTML. App chỉ dùng số game để quyết toán; khi thắng tự lấy bộ 3 số mới và bật lại chu kỳ, thua ở 180K thì báo chu kỳ thất bại.'));
                     }
                     function betCycleStop(message, kind, clearSelection) {
                         if (!betCycle.active) {
@@ -7980,10 +8910,221 @@ body {
                             betCycleStop('⏹ Đã dừng chu kỳ: dãy xáo trộn đã thay đổi (' + guide.pattern.join('-') + ') để tránh đặt sai', 'err', true);
                             return false;
                         }
+                        if (Number(guide.formula || 1) !== Number(betCycle.formula || 1)) {
+                            betCycleStop('⏹ Đã dừng chu kỳ: công thức đã thay đổi giữa chừng để tránh đặt sai', 'err', true);
+                            return false;
+                        }
                         if (Number(guide.index) !== Number(betCycle.stepIndex)) {
                             betCycleStop('⏹ Đã dừng chu kỳ: vị trí ô/mức cược đã thay đổi bên ngoài chu kỳ', 'err', true);
                             return false;
                         }
+                        return true;
+                    }
+                    function betClearWinAutoStart() {
+                        if (betWinAutoStartTimer) {
+                            clearTimeout(betWinAutoStartTimer);
+                            betWinAutoStartTimer = null;
+                        }
+                        betWinAutoStartKey = '';
+                        betWinAutoStartDeadline = 0;
+                        betWinAutoStartWaitReason = '';
+                        try { betCycleRenderButton(); } catch (e) {}
+                    }
+                    function betCancelWinAutoStart(reason) {
+                        const hadPending = !!(betWinAutoStartTimer || betWinAutoStartKey);
+                        betClearWinAutoStart();
+                        if (hadPending && reason) {
+                            try { betSetStatus(reason, 'err'); } catch (e) {}
+                        }
+                        return hadPending;
+                    }
+                    function betScheduleAutoCycleAfterWin(key, opts) {
+                        opts = opts || {};
+                        const scheduleKey = String(key || '').trim();
+                        if (!scheduleKey || betWinAutoStartLastKey === scheduleKey) return false;
+                        if (betWinAutoStartTimer) {
+                            clearTimeout(betWinAutoStartTimer);
+                            betWinAutoStartTimer = null;
+                        }
+                        betWinAutoStartLastKey = scheduleKey;
+                        betWinAutoStartKey = scheduleKey;
+                        betWinAutoStartDeadline = Date.now() + 90000;
+                        betWinAutoStartWaitReason = 'đang chờ dãy 7 ô của bộ số mới và kỳ cược sẵn sàng';
+                        const expectedPrefix = String(opts.prefix || '').replace(/\D/g, '');
+                        let stableKey = '';
+                        let stableSince = 0;
+                        let lastGuideRetryAt = 0;
+                        let guideRetryBusy = false;
+                        let lastStartAttemptAt = 0;
+                        let lastWaitStatusAt = Date.now();
+                        let indexMismatchSince = 0;
+                        try {
+                            betSetStatus('🎉 Đã thắng · đã lấy bộ số mới vào ô nhập · đang chờ dãy 7 ô và kỳ cược sẵn sàng để tự bật TỰ CHẠY CHU KỲ', 'ok');
+                            betCycleRenderButton();
+                        } catch (e) {}
+                        const tick = function () {
+                            if (betWinAutoStartKey !== scheduleKey) return;
+                            betWinAutoStartTimer = null;
+                            const wait = function (ms) {
+                                if (betWinAutoStartKey !== scheduleKey) return;
+                                betWinAutoStartTimer = setTimeout(tick, Math.max(250, Number(ms) || 500));
+                            };
+                            const waitFor = function (reason, ms) {
+                                betWinAutoStartWaitReason = String(reason || 'đang chờ đủ điều kiện');
+                                try { betCycleRenderButton(); } catch (e) {}
+                                if (Date.now() - lastWaitStatusAt > 5000) {
+                                    lastWaitStatusAt = Date.now();
+                                    try {
+                                        betSetStatus('🎉 Đã thắng · đã lấy bộ số mới · chưa tự chạy vì ' + betWinAutoStartWaitReason + ' · app vẫn đang chờ để tự bấm nút', 'ok');
+                                    } catch (e) {}
+                                }
+                                wait(ms);
+                            };
+                            if (Date.now() > betWinAutoStartDeadline) {
+                                const lastReason = betWinAutoStartWaitReason || 'chưa đủ điều kiện';
+                                betCancelWinAutoStart('🎉 Đã lấy bộ số mới nhưng sau 90 giây vẫn chưa tự bật TỰ CHẠY CHU KỲ · lý do cuối: ' + lastReason + ' · hãy bấm nút thủ công');
+                                return;
+                            }
+                            if (betCycle.active) {
+                                betClearWinAutoStart();
+                                return;
+                            }
+                            if (betAuto.active || betAuto.starting) {
+                                betCancelWinAutoStart('🎉 Đã lấy bộ số mới nhưng chế độ tự động cũ đang hoạt động · chưa bật TỰ CHẠY CHU KỲ');
+                                return;
+                            }
+                            if (document.hidden || betWinTakeLatestBusy || betPlacing || betResultPopupShowing || betResultPopupQueue.length) {
+                                waitFor(document.hidden
+                                    ? 'tab/app đang bị ẩn'
+                                    : (betWinTakeLatestBusy ? 'đang hoàn tất lấy bộ số mới' : 'popup/lệnh hiện tại chưa xử lý xong'), 650);
+                                return;
+                            }
+                            let pendingWatcher = false;
+                            try { pendingWatcher = !!betManualHasPendingWatcher(); } catch (e) {}
+                            if (pendingWatcher) {
+                                waitFor('vẫn còn lệnh đang chờ kết quả', 650);
+                                return;
+                            }
+                            if (betSel) {
+                                betCancelWinAutoStart('🎉 Đã lấy bộ số mới · đã hủy tự bật TỰ CHẠY CHU KỲ vì bạn đang chọn cược thủ công');
+                                return;
+                            }
+                            let suggestedIndex = 0;
+                            try { suggestedIndex = Number(betManualSuggestedLoad()) || 0; } catch (e) {}
+                            if (suggestedIndex !== 0) {
+                                if (!indexMismatchSince) indexMismatchSince = Date.now();
+                                if (Date.now() - indexMismatchSince < 5000) {
+                                    waitFor('mức cược đang chờ quay về 1K', 600);
+                                    return;
+                                }
+                                betCancelWinAutoStart('🎉 Đã lấy bộ số mới nhưng mức cược chưa quay về 1K · chưa tự bật TỰ CHẠY CHU KỲ');
+                                return;
+                            }
+                            let secondsLeft = 0;
+                            try { secondsLeft = betSecondsLeft(); } catch (e) {}
+                            if (!betIssue || secondsLeft <= BET_CLOSE_SECONDS) {
+                                waitFor(!betIssue ? 'chưa đồng bộ kỳ hiện tại' : ('kỳ hiện tại còn ' + secondsLeft + 's, phải chờ kỳ mới'), 600);
+                                return;
+                            }
+                            let currentPrefix = '';
+                            try { currentPrefix = (segPrefixDigits() || []).join(''); } catch (e) {}
+                            if (expectedPrefix && currentPrefix !== expectedPrefix) {
+                                stableKey = '';
+                                stableSince = 0;
+                                waitFor('đang chờ đúng bộ số ' + expectedPrefix + ' trong ô nhập', 600);
+                                return;
+                            }
+                            let guide = null;
+                            try { guide = betPatternGuideState(); } catch (e) {}
+                            if (!guide || !guide.ready || !guide.pattern || guide.pattern.length !== BET_MULTIPLES_CUSTOM.length) {
+                                stableKey = '';
+                                stableSince = 0;
+                                const guideRetryNow = Date.now();
+                                if (!guideRetryBusy && guideRetryNow - lastGuideRetryAt >= 2500) {
+                                    lastGuideRetryAt = guideRetryNow;
+                                    guideRetryBusy = true;
+                                    try {
+                                        const guideRetry = findSegmentsFromInput();
+                                        if (guideRetry && typeof guideRetry.then === 'function') {
+                                            guideRetry.then(function () {
+                                                guideRetryBusy = false;
+                                                try { betSyncPatternGuide(true); } catch (e) {}
+                                            }, function () { guideRetryBusy = false; });
+                                        } else {
+                                            guideRetryBusy = false;
+                                            try { betSyncPatternGuide(true); } catch (e) {}
+                                        }
+                                    } catch (e) { guideRetryBusy = false; }
+                                }
+                                waitFor('dãy 7 ô của bộ số mới chưa sẵn sàng', 600);
+                                return;
+                            }
+                            if (Number(guide.index) !== 0) {
+                                if (!indexMismatchSince) indexMismatchSince = Date.now();
+                                if (Date.now() - indexMismatchSince < 5000) {
+                                    waitFor('dãy đang chờ quay về ô 1/7', 600);
+                                    return;
+                                }
+                                betCancelWinAutoStart('🎉 Đã lấy bộ số mới nhưng dãy chưa ở ô 1/7 · chưa tự bật TỰ CHẠY CHU KỲ');
+                                return;
+                            }
+                            indexMismatchSince = 0;
+                            let sourceKey = currentPrefix + '|' + guide.pattern.join('') + '|' + String(guide.formula || 1);
+                            try {
+                                sourceKey += '|' + String(bsTopIssue || '')
+                                    + '|' + (bsBaseDigits || []).join('')
+                                    + '|' + (bsCurDigits || []).join('');
+                            } catch (e) {}
+                            if (sourceKey !== stableKey) {
+                                stableKey = sourceKey;
+                                stableSince = Date.now();
+                                waitFor('dãy 7 ô mới đang ổn định', 700);
+                                return;
+                            }
+                            if (Date.now() - stableSince < 700) {
+                                waitFor('dãy 7 ô mới đang ổn định', 350);
+                                return;
+                            }
+                            try {
+                                const ts = betTokenState();
+                                if (!ts.ok && !getRefreshToken()) {
+                                    betCancelWinAutoStart(betTokenProblemReason() + ' Chưa tự bật TỰ CHẠY CHU KỲ sau khi thắng.');
+                                    return;
+                                }
+                            } catch (e) {}
+                            if (Date.now() - lastStartAttemptAt < 2500) {
+                                waitFor('đang chờ thử bấm lại nút TỰ CHẠY CHU KỲ', 500);
+                                return;
+                            }
+                            lastStartAttemptAt = Date.now();
+                            betWinAutoStartWaitReason = 'đang tự bấm nút TỰ CHẠY CHU KỲ';
+                            let started = false;
+                            try {
+                                let cycleBtn = null;
+                                try { cycleBtn = document.getElementById('btnAutoCycle'); } catch (e) {}
+                                try { betCycleRenderButton(); } catch (e) {}
+                                if (cycleBtn && !cycleBtn.disabled && typeof cycleBtn.click === 'function') {
+                                    cycleBtn.click();
+                                    started = !!betCycle.active;
+                                } else {
+                                    started = !!betCycleStart();
+                                }
+                            } catch (e) {
+                                started = !!betCycle.active;
+                                if (!started) {
+                                    try { started = !!betCycleStart(); } catch (e2) {}
+                                }
+                            }
+                            if (started && betCycle.active) {
+                                betClearWinAutoStart();
+                                return;
+                            }
+                            stableKey = '';
+                            stableSince = 0;
+                            waitFor('nút TỰ CHẠY CHU KỲ chưa bật được, đang thử lại', 900);
+                            return;
+                        };
+                        betWinAutoStartTimer = setTimeout(tick, 350);
                         return true;
                     }
                     function betCycleStart() {
@@ -8025,12 +9166,21 @@ body {
                             return false;
                         }
                         const startIndex = Math.max(0, Math.min(BET_MULTIPLES_CUSTOM.length - 1, Number(guide.index) || 0));
+                        try {
+                            const firstVirtualStake = betCycleLevelForStep(startIndex) * BET_DEFAULT_COIN;
+                            if (vbBalance() < firstVirtualStake) {
+                                betSetStatus('Không đủ vốn ảo cho mức ' + betCycleLevelForStep(startIndex) + 'K · hãy đặt lại vốn ở khung trên', 'err');
+                                try { betCycleRenderButton(); } catch (e) {}
+                                return false;
+                            }
+                        } catch (e) {}
                         const now = Date.now();
                         betCycle = {
                             active: true,
                             phase: 'side',
                             pattern: guide.pattern.slice(),
                             patternKey: guide.pattern.join(''),
+                            formula: Number(guide.formula) === 2 ? 2 : 1,
                             stepIndex: startIndex,
                             startedAt: now,
                             nextActionAt: now + 300,
@@ -8048,12 +9198,13 @@ body {
                         };
                         betCoin = BET_DEFAULT_COIN;
                         betCount = betCycleLevelForStep(startIndex);
-                        betSetStatus('🤖 Bắt đầu tự chạy dãy ' + guide.pattern.join('-') + ' · từ ô ' + (startIndex + 1) + '/7: ' + guide.label + ' · ' + betCycleLevelForStep(startIndex) + 'K', 'ok');
+                        betSetStatus('🤖 Bắt đầu tự chạy ẢO Công thức ' + betCycle.formula + ' · dãy ' + guide.pattern.join('-') + ' · từ ô ' + (startIndex + 1) + '/7: ' + guide.label + ' · ' + betCycleLevelForStep(startIndex) + 'K · Vốn ảo ' + gtxFmtMoney(vbBalance()), 'ok');
                         try { betCycleRenderButton(); } catch (e) {}
                         try { betRender(); } catch (e) {}
                         return true;
                     }
                     function betCycleRequestStop() {
+                        try { betClearWinAutoStart(); } catch (e) {}
                         if (!betCycle.active) return false;
                         if (betCycle.phase === 'placing' || betCycle.phase === 'waiting' || betPlacing || betManualHasPendingWatcher()) {
                             betCycle.stopRequested = true;
@@ -8073,7 +9224,11 @@ body {
                         const placedStep = Math.max(0, Math.min(BET_MULTIPLES_CUSTOM.length - 1, Number(betCycle.stepIndex) || 0));
                         const placedLevel = betCycleLevelForStep(placedStep);
                         if (win) {
-                            betCycleStop('✅ Chu kỳ hoàn thành · đã thắng ở ô ' + (placedStep + 1) + '/7 · ' + placedLevel + 'K · quay về mức 1K', 'ok', true);
+                            const stopRequestedBeforeWin = !!betCycle.stopRequested;
+                            betCycleStop('✅ Chu kỳ hoàn thành · đã thắng ở ô ' + (placedStep + 1) + '/7 · ' + placedLevel + 'K · quay về mức 1K'
+                                + (stopRequestedBeforeWin
+                                    ? ' · đã dừng theo yêu cầu, chỉ lấy bộ số mới'
+                                    : ' · đang lấy bộ số mới và sẽ tự chạy chu kỳ tiếp theo'), 'ok', true);
                             return true;
                         }
                         if (betCycleIsFinalLoss(false, watcher)) {
@@ -8161,6 +9316,12 @@ body {
                             }
                             return false;
                         }
+                        try {
+                            if (vbBalance() < level * BET_DEFAULT_COIN) {
+                                betCycleStop('⏹ Đã dừng chu kỳ ảo: không đủ vốn ảo cho mức ' + level + 'K · vốn còn ' + gtxFmtMoney(vbBalance()), 'err', true);
+                                return false;
+                            }
+                        } catch (e) {}
                         const chip = document.querySelector('#betMultipleRow .bet-chip[data-current-level="1"]');
                         if (!chip || chip.disabled) {
                             betCycle.actionAttempts++;
@@ -8180,7 +9341,7 @@ body {
                         betCycle.sawPlacing = false;
                         betCycle.actionAttempts = 0;
                         betCycle.nextActionAt = 0;
-                        betSetStatus('🤖 Đang tự bấm mức ' + level + 'K · ' + guide.label + ' · ô ' + (betCycle.stepIndex + 1) + '/7', 'ok');
+                        betSetStatus('🤖 Đang tự đặt ẢO mức ' + level + 'K · ' + guide.label + ' · ô ' + (betCycle.stepIndex + 1) + '/7', 'ok');
                         try { betCycleRenderButton(); } catch (e) {}
                         chip.click();
                         return true;
@@ -8226,7 +9387,7 @@ body {
                                     try { betRender(); } catch (e) {}
                                     return;
                                 }
-                                betCycleStop('⏹ Đã dừng chu kỳ: lệnh vừa bấm không tạo được lệnh chờ kết quả. Hãy kiểm tra trạng thái/token rồi bấm chạy lại.', 'err', false);
+                                betCycleStop('⏹ Đã dừng chu kỳ ảo: lệnh vừa bấm không tạo được lệnh chờ kết quả. Hãy kiểm tra vốn ảo, token lấy số và kỳ hiện tại rồi bấm chạy lại.', 'err', false);
                             }
                             return;
                         }
@@ -8295,7 +9456,7 @@ body {
                         const can0 = betCanPlace();
                         if (can0.action === 'token') {
                             if (auto) {
-                                betSetStatus('Token hết hạn — bấm Số dư để dán token mới', 'err');
+                                betSetStatus('Token lấy số hết hạn — bấm “Nhập token lấy số” để dán token mới', 'err');
                                 return { ok: false, error: betError('Token hết hạn', 'auth') };
                             }
                             betPlacing = true;
@@ -8325,7 +9486,7 @@ body {
                                 || (typeof tokenAlive === 'function' && !tokenAlive())
                                 || token === gtxSessionDeadToken) {
                                 gtxShowTokenProblem('Token hết hạn');
-                                betSetStatus('Token hết hạn — bấm Số dư để dán token mới', 'err');
+                                betSetStatus('Token lấy số hết hạn — bấm “Nhập token lấy số” để dán token mới', 'err');
                                 return { ok: false, error: betError('Token hết hạn', 'auth') };
                             }
                             try { await loadBetConfig(false); } catch (e) {}
@@ -8337,12 +9498,12 @@ body {
                             if (betSecondsLeft() <= BET_CLOSE_SECONDS) throw betError('Đã đóng cược kỳ này', 'closed');
                             const total = betTotal();
                             if (!(total > 0)) throw betError('Số tiền cược không hợp lệ');
-                            if (Number.isFinite(gtxLastBalance) && total > gtxLastBalance) throw betError('Không đủ số dư', 'insufficient');
+                            if (total > vbBalance()) throw betError('Không đủ vốn ảo', 'insufficient');
                             const confirmedIssue = betIssue;
                             if (!auto && !opts.skipConfirm) {
                                 const confirmText = 'Đặt ' + betSel.label + ' cho kỳ ' + confirmedIssue + '\n'
                                     + gtxFmtMoney(betCoin) + ' × ' + betCount + ' = ' + gtxFmtMoney(total)
-                                    + '\n\nBấm OK để đặt cược thật.';
+                                    + '\n\nBấm OK để đặt cược ẢO bằng vốn trong HTML. App không gửi lệnh cược thật lên game.';
                                 let confirmed = false;
                                 try { confirmed = !!window.confirm(confirmText); } catch (e) {}
                                 if (!confirmed) {
@@ -8361,70 +9522,63 @@ body {
                             if (!auto) {
                                 try { betWaitBeginFromSelection(confirmedIssue, confirmedDeadlineMs); } catch (e) {}
                             }
-                            const payload = {
-                                typeId: CFG.payload.typeId,
-                                issuenumber: betIssue,
-                                amount: Number(BET_DEFAULT_COIN),
-                                betCount: Number(betCount),
-                                gameType: Number(betSel.gameType),
-                                selectType: Number(betSel.selectType)
-                            };
-                            const res = await apiPost(CFG.apiBet, buildSignedBody(payload));
-                            const code = gtxBizCode(res);
-                            if (code !== 0) {
-                                let err = null;
-                                try { gtxApiData(res); } catch (e) { err = e; }
-                                if (!err) {
-                                    err = new Error((res && (res.msg || res.message)) || 'Đặt cược thất bại');
-                                    err.kind = 'api';
-                                    err.code = code;
+                            let placedFormula = 0;
+                            try {
+                                const placedGuide = betPatternGuideState();
+                                if (placedGuide && placedGuide.ready && betSel && betSel.key === placedGuide.key) {
+                                    placedFormula = Number(placedGuide.formula) === 2 ? 2 : 1;
                                 }
-                                throw err;
-                            }
+                            } catch (e) {}
+                            const virtualEntry = vbPlaceBet({
+                                issue: confirmedIssue,
+                                bit: Number(betSel.selectType) === 13 ? 1 : 0,
+                                count: Number(betCount),
+                                total: total,
+                                placedAt: Date.now(),
+                                deadlineMs: confirmedDeadlineMs,
+                                formula: placedFormula
+                            });
+                            if (!virtualEntry) throw betError('Không đủ vốn ảo cho mức ' + betCount + 'K', 'insufficient');
                             try { betMarkTokenAlive(); } catch (e) {}
-                            betSetStatus('Đã đặt ' + betSel.label + ' · ' + gtxFmtMoney(total)
-                                + ' · Kỳ ' + gtxShortIssue(confirmedIssue), 'ok');
+                            betSetStatus('Đã đặt ẢO ' + betSel.label + ' · ' + gtxFmtMoney(total)
+                                + ' · Kỳ ' + gtxShortIssue(confirmedIssue)
+                                + ' · Vốn còn ' + gtxFmtMoney(vbBalance()), 'ok');
                             if (!auto) {
                                 try {
                                     betManualWatchAdd({
-                                        oid: betExtractOrderId(res),
+                                        oid: virtualEntry.oid,
                                         issue: confirmedIssue,
                                         bit: Number(betSel.selectType) === 13 ? 1 : 0,
                                         count: Number(betCount),
                                         total: total,
-                                        placedAt: Date.now(),
+                                        placedAt: Number(virtualEntry.placedAt) || Date.now(),
                                         deadlineMs: confirmedDeadlineMs,
-                                        acct: betManualAccountKey()
+                                        formula: placedFormula,
+                                        virtual: true,
+                                        acct: ''
                                     });
                                 } catch (e) {}
                             }
                             betSel = null;
-                            [350, 1800, 4500].forEach(function (delay) {
-                                setTimeout(function () {
-                                    try {
-                                        const p = refreshGameBalanceOnly(true);
-                                        if (p && p.catch) p.catch(function () {});
-                                    } catch (e) {}
-                                }, delay);
-                            });
+                            try { vbRenderBalance(); } catch (e) {}
+                            try { vbRenderHistory(); } catch (e) {}
                             setTimeout(function () {
-                                try { refreshGameWallet(true); } catch (e) {}
-                                try { refreshBetIssue(true); } catch (e) {}
+                                try {
+                                    const pIssueAfterVirtualBet = refreshBetIssue(true);
+                                    if (pIssueAfterVirtualBet && pIssueAfterVirtualBet.catch) pIssueAfterVirtualBet.catch(function () {});
+                                } catch (e) {}
                             }, 900);
-                            return { ok: true, issue: confirmedIssue };
+                            return { ok: true, issue: confirmedIssue, oid: virtualEntry.oid, total: total, virtual: true };
                         } catch (e) {
                             if (gtxIsSessionError(e) || (e && e.kind === 'auth')) {
                                 try { gtxSessionDeadToken = extractToken(getToken() || ''); } catch (e2) {}
                                 gtxShowTokenProblem(gtxErrText(e));
-                                betSetStatus(gtxErrText(e) + ' — bấm Số dư để dán token mới', 'err');
+                                betSetStatus(gtxErrText(e) + ' — bấm “Nhập token lấy số” để dán token mới', 'err');
                             } else if (e && e.kind === 'net') {
-                                betSetStatus('Mất kết nối: chưa rõ lệnh đã vào hay chưa. Kiểm tra kết quả cược trước khi đặt lại.', 'err');
+                                betSetStatus('Mất kết nối khi lấy kỳ/số game · chưa trừ vốn ảo. Kiểm tra lịch sử ảo trước khi đặt lại.', 'err');
                                 setTimeout(function () {
-                                    try {
-                                        const p = refreshGameBalanceOnly(true);
-                                        if (p && p.catch) p.catch(function () {});
-                                    } catch (e2) {}
-                                    try { refreshGameWallet(true); } catch (e2) {}
+                                    try { vbRenderBalance(); } catch (e2) {}
+                                    try { vbRenderHistory(); } catch (e2) {}
                                 }, 1000);
                             } else {
                                 betSetStatus((e && e.message) ? e.message : gtxErrText(e), 'err');
@@ -8445,6 +9599,7 @@ body {
                         );
                     }
                     async function refreshGameBalanceOnly(force) {
+                        try { return vbRefreshVirtualWallet(force); } catch (e) { return false; }
                         const balanceEl = document.getElementById('gameBalance');
                         if (!balanceEl) return false;
                         if (document.hidden && !force) return false;
@@ -8561,6 +9716,7 @@ body {
                         }
                     }
                     async function refreshGameWallet(force) {
+                        try { return vbRefreshVirtualWallet(force); } catch (e) { return false; }
                         const balanceEl = document.getElementById('gameBalance');
                         if (!balanceEl) return false;
                         const importSeqAtStart = gtxTokenImportSeq;
@@ -8718,6 +9874,7 @@ body {
                             const bal = document.getElementById('gameBalance');
                             if (bal) bal.addEventListener('click', function () { gtxBalanceClicked(); });
                             try { betInitPanel(); } catch (e) {}
+                            try { vbInitControls(); } catch (e) {}
                             const tokEl = document.getElementById('tokenInput');
                             if (tokEl) ['paste', 'change', 'blur'].forEach(function (ev) {
                                 tokEl.addEventListener(ev, function () {
@@ -10169,6 +11326,7 @@ body {
                             const wrap = document.getElementById('segBsWrap');
                             if (wrap) wrap.classList.toggle('bs-random-ready', bsRandomShown);
                         } catch (e) {}
+                        try { bsFormulaRenderBadge(); } catch (e) {}
                         try { betSyncPatternGuide(true); } catch (e) {}
                     }
                     /* 0-1 cho KỲ CAO NHẤT trong BẢNG KẾT QUẢ: lấy 5 số CUỐI của dòng đó. */
@@ -10232,12 +11390,16 @@ body {
                             }
                         }
                         box.innerHTML = html;
+                        let formulaLabel = '';
+                        try {
+                            if (bsShuffled) formulaLabel = '   🔁 Công thức ' + bsFormulaDisplayedMode();
+                        } catch (e) {}
                         const ttl = document.getElementById('segBsTitle');
                         if (ttl) ttl.textContent = '🔢 LỚN / NHỎ — ' + bsCount() + ' ô '
                             + (bsPinned ? 'CUỐI của KỲ CAO NHẤT trong BẢNG' : (bsSrc || 'mới nhất'))
                             + (bsAdded === null ? ''
                                : (bsAdded ? '   🔁 đổi 1 số → 1 (vì toàn NHỎ <5)' : '   🔁 đổi 1 số → 0 (vì toàn LỚN ≥5)'))
-                            + (bsShuffled ? '   🔁 đã hoán đổi' : '');
+                            + formulaLabel;
                         if (lbl) lbl.textContent = '🔢 Lớn/Nhỏ (' + digits.length + ' số · '
                             + r.lon + ' lớn / ' + r.nho + ' nhỏ):';
                         let addIdx = -1;                  // vị trí ô ĐƯỢC THÊM trong dãy đang hiện
@@ -10260,8 +11422,9 @@ body {
                                + (bsAdded === null ? ''
                                   : ('  ·  🔁 ĐỔI 1 số thành ' + (bsAdded ? '1 (LỚN)' : '0 (NHỎ)')
                                      + ' vì ' + bsCount() + ' số gốc toàn ' + (bsAdded ? 'NHỎ (<5)' : 'LỚN (≥5)')))
-                               + (bsShuffled ? '  ·  🔁 đã hoán đổi' : ''))
+                               + formulaLabel)
                             : '· chưa có số trong kho ·';
+                        try { bsFormulaRenderBadge(); } catch (e) {}
                         try { betSyncPatternGuide(true); } catch (e) {}
                     }
                     function bsOrdered(digits) {   // 1/0 theo ĐÚNG thứ tự đang có (dùng sau khi xáo)
@@ -10270,34 +11433,629 @@ body {
                         for (let i = 0; i < pat.length; i++) if (pat[i]) lon++;
                         return { pat: pat, lon: lon, nho: pat.length - lon, tie: (lon * 2 === pat.length) };
                     }
-                    /* 🔁 QUY TẮC HOÁN ĐỔI CỐ ĐỊNH (thay cho random) — theo 7 số KẾT QUẢ (đuôi) của
-                       dòng kỳ cao nhất trong khung kết quả. K1..K7 = Lớn/Nhỏ của 7 số đó (số >=5 = LỚN):
-                         R1=K4 · R2=NGƯỢC K6 · R3=K3 · R4=K2 · R5=NGƯỢC K1 · R6=K5 · R7=NGƯỢC K7
+                    /* 🔁 HAI MÃ TRỰC TIẾP CÙNG VỊ TRÍ — theo 7 số KẾT QUẢ (đuôi) của
+                       dòng kỳ cao nhất trong khung kết quả. K1..K7 = Lớn/Nhỏ của 7 số đó (số >=5 = LỚN).
+                       CÔNG THỨC 1 — mã #####=#:
+                         R1=NGƯỢC K1 · R2=NGƯỢC K2 · R3=NGƯỢC K3 · R4=NGƯỢC K4 · R5=NGƯỢC K5 · R6=K6 · R7=NGƯỢC K7
+                       CÔNG THỨC 2 — mã đối lập hoàn toàn =====#=:
+                         R1=K1 · R2=K2 · R3=K3 · R4=K4 · R5=K5 · R6=NGƯỢC K6 · R7=K7
+                       Thắng ở R5, R6 hoặc R7 (25K/72K/180K) thì đổi 1<->2 cho chu kỳ tiếp theo.
                        Đảo ngược 1 số: cộng 5 rồi mod 10 (0-4 <-> 5-9) để lật nhóm LỚN<->NHỎ mà vẫn có số đại diện. */
-                    const BS_SWAP_SRC = [3, 5, 2, 1, 0, 4, 6];                 // R1..R7 lấy từ K4,K6,K3,K2,K1,K5,K7 (0-based)
-                    const BS_SWAP_INV = [false, true, false, false, true, false, true];   // R2, R5, R7 đảo ngược
-                    function bsSwapRuleDigits(base) {
+                    const BS_SWAP_SRC = [0, 1, 2, 3, 4, 5, 6];                 // R1..R7 lấy trực tiếp từ K1..K7, không hoán vị
+                    const BS_FORMULAS = {
+                        1: {
+                            inv: [true, true, true, true, true, false, true],
+                            text: 'Mã #####=# · R1=NGƯỢC K1 · R2=NGƯỢC K2 · R3=NGƯỢC K3 · R4=NGƯỢC K4 · R5=NGƯỢC K5 · R6=K6 · R7=NGƯỢC K7',
+                            txt: 'Ma #####=#: R1=nguoc K1, R2=nguoc K2, R3=nguoc K3, R4=nguoc K4, R5=nguoc K5, R6=K6, R7=nguoc K7'
+                        },
+                        2: {
+                            inv: [false, false, false, false, false, true, false],
+                            text: 'Mã =====#= · R1=K1 · R2=K2 · R3=K3 · R4=K4 · R5=K5 · R6=NGƯỢC K6 · R7=K7',
+                            txt: 'Ma =====#=: R1=K1, R2=K2, R3=K3, R4=K4, R5=K5, R6=nguoc K6, R7=K7'
+                        }
+                    };
+                    const LS_BS_FORMULA_MODE = 'vn168_bs_formula_mode_v2_direct';
+                    const LS_BS_FORMULA_LEDGER = 'vn168_bs_formula_ledger_v2_direct';
+                    const LS_BS_FORMULA_AUDIT = 'vn168_bs_formula_audit_v2_direct';
+                    let bsFormulaMode = 1;
+                    let bsFormulaAppliedMode = 1;
+                    let bsFormulaModeLoaded = false;
+                    let bsFormulaModeUpdatedAt = 0;
+                    let bsFormulaRefreshTimer = null;
+                    let bsFormulaLedger = [];
+                    let bsFormulaLedgerLoaded = false;
+                    let bsFormulaAuditState = {
+                        lastKey: '', lastFormula: 0, lastTo: 0, lastPlacedIndex: -1,
+                        checkedAt: 0, scanned: 0, source: '', inference: '', acct: ''
+                    };
+                    let bsFormulaAuditLoaded = false;
+                    let bsFormulaAuditLastSignature = '';
+                    let bsFormulaAuditLastRunAt = 0;
+                    let bsFormulaAuditStartupDone = false;
+                    let bsFormulaAuditStartupDoneAcct = '';
+                    let bsFormulaAuditStartupDoneAt = 0;
+                    function bsFormulaNormalize(mode) {
+                        return Number(mode) === 2 ? 2 : 1;
+                    }
+                    function bsFormulaLoad() {
+                        if (bsFormulaModeLoaded) return bsFormulaMode;
+                        bsFormulaModeLoaded = true;
+                        try {
+                            const rawText = localStorage.getItem(LS_BS_FORMULA_MODE);
+                            let raw = rawText;
+                            try { raw = rawText ? JSON.parse(rawText) : null; } catch (e) {}
+                            let savedMode = 1;
+                            let savedAcct = '';
+                            let savedAt = 0;
+                            if (raw && typeof raw === 'object') {
+                                savedMode = raw.mode;
+                                savedAcct = raw.acct ? String(raw.acct) : '';
+                                savedAt = Number(raw.at) || 0;
+                            } else if (raw !== null && raw !== undefined) {
+                                savedMode = raw;
+                            }
+                            let currentAcct = '';
+                            try { currentAcct = betManualAccountKey(); } catch (e) {}
+                            if (!savedAcct || !currentAcct || savedAcct === currentAcct) {
+                                bsFormulaMode = bsFormulaNormalize(savedMode);
+                                bsFormulaModeUpdatedAt = savedAt;
+                            }
+                        } catch (e) {}
+                        if (!bsFormulaModeUpdatedAt) {
+                            // Mốc bắt đầu của cặp mã trực tiếp mới: không dùng giao dịch
+                            // thuộc hai công thức cũ để tự đổi 1<->2 ngay khi nâng cấp.
+                            try { bsFormulaSave(); } catch (e) { bsFormulaModeUpdatedAt = Date.now(); }
+                        }
+                        bsFormulaAppliedMode = bsFormulaMode;
+                        return bsFormulaMode;
+                    }
+                    function bsFormulaSave() {
+                        bsFormulaModeUpdatedAt = Date.now();
+                        try {
+                            let acct = '';
+                            try { acct = betManualAccountKey(); } catch (e) {}
+                            localStorage.setItem(LS_BS_FORMULA_MODE, JSON.stringify({
+                                mode: bsFormulaNormalize(bsFormulaMode),
+                                acct: acct,
+                                at: bsFormulaModeUpdatedAt
+                            }));
+                        } catch (e) {}
+                    }
+                    function bsFormulaCurrent() {
+                        return bsFormulaLoad();
+                    }
+                    function bsFormulaDisplayedMode() {
+                        try {
+                            if (bsShuffled) return bsFormulaNormalize(bsFormulaAppliedMode);
+                        } catch (e) {}
+                        return bsFormulaCurrent();
+                    }
+                    function bsFormulaDef(mode) {
+                        return BS_FORMULAS[bsFormulaNormalize(mode === undefined || mode === null ? bsFormulaCurrent() : mode)];
+                    }
+                    function bsFormulaText(mode) {
+                        return bsFormulaDef(mode).text;
+                    }
+                    function bsFormulaRenderBadge() {
+                        const nextMode = bsFormulaCurrent();
+                        const shownMode = bsFormulaDisplayedMode();
+                        try {
+                            const wrap = document.getElementById('segBsWrap');
+                            if (wrap) {
+                                wrap.setAttribute('data-formula-mode', String(nextMode));
+                                wrap.setAttribute('data-formula-applied', String(shownMode));
+                                wrap.title = 'Đang dùng Công thức ' + shownMode + ': ' + bsFormulaText(shownMode)
+                                    + (shownMode !== nextMode ? (' · Chu kỳ sau: Công thức ' + nextMode) : '');
+                            }
+                            const badge = document.getElementById('bsFormulaBadge');
+                            if (badge) {
+                                const label = '⚗️ CÔNG THỨC ' + shownMode;
+                                if (badge.textContent !== label) badge.textContent = label;
+                                badge.setAttribute('data-formula-mode', String(shownMode));
+                                badge.title = 'Công thức ' + shownMode + ': ' + bsFormulaText(shownMode)
+                                    + (shownMode !== nextMode ? (' · Chu kỳ tiếp theo sẽ dùng Công thức ' + nextMode) : '');
+                            }
+                        } catch (e) {}
+                        return shownMode;
+                    }
+                    function bsFormulaScheduleRefresh() {
+                        try {
+                            if (bsFormulaRefreshTimer) clearTimeout(bsFormulaRefreshTimer);
+                        } catch (e) {}
+                        try {
+                            bsFormulaRefreshTimer = setTimeout(function () {
+                                bsFormulaRefreshTimer = null;
+                                try {
+                                    if ((typeof betPlacing !== 'undefined' && betPlacing)
+                                        || (typeof betManualHasPendingWatcher === 'function' && betManualHasPendingWatcher())
+                                        || (typeof betCycle !== 'undefined' && betCycle && betCycle.active)) return;
+                                } catch (e) {}
+                                try {
+                                    if (bsBaseDigits && bsBaseDigits.length === BS_SWAP_SRC.length) bsShuffle();
+                                } catch (e) {}
+                            }, 30);
+                        } catch (e) {}
+                    }
+                    function bsFormulaSet(mode, refresh) {
+                        const next = bsFormulaNormalize(mode);
+                        const prev = bsFormulaCurrent();
+                        if (next === prev) {
+                            try { bsFormulaRenderBadge(); } catch (e) {}
+                            return false;
+                        }
+                        bsFormulaMode = next;
+                        bsFormulaModeLoaded = true;
+                        bsFormulaSave();
+                        try { bsFormulaRenderBadge(); } catch (e) {}
+                        if (refresh !== false) bsFormulaScheduleRefresh();
+                        return true;
+                    }
+                    function bsFormulaAcctOk(acct) {
+                        const a = String(acct || '');
+                        if (!a) return true;
+                        let cur = '';
+                        try { cur = betManualAccountKey(); } catch (e) {}
+                        return !cur || a === cur;
+                    }
+                    function bsFormulaLedgerTime(entry) {
+                        return Math.max(Number(entry && entry.settledAt) || 0, Number(entry && entry.placedAt) || 0);
+                    }
+                    function bsFormulaLedgerNormalize(raw) {
+                        raw = raw || {};
+                        const oid = String(raw.oid || '').trim();
+                        const issue = String(raw.issue || '').trim();
+                        const bit = Number(raw.bit) === 1 ? 1 : 0;
+                        const count = Number(raw.count) || 0;
+                        const placedAt = Number(raw.placedAt) || 0;
+                        return {
+                            key: String(raw.key || (oid ? ('o:' + oid) : ('k:' + issue + '|' + bit + '|' + count + '|' + placedAt))),
+                            oid: oid,
+                            issue: issue,
+                            bit: bit,
+                            count: count,
+                            total: Number(raw.total) || 0,
+                            formula: Number(raw.formula) === 2 ? 2 : (Number(raw.formula) === 1 ? 1 : 0),
+                            win: raw.win === true ? true : (raw.win === false ? false : null),
+                            placedAt: placedAt,
+                            settledAt: Number(raw.settledAt) || 0,
+                            source: String(raw.source || ''),
+                            acct: String(raw.acct || '')
+                        };
+                    }
+                    function bsFormulaLedgerLoad() {
+                        if (bsFormulaLedgerLoaded) return bsFormulaLedger;
+                        bsFormulaLedgerLoaded = true;
+                        try {
+                            const arr = JSON.parse(localStorage.getItem(LS_BS_FORMULA_LEDGER) || '[]');
+                            bsFormulaLedger = (Array.isArray(arr) ? arr : []).map(bsFormulaLedgerNormalize)
+                                .filter(function (x) { return !!x.issue && x.count > 0; })
+                                .sort(function (a, b) { return bsFormulaLedgerTime(b) - bsFormulaLedgerTime(a); })
+                                .slice(0, 200);
+                        } catch (e) { bsFormulaLedger = []; }
+                        return bsFormulaLedger;
+                    }
+                    function bsFormulaLedgerSave() {
+                        try {
+                            bsFormulaLedger = bsFormulaLedger.slice().sort(function (a, b) {
+                                return bsFormulaLedgerTime(b) - bsFormulaLedgerTime(a);
+                            }).slice(0, 200);
+                            localStorage.setItem(LS_BS_FORMULA_LEDGER, JSON.stringify(bsFormulaLedger));
+                        } catch (e) {}
+                    }
+                    function bsFormulaLedgerUpsert(raw) {
+                        const entry = bsFormulaLedgerNormalize(raw);
+                        if (!entry.issue || !entry.count) return null;
+                        bsFormulaLedgerLoad();
+                        let idx = -1;
+                        for (let i = 0; i < bsFormulaLedger.length; i++) {
+                            const x = bsFormulaLedger[i];
+                            if (entry.oid && x.oid && entry.oid === x.oid) { idx = i; break; }
+                            if (entry.key && x.key && entry.key === x.key) { idx = i; break; }
+                        }
+                        if (idx < 0) {
+                            for (let i = 0; i < bsFormulaLedger.length; i++) {
+                                const x = bsFormulaLedger[i];
+                                if (entry.acct && x.acct && entry.acct !== x.acct) continue;
+                                if (x.issue === entry.issue && Number(x.bit) === Number(entry.bit) && Number(x.count) === Number(entry.count)) { idx = i; break; }
+                            }
+                        }
+                        let merged = entry;
+                        if (idx >= 0) {
+                            const old = bsFormulaLedger[idx];
+                            merged = Object.assign({}, old, entry, {
+                                key: entry.key || old.key,
+                                oid: entry.oid || old.oid,
+                                total: entry.total || old.total,
+                                formula: entry.formula || old.formula,
+                                win: entry.win !== null ? entry.win : old.win,
+                                placedAt: old.placedAt && entry.placedAt ? Math.min(old.placedAt, entry.placedAt) : (entry.placedAt || old.placedAt),
+                                settledAt: Math.max(Number(old.settledAt) || 0, Number(entry.settledAt) || 0),
+                                source: entry.source || old.source,
+                                acct: entry.acct || old.acct
+                            });
+                            bsFormulaLedger[idx] = merged;
+                        } else {
+                            bsFormulaLedger.push(entry);
+                        }
+                        bsFormulaLedgerSave();
+                        return merged;
+                    }
+                    function bsFormulaRowOid(row) {
+                        row = row || {};
+                        return String(row.orderNumber || row.orderId || row.betId || row.id || row.tradeNo || row.orderSn || row.orderNo || '').trim();
+                    }
+                    function bsFormulaRowTime(row) {
+                        row = row || {};
+                        const raw = row.addTime || row.createTime || row.time || row.betTime || row.settleTime || '';
+                        if (!raw) return 0;
+                        let t = Date.parse(String(raw));
+                        if (!Number.isFinite(t)) t = Date.parse(String(raw).replace(/-/g, '/'));
+                        return Number.isFinite(t) ? t : 0;
+                    }
+                    function bsFormulaLedgerForRow(row) {
+                        bsFormulaLedgerLoad();
+                        const oid = bsFormulaRowOid(row);
+                        let key = '';
+                        try { key = gtxBetRowKey(row); } catch (e) {}
+                        let issue = '';
+                        let bit = -1;
+                        try { issue = betAutoRowIssue(row); } catch (e) { issue = String((row && (row.issueNumber || row.issue)) || '').trim(); }
+                        try { bit = betAutoRowBit(row); } catch (e) {}
+                        const count = Number(row && row.betCount) || 0;
+                        const sorted = bsFormulaLedger.slice().sort(function (a, b) { return bsFormulaLedgerTime(b) - bsFormulaLedgerTime(a); });
+                        for (let i = 0; i < sorted.length; i++) {
+                            const x = sorted[i];
+                            if (!bsFormulaAcctOk(x.acct)) continue;
+                            if (oid && x.oid && oid === x.oid) return x;
+                            if (key && x.key && key === x.key) return x;
+                        }
+                        let fallback = null;
+                        for (let i = 0; i < sorted.length; i++) {
+                            const x = sorted[i];
+                            if (!bsFormulaAcctOk(x.acct)) continue;
+                            if (x.issue === issue && Number(x.bit) === Number(bit) && Number(x.count) === count) {
+                                if (x.formula === 1 || x.formula === 2) return x;
+                                if (!fallback) fallback = x;
+                            }
+                        }
+                        return fallback;
+                    }
+                    function bsFormulaResolveWatcherFormula(watcher) {
+                        const direct = Number(watcher && watcher.formula);
+                        if (direct === 1 || direct === 2) return direct;
+                        try {
+                            if (typeof betCycleMatchesWatcher === 'function' && betCycleMatchesWatcher(watcher)
+                                && typeof betCycle !== 'undefined' && betCycle) {
+                                return Number(betCycle.formula) === 2 ? 2 : 1;
+                            }
+                        } catch (e) {}
+                        try {
+                            if (bsShuffled) return bsFormulaDisplayedMode();
+                        } catch (e) {}
+                        return 0;
+                    }
+                    function bsFormulaLedgerRecordOutcome(watcher, row, win) {
+                        const formula = bsFormulaResolveWatcherFormula(watcher);
+                        if (formula !== 1 && formula !== 2) return null;
+                        let key = '';
+                        try { key = gtxBetRowKey(row); } catch (e) {}
+                        return bsFormulaLedgerUpsert({
+                            key: key,
+                            oid: String((watcher && watcher.oid) || bsFormulaRowOid(row) || ''),
+                            issue: String((watcher && watcher.issue) || ''),
+                            bit: Number(watcher && watcher.bit) === 1 ? 1 : 0,
+                            count: Number(watcher && watcher.count) || 0,
+                            total: Number(watcher && watcher.total) || 0,
+                            formula: formula,
+                            win: !!win,
+                            placedAt: Number(watcher && watcher.placedAt) || 0,
+                            settledAt: Date.now(),
+                            source: 'settled-watcher',
+                            acct: String((watcher && watcher.acct) || '')
+                        });
+                    }
+                    function bsFormulaAuditLoad() {
+                        if (bsFormulaAuditLoaded) return bsFormulaAuditState;
+                        bsFormulaAuditLoaded = true;
+                        try {
+                            const raw = JSON.parse(localStorage.getItem(LS_BS_FORMULA_AUDIT) || 'null');
+                            if (raw && typeof raw === 'object') {
+                                const acct = raw.acct ? String(raw.acct) : '';
+                                if (bsFormulaAcctOk(acct)) {
+                                    bsFormulaAuditState = {
+                                        lastKey: String(raw.lastKey || ''),
+                                        lastFormula: Number(raw.lastFormula) === 2 ? 2 : (Number(raw.lastFormula) === 1 ? 1 : 0),
+                                        lastTo: Number(raw.lastTo) === 2 ? 2 : (Number(raw.lastTo) === 1 ? 1 : 0),
+                                        lastPlacedIndex: Number.isFinite(Number(raw.lastPlacedIndex)) ? Number(raw.lastPlacedIndex) : -1,
+                                        checkedAt: Number(raw.checkedAt) || 0,
+                                        scanned: Number(raw.scanned) || 0,
+                                        source: String(raw.source || ''),
+                                        inference: String(raw.inference || ''),
+                                        acct: acct
+                                    };
+                                }
+                            }
+                        } catch (e) {}
+                        return bsFormulaAuditState;
+                    }
+                    function bsFormulaAuditSave() {
+                        try {
+                            let acct = '';
+                            try { acct = betManualAccountKey(); } catch (e) {}
+                            bsFormulaAuditState.acct = acct || bsFormulaAuditState.acct || '';
+                            localStorage.setItem(LS_BS_FORMULA_AUDIT, JSON.stringify(bsFormulaAuditState));
+                        } catch (e) {}
+                    }
+                    function bsFormulaAuditMark(info) {
+                        bsFormulaAuditLoad();
+                        bsFormulaAuditState = {
+                            lastKey: String((info && info.key) || ''),
+                            lastFormula: Number(info && info.formula) === 2 ? 2 : (Number(info && info.formula) === 1 ? 1 : 0),
+                            lastTo: Number(info && info.to) === 2 ? 2 : (Number(info && info.to) === 1 ? 1 : 0),
+                            lastPlacedIndex: Number.isFinite(Number(info && info.placedIndex)) ? Number(info.placedIndex) : -1,
+                            checkedAt: Date.now(),
+                            scanned: Number(info && info.scanned) || bsFormulaAuditState.scanned || 0,
+                            source: String((info && info.source) || ''),
+                            inference: String((info && info.inference) || ''),
+                            acct: bsFormulaAuditState.acct || ''
+                        };
+                        bsFormulaAuditSave();
+                        return bsFormulaAuditState;
+                    }
+                    function bsFormulaInferHistoricalFormula(row, txKey) {
+                        const audit = bsFormulaAuditLoad();
+                        if (txKey && audit.lastKey === txKey && (audit.lastFormula === 1 || audit.lastFormula === 2)) return audit.lastFormula;
+                        const current = bsFormulaCurrent();
+                        const updatedAt = Number(bsFormulaModeUpdatedAt) || 0;
+                        const rowTime = bsFormulaRowTime(row);
+                        if (rowTime && updatedAt) return updatedAt >= rowTime ? (current === 1 ? 2 : 1) : current;
+                        if (!updatedAt) return current;
+                        return 0;
+                    }
+                    function bsFormulaAuditBoundary() {
+                        try {
+                            if (typeof betPlacing !== 'undefined' && betPlacing) return 'placing';
+                            if (typeof betManualHasPendingWatcher === 'function' && betManualHasPendingWatcher()) return 'pending';
+                            if (typeof betCycle !== 'undefined' && betCycle && betCycle.active) return 'cycle-active';
+                            if (typeof betAuto !== 'undefined' && betAuto && (betAuto.active || betAuto.starting)) return 'auto-active';
+                            if (typeof betManualSuggestedLoad === 'function' && Number(betManualSuggestedLoad()) !== 0) return 'mid-cycle';
+                        } catch (e) {}
+                        return '';
+                    }
+                    function bsFormulaAuditRowWin(row, bit) {
+                        if (!row || Number(row.state) === 2) return null;
+                        try {
+                            const outcome = betManualOutcome(row, { bit: bit });
+                            return outcome ? !!outcome.win : null;
+                        } catch (e) {}
+                        const stateN = Number(row.state);
+                        if (stateN === 1 || row.state === true) return true;
+                        if (stateN === 0 || row.state === false) return false;
+                        let profit = NaN;
+                        try { profit = gtxParseMoney(row.profitAmount); } catch (e) {}
+                        if (Number.isFinite(profit) && profit !== 0) return profit > 0;
+                        return null;
+                    }
+                    function bsFormulaAuditRecent30(rows, opts) {
+                        opts = opts || {};
+                        const startupOnce = !!opts.startupOnce || opts.source === 'app-open';
+                        if (!startupOnce) {
+                            return { skipped: 'not-app-open', found: false, changed: false, scanned: 0, source: String(opts.source || '') };
+                        }
+                        let startupAcct = '';
+                        try { startupAcct = betManualAccountKey(); } catch (e) {}
+                        if (bsFormulaAuditStartupDone) {
+                            if (!startupAcct || !bsFormulaAuditStartupDoneAcct || startupAcct === bsFormulaAuditStartupDoneAcct) {
+                                return {
+                                    skipped: 'app-open-done',
+                                    found: false,
+                                    changed: false,
+                                    scanned: 0,
+                                    source: String(opts.source || ''),
+                                    startupOnce: true,
+                                    startupDoneAt: bsFormulaAuditStartupDoneAt
+                                };
+                            }
+                            // Đổi sang tài khoản khác ngay trong cùng một lần mở trang:
+                            // cho phép đúng một lần rà soát khởi động cho tài khoản mới.
+                            bsFormulaAuditStartupDone = false;
+                            bsFormulaAuditStartupDoneAcct = '';
+                            bsFormulaAuditStartupDoneAt = 0;
+                            bsFormulaAuditLastSignature = '';
+                            bsFormulaAuditLastRunAt = 0;
+                        }
+                        const finishStartupAudit = function (result) {
+                            bsFormulaAuditStartupDone = true;
+                            bsFormulaAuditStartupDoneAcct = startupAcct || '';
+                            bsFormulaAuditStartupDoneAt = Date.now();
+                            result.startupOnce = true;
+                            result.startupDoneAt = bsFormulaAuditStartupDoneAt;
+                            return result;
+                        };
+                        const boundary = opts.ignoreBoundary ? '' : bsFormulaAuditBoundary();
+                        if (boundary) return { skipped: boundary, found: false, changed: false, scanned: 0 };
+                        let list = [];
+                        if (rows && rows.length) list = rows.slice();
+                        else {
+                            try { list = (gtxBetHistoryRows || []).slice(); } catch (e) { list = []; }
+                        }
+                        if (!list.length) return { found: false, changed: false, scanned: 0, reason: 'no-history' };
+                        try { list.sort(gtxBetRowCmp); } catch (e) {}
+                        list = list.slice(0, 30);
+                        let levels = [1, 2, 5, 10, 25, 72, 180];
+                        try {
+                            if (typeof BET_MULTIPLES_CUSTOM !== 'undefined' && BET_MULTIPLES_CUSTOM.length >= 7) levels = BET_MULTIPLES_CUSTOM;
+                        } catch (e) {}
+                        let signatureParts = [String(bsFormulaCurrent()), String(list.length)];
+                        for (let s = 0; s < list.length; s++) {
+                            let k = '';
+                            try { k = gtxBetRowKey(list[s]); } catch (e) {}
+                            signatureParts.push(k + ':' + String(list[s] && list[s].state) + ':' + String(list[s] && list[s].profitAmount) + ':' + String(list[s] && list[s].betCount));
+                        }
+                        const signature = signatureParts.join('|');
+                        const now = Date.now();
+                        if (!opts.forceScan && signature === bsFormulaAuditLastSignature && now - bsFormulaAuditLastRunAt < 5000) {
+                            return { skipped: 'duplicate', found: false, changed: false, scanned: list.length };
+                        }
+                        bsFormulaAuditLastSignature = signature;
+                        bsFormulaAuditLastRunAt = now;
+                        const audit = bsFormulaAuditLoad();
+                        for (let i = 0; i < list.length; i++) {
+                            const row = list[i] || {};
+                            let bit = -1;
+                            try { bit = betAutoRowBit(row); } catch (e) {}
+                            if (bit !== 0 && bit !== 1) continue;
+                            const placedIndex = levels.indexOf(Number(row.betCount));
+                            if (placedIndex < 4) continue;
+                            if (bsFormulaAuditRowWin(row, bit) !== true) continue;
+                            let txKey = '';
+                            try { txKey = gtxBetRowKey(row); } catch (e) {}
+                            const ledger = bsFormulaLedgerForRow(row);
+                            let placedFormula = ledger && (ledger.formula === 1 || ledger.formula === 2) ? ledger.formula : 0;
+                            let inference = placedFormula ? 'ledger' : '';
+                            if (!placedFormula) {
+                                placedFormula = bsFormulaInferHistoricalFormula(row, txKey);
+                                inference = placedFormula ? 'timeline-inferred' : 'unknown';
+                                if (placedFormula) {
+                                    let issue = '';
+                                    try { issue = betAutoRowIssue(row); } catch (e) {}
+                                    bsFormulaLedgerUpsert({
+                                        key: txKey,
+                                        oid: bsFormulaRowOid(row),
+                                        issue: issue,
+                                        bit: bit,
+                                        count: Number(row.betCount) || 0,
+                                        total: Number(row.amount) || ((Number(row.betCount) || 0) * 1000),
+                                        formula: placedFormula,
+                                        win: true,
+                                        placedAt: bsFormulaRowTime(row) || now,
+                                        settledAt: bsFormulaRowTime(row) || now,
+                                        source: 'audit-30',
+                                        acct: ledger && ledger.acct ? ledger.acct : ''
+                                    });
+                                }
+                            }
+                            if (placedFormula !== 1 && placedFormula !== 2) {
+                                return finishStartupAudit({
+                                    found: true, unknownFormula: true, changed: false,
+                                    key: txKey, placedIndex: placedIndex, scanned: list.length,
+                                    source: String(opts.source || '')
+                                });
+                            }
+                            const desired = placedFormula === 1 ? 2 : 1;
+                            const current = bsFormulaCurrent();
+                            let changed = false;
+                            let refreshed = false;
+                            if (current !== desired) {
+                                if (opts.refresh === 'immediate') {
+                                    changed = bsFormulaSet(desired, false);
+                                    try {
+                                        if (bsBaseDigits && bsBaseDigits.length === BS_SWAP_SRC.length) { bsShuffle(); refreshed = true; }
+                                    } catch (e) {}
+                                } else if (opts.refresh === 'defer') {
+                                    changed = bsFormulaSet(desired, false);
+                                } else {
+                                    changed = bsFormulaSet(desired, true);
+                                    refreshed = !!changed;
+                                }
+                            } else {
+                                let shown = current;
+                                try { shown = bsFormulaDisplayedMode(); } catch (e) {}
+                                if (shown !== desired && opts.refresh !== 'defer') {
+                                    if (opts.refresh === 'immediate') {
+                                        try {
+                                            if (bsBaseDigits && bsBaseDigits.length === BS_SWAP_SRC.length) { bsShuffle(); refreshed = true; }
+                                        } catch (e) {}
+                                    } else {
+                                        bsFormulaScheduleRefresh();
+                                        refreshed = true;
+                                    }
+                                }
+                            }
+                            const alreadyApplied = !!(audit && audit.lastKey && txKey && audit.lastKey === txKey && !changed);
+                            bsFormulaAuditMark({
+                                key: txKey,
+                                formula: placedFormula,
+                                to: desired,
+                                placedIndex: placedIndex,
+                                scanned: list.length,
+                                source: String(opts.source || 'audit-30'),
+                                inference: inference
+                            });
+                            if (changed && opts.announce !== false) {
+                                try {
+                                    betSetStatus('🔎 Đã rà soát ' + list.length + '/30 giao dịch gần nhất: thấy thắng ở R'
+                                        + (placedIndex + 1) + ' bằng Công thức ' + placedFormula
+                                        + ' · chu kỳ mới dùng Công thức ' + desired, 'ok');
+                                } catch (e) {}
+                            }
+                            return finishStartupAudit({
+                                found: true,
+                                changed: !!changed,
+                                refreshed: !!refreshed,
+                                alreadyApplied: alreadyApplied,
+                                from: placedFormula,
+                                to: desired,
+                                placedIndex: placedIndex,
+                                key: txKey,
+                                scanned: list.length,
+                                inference: inference,
+                                source: String(opts.source || '')
+                            });
+                        }
+                        try {
+                            bsFormulaAuditState.checkedAt = now;
+                            bsFormulaAuditState.scanned = list.length;
+                            bsFormulaAuditState.source = String(opts.source || 'audit-30');
+                            bsFormulaAuditSave();
+                        } catch (e) {}
+                        return finishStartupAudit({ found: false, changed: false, scanned: list.length, source: String(opts.source || '') });
+                    }
+                    function bsFormulaOnBetOutcome(win, watcher) {
+                        if (!win || !watcher) return null;
+                        let levels = [1, 2, 5, 10, 25, 72, 180];
+                        try {
+                            if (typeof BET_MULTIPLES_CUSTOM !== 'undefined' && BET_MULTIPLES_CUSTOM.length >= 7) levels = BET_MULTIPLES_CUSTOM;
+                        } catch (e) {}
+                        const placedIndex = levels.indexOf(Number(watcher.count));
+                        if (placedIndex < 4) return null;   // thắng ở R5/R6/R7 (25K/72K/180K) mới đổi công thức
+                        const placedFormula = bsFormulaResolveWatcherFormula(watcher);
+                        if (placedFormula !== 1 && placedFormula !== 2) return null;
+                        const next = placedFormula === 1 ? 2 : 1;
+                        const changed = bsFormulaCurrent() !== next && bsFormulaSet(next, true);
+                        return {
+                            changed: !!changed,
+                            from: placedFormula,
+                            to: next,
+                            placedIndex: placedIndex
+                        };
+                    }
+                    function bsSwapRuleDigits(base, mode) {
                         if (!base || base.length !== BS_SWAP_SRC.length) return null;
+                        const inv = bsFormulaDef(mode).inv;
                         const out = [];
                         for (let i = 0; i < BS_SWAP_SRC.length; i++) {
                             let d = Number(base[BS_SWAP_SRC[i]]);
                             if (!Number.isFinite(d)) d = 0;
-                            if (BS_SWAP_INV[i]) d = (d + 5) % 10;
+                            if (inv[i]) d = (d + 5) % 10;
                             out.push(String(d));
                         }
                         return out;
                     }
-                    function bsShuffle() {   // giữ tên cũ cho các chỗ gọi sẵn có — nay là ÁP QUY TẮC HOÁN ĐỔI, không random
+                    function bsShuffle() {   // giữ tên cũ cho các chỗ gọi sẵn có — nay là ÁP CÔNG THỨC 1/2, không random
                         try {
                             const base = (bsBaseDigits && bsBaseDigits.length) ? bsBaseDigits.slice()
                                        : ((bsCurDigits && bsCurDigits.length) ? bsCurDigits.slice() : bsDigitsNewest());
                             if (base.length < 2) return;
-                            const swapped = bsSwapRuleDigits(base);
+                            const formulaMode = bsFormulaCurrent();
+                            const swapped = bsSwapRuleDigits(base, formulaMode);
                             bsPerm = BS_SWAP_SRC.slice();
                             bsBaseDigits = base.slice();
+                            bsFormulaAppliedMode = formulaMode;
                             bsShuffled = true;
                             bsPinned = true;               // vòng 2s/3s không được ghi đè
                             bsRender(swapped || base.slice(), true);
+                            try { bsFormulaRenderBadge(); } catch (e) {}
                         } catch (e) { try { console.warn('[BigSmall]', e); } catch (e2) {} }
                     }
                     function bsSwapTxtLines() {   // mấy dòng "kết quả hoán đổi" để ghi vào file TXT xuất ra
@@ -10313,7 +12071,8 @@ body {
                             let prefix = [];
                             try { if (typeof segPrefixDigits === 'function') prefix = segPrefixDigits(); } catch (e) {}
                             out.push('KET QUA HOAN DOI LON/NHO | ky goc: ' + ((typeof bsTopIssue !== 'undefined' && bsTopIssue) || '') + ' | ' + new Date().toLocaleString('vi-VN'));
-                            out.push('Quy tac: R1=K4, R2=nguoc K6, R3=K3, R4=K2, R5=nguoc K1, R6=K5, R7=nguoc K7 | so >=5 = LON (1), so <=4 = NHO (0)');
+                            const appliedFormula = bsFormulaDisplayedMode();
+                            out.push('Cong thuc ' + appliedFormula + ': ' + bsFormulaDef(appliedFormula).txt + ' | so >=5 = LON (1), so <=4 = NHO (0)');
                             if (prefix && prefix.join('')) out.push('3 so nhap: ' + prefix.join(' '));
                             out.push('7 so ket qua K: ' + base.join(' ') + ' -> ' + base.map(bit).join('') + ' (' + base.map(word).join(' ') + ')');
                             const seq = cur.map(function (d, i) { return word(d) + ' ' + (levels[i] !== undefined ? levels[i] : levels[levels.length - 1]) + 'k'; }).join(', ');
@@ -10604,7 +12363,16 @@ body {
                                     }
                                 } catch (e) {}
                                 try { refreshBigSmall(); } catch (e) {}
-                                findSegmentsFromInput();
+                                const segSearchAfterFill = findSegmentsFromInput();
+                                if (opts.fromWin && segSearchAfterFill && typeof segSearchAfterFill.then === 'function') {
+                                    try {
+                                        await Promise.race([
+                                            segSearchAfterFill.catch(function () { return false; }),
+                                            sleep(10000)
+                                        ]);
+                                    } catch (e) {}
+                                    try { betSyncPatternGuide(true); } catch (e) {}
+                                }
                                 try { betRender(); } catch (e) {}
                                 // bấm nút là để khỏi gõ tay -> thu bàn phím lại (nếu con trỏ đang ở ô nhập)
                                 try { const ae = document.activeElement; if (ae && /^segD[0-9]+$/.test(ae.id || '')) ae.blur(); } catch (e) {}
@@ -10912,18 +12680,19 @@ body {
                                 info.style.color = '#f87171';
                                 info.textContent = '⚠️ Nhập đủ ' + segPrefixLen() + ' ô, mỗi ô một số từ 0 đến 9.';
                             }
-                            return;
+                            return Promise.resolve(false);
                         }
                         dataTableSeg = { prefix: vals, len: vals.length };
                         // có kho trong máy -> tra ngay trên máy (nhanh nhất)
-                        if (gameArchive.length >= SEG_TOTAL) { dataTableFbSegs = null; renderDataTable('segments'); return; }
+                        if (gameArchive.length >= SEG_TOTAL) { dataTableFbSegs = null; renderDataTable('segments'); return Promise.resolve(true); }
                         // KHÔNG có kho trong máy -> tra TRỰC TIẾP trên Firebase (chỉ đọc 1 doc nhỏ)
-                        if (!fbDB) { dataTableFbSegs = null; renderDataTable('segments'); return; }
+                        if (!fbDB) { dataTableFbSegs = null; renderDataTable('segments'); return Promise.resolve(true); }
                         if (info) { info.style.color = '#94a3b8'; info.textContent = '☁️ Đang tra trên Firebase…'; }
-                        segSearchFirebase(vals).then(function (r) {
+                        return segSearchFirebase(vals).then(function (r) {
                             if (r && !r.missing) {
                                 dataTableFbSegs = r.segs;
                                 renderDataTable('segments');
+                                return true;
                             } else {
                                 dataTableFbSegs = null;
                                 renderDataTable('segments');
@@ -10931,10 +12700,12 @@ body {
                                     info.style.color = '#f87171';
                                     info.textContent = '☁️ Chưa có chỉ mục đoạn số trên Firebase — bấm "⬇️ Tải 100 trang" (hoặc "☁️ Cập nhật chỉ mục") để dựng 1 lần, sau này tra liền không cần tải nữa.';
                                 }
+                                return false;
                             }
                         }).catch(function () {
                             dataTableFbSegs = null; renderDataTable('segments');
                             if (info) { info.style.color = '#f87171'; info.textContent = '⚠️ Không tra được trên Firebase.'; }
+                            return false;
                         });
                     }
                     function renderDataTable(mode) {
@@ -12205,4 +13976,4 @@ body {
                         });
                 </script>
    
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4e048c8290704ef',t:'MTc5MjU4NTkzOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c54bc6ad04c5e8',t:'MTc5MjMwMjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d8a7ea18b8855d',t:'MTc5MjUwNTk0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></html>
