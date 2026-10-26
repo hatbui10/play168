@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đảo Bit Ngẫu Nhiên 0-1</title>
+  <title>Đảo Bit Ngẫu Nhiên 0-1 (Nút 3D Gradient)</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -43,15 +43,36 @@
     .flip-card-inner.is-flipped {
       transform: rotateY(180deg);
     }
-    
-    /* Ẩn mũi tên tăng giảm mặc định của input number/tel */
-    input[type="tel"]::-webkit-outer-spin-button,
-    input[type="tel"]::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
+
+    /* Hiệu ứng Nút 3D Gradient */
+    .btn-3d-cyan {
+      background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+      box-shadow: 0 6px 0 #0369a1, 0 10px 20px rgba(6, 182, 212, 0.35);
+      transition: all 0.1s ease;
     }
-    input[type="tel"] {
-      -moz-appearance: textfield;
+    .btn-3d-cyan:hover {
+      background: linear-gradient(135deg, #22d3ee 0%, #0369a1 100%);
+      box-shadow: 0 8px 0 #0369a1, 0 12px 25px rgba(6, 182, 212, 0.45);
+      transform: translateY(-2px);
+    }
+    .btn-3d-cyan:active, .btn-3d-cyan.pressed {
+      transform: translateY(4px) !important;
+      box-shadow: 0 2px 0 #0369a1, 0 4px 10px rgba(6, 182, 212, 0.25) !important;
+    }
+
+    .btn-3d-indigo {
+      background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+      box-shadow: 0 6px 0 #3730a3, 0 10px 20px rgba(99, 102, 241, 0.35);
+      transition: all 0.1s ease;
+    }
+    .btn-3d-indigo:hover {
+      background: linear-gradient(135deg, #818cf8 0%, #3730a3 100%);
+      box-shadow: 0 8px 0 #3730a3, 0 12px 25px rgba(99, 102, 241, 0.45);
+      transform: translateY(-2px);
+    }
+    .btn-3d-indigo:active, .btn-3d-indigo.pressed {
+      transform: translateY(4px) !important;
+      box-shadow: 0 2px 0 #3730a3, 0 4px 10px rgba(99, 102, 241, 0.25) !important;
     }
   </style>
 </head>
@@ -86,20 +107,39 @@
     <div class="w-full bg-slate-800/60 border border-slate-700/60 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl mb-6">
       
       <!-- Lựa chọn số lượng ô -->
-      <div class="mb-8 flex flex-col items-center">
+      <div class="mb-6 flex flex-col items-center">
         <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
           <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
           Chọn số lượng ô nhập (4 - 10)
         </label>
         <div class="flex flex-wrap justify-center gap-2 p-1.5 bg-slate-900/80 rounded-2xl border border-slate-700/80" id="sizeSelector">
-          <!-- Các nút chọn kích thước từ 4 đến 10 -->
+          <!-- Render bằng JS -->
         </div>
       </div>
 
       <!-- Khung hiển thị các ô nhập (Flex Wrap tự xuống dòng) -->
       <div class="w-full flex justify-center mb-8">
         <div id="inputsContainer" class="flex flex-wrap justify-center gap-3 sm:gap-4 max-w-full">
-          <!-- Các ô input sẽ được render bằng JS ở đây -->
+          <!-- Render bằng JS -->
+        </div>
+      </div>
+
+      <!-- Bàn phím 3D Gradient trực tiếp trên giao diện -->
+      <div class="flex flex-col items-center mb-8">
+        <span class="text-xs text-slate-400 mb-3 font-medium flex items-center gap-1">
+          <i data-lucide="mouse-pointer" class="w-3.5 h-3.5 text-cyan-400"></i>
+          Bấm nút 3D để điền dữ liệu vào ô hiện tại:
+        </span>
+        <div class="flex items-center gap-6">
+          <!-- Nút 0 (Cyan 3D) -->
+          <button type="button" id="btnZero" class="btn-3d-cyan w-24 sm:w-28 h-16 sm:h-18 rounded-2xl border-t border-white/30 text-white font-mono text-3xl sm:text-4xl font-extrabold flex items-center justify-center select-none cursor-pointer">
+            0
+          </button>
+          
+          <!-- Nút 1 (Indigo 3D) -->
+          <button type="button" id="btnOne" class="btn-3d-indigo w-24 sm:w-28 h-16 sm:h-18 rounded-2xl border-t border-white/30 text-white font-mono text-3xl sm:text-4xl font-extrabold flex items-center justify-center select-none cursor-pointer">
+            1
+          </button>
         </div>
       </div>
 
@@ -150,14 +190,13 @@
 
   <!-- Footer -->
   <footer class="w-full border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-    Hỗ trợ bàn phím di động (Numeric) &bull; Tự động chuyển Focus &bull; Flex Wrap thích ứng mọi màn hình
+    Bàn phím 3D Gradient &bull; Flex Wrap thích ứng mọi màn hình
   </footer>
 
   <script>
-    // Khởi tạo các biến ứng dụng
     let currentSize = 5;
     let originalValues = [];
-    let isProcessing = false;
+    let activeIndex = 0;
 
     // DOM Elements
     const inputsContainer = document.getElementById('inputsContainer');
@@ -170,8 +209,10 @@
     const flippedIndicesEl = document.getElementById('flippedIndices');
     const resultStrEl = document.getElementById('resultStr');
     const themeToggle = document.getElementById('themeToggle');
+    const btnZero = document.getElementById('btnZero');
+    const btnOne = document.getElementById('btnOne');
 
-    // Chuyển đổi Dark / Light Theme
+    // Toggle Theme
     themeToggle.addEventListener('click', () => {
       document.documentElement.classList.toggle('dark');
     });
@@ -191,6 +232,7 @@
         btn.addEventListener('click', () => {
           if (currentSize !== i) {
             currentSize = i;
+            activeIndex = 0;
             renderSizeSelector();
             initInputs();
           }
@@ -199,146 +241,121 @@
       }
     }
 
-    // Khởi tạo và Render danh sách các ô Input
+    // Khởi tạo các ô Input
     function initInputs() {
       inputsContainer.innerHTML = '';
       originalValues = [];
-      isProcessing = false;
+      activeIndex = 0;
       reFlipBtn.disabled = true;
       resultCard.classList.add('hidden');
       updateStatus('info', `Nhập đủ ${currentSize} ô để tự động đảo 2 vị trí ngẫu nhiên`);
 
       for (let i = 0; i < currentSize; i++) {
         const wrapper = document.createElement('div');
-        // Đặt kích thước cố định cho mỗi ô (w-14 sm:w-16 h-16 sm:h-20)
-        wrapper.className = 'relative w-14 sm:w-16 h-16 sm:h-20 perspective-500 flex-shrink-0';
+        wrapper.className = 'relative w-14 sm:w-16 h-16 sm:h-20 perspective-500 flex-shrink-0 cursor-pointer';
         
         wrapper.innerHTML = `
-          <!-- Thẻ lật card 3D -->
           <div class="flip-card-inner w-full h-full relative" id="card-${i}">
-            <!-- Mặt trước (Nền mặc định) -->
-            <div class="w-full h-full rounded-2xl border-2 border-slate-700 bg-slate-800/80 flex flex-col items-center justify-center relative transition-all shadow-inner focus-within:border-cyan-400 focus-within:ring-4 focus-within:ring-cyan-500/20">
-              <!-- Hiển thị STT ở góc trên bên trái -->
+            <div id="box-${i}" class="w-full h-full rounded-2xl border-2 ${i === 0 ? 'border-cyan-400 ring-4 ring-cyan-500/20' : 'border-slate-700'} bg-slate-800/80 flex flex-col items-center justify-center relative transition-all shadow-inner">
               <span class="absolute top-1.5 left-2 text-[10px] font-bold text-slate-500">#${i + 1}</span>
-              
-              <input 
-                type="tel" 
-                inputmode="numeric" 
-                pattern="[0-1]*" 
-                maxlength="1" 
-                data-index="${i}"
-                class="bit-input w-full h-full bg-transparent text-center font-mono font-extrabold text-2xl sm:text-3xl text-cyan-400 focus:outline-none z-10 pt-2"
-                autocomplete="off"
-              />
+              <span id="val-${i}" class="font-mono font-extrabold text-2xl sm:text-3xl text-cyan-400 pt-2"></span>
             </div>
           </div>
         `;
 
+        wrapper.addEventListener('click', () => {
+          setActiveIndex(i);
+        });
+
         inputsContainer.appendChild(wrapper);
       }
-
-      attachEvents();
-      // Focus vào ô đầu tiên
-      const firstInput = inputsContainer.querySelector('input');
-      if (firstInput) firstInput.focus();
     }
 
-    // Đăng ký sự kiện phím cho các ô Input
-    function attachEvents() {
-      const inputs = inputsContainer.querySelectorAll('.bit-input');
-
-      inputs.forEach((input, index) => {
-        // Xử lý khi gõ phím (input)
-        input.addEventListener('input', (e) => {
-          const val = e.target.value;
-
-          // Chỉ cho phép nhập 0 hoặc 1
-          if (val !== '0' && val !== '1') {
-            e.target.value = '';
-            return;
+    // Đặt ô đang active
+    function setActiveIndex(index) {
+      activeIndex = index;
+      for (let i = 0; i < currentSize; i++) {
+        const box = document.getElementById(`box-${i}`);
+        if (!box.classList.contains('border-amber-500')) {
+          if (i === activeIndex) {
+            box.className = "w-full h-full rounded-2xl border-2 border-cyan-400 ring-4 ring-cyan-500/20 bg-slate-800/80 flex flex-col items-center justify-center relative transition-all shadow-inner";
+          } else {
+            box.className = "w-full h-full rounded-2xl border-2 border-slate-700 bg-slate-800/80 flex flex-col items-center justify-center relative transition-all shadow-inner";
           }
-
-          // Xóa class highlight nếu có
-          resetCardStyle(index);
-
-          // Chuyển focus sang ô tiếp theo nếu có
-          if (index < currentSize - 1) {
-            inputs[index + 1].focus();
-          }
-
-          // Kiểm tra xem đã nhập đủ tất cả các ô chưa
-          checkAndFlip();
-        });
-
-        // Xử lý các phím đặc biệt (Backspace, phím mũi tên)
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Backspace') {
-            resetCardStyle(index);
-            if (!input.value && index > 0) {
-              inputs[index - 1].focus();
-              inputs[index - 1].value = '';
-              resetCardStyle(index - 1);
-            }
-          } else if (e.key === 'ArrowLeft' && index > 0) {
-            inputs[index - 1].focus();
-          } else if (e.key === 'ArrowRight' && index < currentSize - 1) {
-            inputs[index + 1].focus();
-          }
-        });
-
-        // Xử lý dán dữ liệu (Paste)
-        input.addEventListener('paste', (e) => {
-          e.preventDefault();
-          const pastedText = (e.clipboardData || window.clipboardData).getData('text').trim();
-          
-          // Lọc lấy các ký tự 0 và 1
-          const validChars = pastedText.split('').filter(ch => ch === '0' || ch === '1');
-          
-          if (validChars.length > 0) {
-            validChars.slice(0, currentSize).forEach((char, idx) => {
-              if (inputs[idx]) {
-                inputs[idx].value = char;
-                resetCardStyle(idx);
-              }
-            });
-
-            // Focus vào ô tiếp theo hoặc ô cuối cùng
-            const nextIdx = Math.min(validChars.length, currentSize - 1);
-            inputs[nextIdx].focus();
-            
-            checkAndFlip();
-          }
-        });
-      });
+        }
+      }
     }
 
-    // Reset kiểu dáng ô về mặc định
+    // Xử lý khi bấm nút 0 hoặc 1 3D
+    function inputBit(bitValue) {
+      const valSpan = document.getElementById(`val-${activeIndex}`);
+      if (!valSpan) return;
+
+      valSpan.textContent = bitValue;
+      resetCardStyle(activeIndex);
+
+      if (activeIndex < currentSize - 1) {
+        setActiveIndex(activeIndex + 1);
+      }
+
+      checkAndFlip();
+    }
+
+    btnZero.addEventListener('click', () => inputBit('0'));
+    btnOne.addEventListener('click', () => inputBit('1'));
+
+    // Hỗ trợ bàn phím cứng kèm hiệu ứng nhấn nút 3D
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '0') {
+        btnZero.classList.add('pressed');
+        inputBit('0');
+      } else if (e.key === '1') {
+        btnOne.classList.add('pressed');
+        inputBit('1');
+      } else if (e.key === 'Backspace') {
+        const valSpan = document.getElementById(`val-${activeIndex}`);
+        if (valSpan && valSpan.textContent) {
+          valSpan.textContent = '';
+        } else if (activeIndex > 0) {
+          setActiveIndex(activeIndex - 1);
+          document.getElementById(`val-${activeIndex}`).textContent = '';
+        }
+        reFlipBtn.disabled = true;
+        resultCard.classList.add('hidden');
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.key === '0') btnZero.classList.remove('pressed');
+      if (e.key === '1') btnOne.classList.remove('pressed');
+    });
+
+    // Reset kiểu dáng ô
     function resetCardStyle(index) {
       const card = document.getElementById(`card-${index}`);
       if (!card) return;
       card.classList.remove('is-flipped');
-      const container = card.querySelector('div');
-      container.className = "w-full h-full rounded-2xl border-2 border-slate-700 bg-slate-800/80 flex flex-col items-center justify-center relative transition-all shadow-inner focus-within:border-cyan-400 focus-within:ring-4 focus-within:ring-cyan-500/20";
+      const box = document.getElementById(`box-${index}`);
+      box.className = "w-full h-full rounded-2xl border-2 border-slate-700 bg-slate-800/80 flex flex-col items-center justify-center relative transition-all shadow-inner";
       
-      const badge = container.querySelector('.flipped-badge');
+      const badge = box.querySelector('.flipped-badge');
       if (badge) badge.remove();
     }
 
-    // Kiểm tra điều kiện và thực hiện Đảo 2 Bit ngẫu nhiên
+    // Kiểm tra và thực hiện Đảo 2 Bit ngẫu nhiên
     function checkAndFlip(forceReFlip = false) {
-      const inputs = Array.from(inputsContainer.querySelectorAll('.bit-input'));
-      const values = inputs.map(i => i.value);
+      const values = [];
+      for (let i = 0; i < currentSize; i++) {
+        values.push(document.getElementById(`val-${i}`).textContent);
+      }
 
-      // Kiểm tra tất cả các ô đã được điền đủ 0 hoặc 1 chưa
       const isComplete = values.every(v => v === '0' || v === '1');
 
       if (isComplete) {
         if (!forceReFlip && originalValues.length === currentSize && values.join('') === originalValues.join('')) {
-          // Tránh gọi trùng lặp nếu chuỗi không thay đổi
           return;
         }
 
-        // Lưu giữ chuỗi ban đầu do người dùng nhập
         originalValues = [...values];
         performRandomFlip(values);
       } else {
@@ -347,66 +364,53 @@
       }
     }
 
-    // Thực hiện Thuật toán Chọn ngẫu nhiên 2 vị trí & Đảo Bit
+    // Thuật toán Đảo ngẫu nhiên 2 vị trí
     function performRandomFlip(currentBits) {
-      isProcessing = true;
-      
-      // 1. Chọn 2 chỉ số ngẫu nhiên KHÔNG trùng nhau từ 0 đến N-1
       const indices = Array.from({ length: currentSize }, (_, i) => i);
-      // Fisher-Yates Shuffle
       for (let i = indices.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [indices[i], indices[j]] = [indices[j], indices[i]];
       }
       const flippedIndices = [indices[0], indices[1]].sort((a, b) => a - b);
 
-      // 2. Tạo chuỗi bit mới với 2 vị trí đã được đảo (0->1, 1->0)
       const newBits = [...currentBits];
       flippedIndices.forEach(idx => {
         newBits[idx] = newBits[idx] === '0' ? '1' : '0';
       });
 
-      // 3. Cập nhật kết quả trực tiếp lên UI và các ô Input
-      const inputs = inputsContainer.querySelectorAll('.bit-input');
-
+      // Cập nhật lên UI kèm hiệu ứng lật
       flippedIndices.forEach((flippedIdx) => {
         const card = document.getElementById(`card-${flippedIdx}`);
-        const container = card.querySelector('div');
+        const box = document.getElementById(`box-${flippedIdx}`);
+        const valSpan = document.getElementById(`val-${flippedIdx}`);
 
-        // Animation lật 3D nhẹ
         card.classList.add('is-flipped');
         
-        // Đổi màu viền và nền nổi bật cho vị trí vừa bị đảo
         setTimeout(() => {
-          container.className = "w-full h-full rounded-2xl border-2 border-amber-500 bg-amber-500/10 flex flex-col items-center justify-center relative transition-all shadow-lg shadow-amber-500/20 ring-2 ring-amber-500/40";
-          
-          // Đổi chữ số trực tiếp trong ô input thành giá trị mới
-          inputs[flippedIdx].value = newBits[flippedIdx];
-          inputs[flippedIdx].classList.remove('text-cyan-400');
-          inputs[flippedIdx].classList.add('text-amber-400');
+          box.className = "w-full h-full rounded-2xl border-2 border-amber-500 bg-amber-500/10 flex flex-col items-center justify-center relative transition-all shadow-lg shadow-amber-500/20 ring-2 ring-amber-500/40";
+          valSpan.textContent = newBits[flippedIdx];
+          valSpan.className = "font-mono font-extrabold text-2xl sm:text-3xl text-amber-400 pt-2";
 
-          // Thêm icon/nhãn đánh dấu bị đảo ở góc trên bên phải
-          if (!container.querySelector('.flipped-badge')) {
+          if (!box.querySelector('.flipped-badge')) {
             const badge = document.createElement('span');
             badge.className = 'flipped-badge absolute top-1.5 right-2 text-[10px] font-extrabold text-amber-400 animate-bounce';
             badge.textContent = '↺';
-            container.appendChild(badge);
+            box.appendChild(badge);
           }
           card.classList.remove('is-flipped');
         }, 150);
       });
 
-      // Cập nhật các ô KHÔNG bị đảo về màu bình thường và giá trị tương ứng
-      inputs.forEach((input, idx) => {
-        if (!flippedIndices.includes(idx)) {
-          resetCardStyle(idx);
-          input.value = newBits[idx];
-          input.classList.remove('text-amber-400');
-          input.classList.add('text-cyan-400');
+      // Cập nhật các ô không bị đảo
+      for (let i = 0; i < currentSize; i++) {
+        if (!flippedIndices.includes(i)) {
+          resetCardStyle(i);
+          const valSpan = document.getElementById(`val-${i}`);
+          valSpan.textContent = newBits[i];
+          valSpan.className = "font-mono font-extrabold text-2xl sm:text-3xl text-cyan-400 pt-2";
         }
-      });
+      }
 
-      // 4. Hiển thị thông báo chi tiết bên dưới
       originalStrEl.textContent = currentBits.join(' ');
       flippedIndicesEl.textContent = flippedIndices.map(i => `#${i + 1}`).join(' & ');
       resultStrEl.textContent = newBits.join(' ');
@@ -414,10 +418,8 @@
 
       updateStatus('success', `Đã đảo thành công vị trí #${flippedIndices[0] + 1} và #${flippedIndices[1] + 1}!`);
       reFlipBtn.disabled = false;
-      isProcessing = false;
     }
 
-    // Cập nhật thanh trạng thái
     function updateStatus(type, text) {
       if (type === 'success') {
         statusMessage.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i><span class="text-emerald-400">${text}</span>`;
@@ -427,19 +429,17 @@
       lucide.createIcons();
     }
 
-    // Sự kiện Nút "Làm mới"
     resetBtn.addEventListener('click', () => {
       initInputs();
     });
 
-    // Sự kiện Nút "Đảo lại"
     reFlipBtn.addEventListener('click', () => {
       if (originalValues.length === currentSize) {
         performRandomFlip(originalValues);
       }
     });
 
-    // Khởi tạo ban đầu khi tải trang
+    // Khởi chạy lần đầu
     renderSizeSelector();
     initInputs();
     lucide.createIcons();
