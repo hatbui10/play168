@@ -46,13 +46,12 @@
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
-        /* Style hiệu ứng xoay 3D */
         .perspective-1000 {
             perspective: 1000px;
         }
-        /* Custom scrollbar nếu có */
         ::-webkit-scrollbar {
-            width: 8px;
+            height: 6px;
+            width: 6px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
@@ -66,7 +65,7 @@
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between transition-colors duration-300">
 
     <!-- Header / Theme Switcher -->
-    <header class="w-full max-w-xl mx-auto p-4 flex justify-between items-center">
+    <header class="w-full max-w-2xl mx-auto p-4 flex justify-between items-center">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-cyan-500 flex items-center justify-center text-slate-900 font-bold text-lg shadow-lg shadow-cyan-500/30">
                 01
@@ -80,37 +79,26 @@
     </header>
 
     <!-- Main Container -->
-    <main class="flex-1 flex items-center justify-center p-4 w-full max-w-xl mx-auto">
-        <div class="w-full bg-slate-800/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-700/70 rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative overflow-hidden">
+    <main class="flex-1 flex items-center justify-center p-4 w-full max-w-2xl mx-auto">
+        <div class="w-full bg-slate-800/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-700/70 rounded-3xl p-5 sm:p-8 shadow-2xl transition-all relative overflow-hidden">
             
             <!-- Tiêu đề & Hướng dẫn -->
-            <div class="text-center mb-8">
-                <h1 class="text-2xl sm:text-3xl font-extrabold mb-2 text-white">Nhập Mã Bit 5 Chữ Số</h1>
-                <p class="text-sm text-slate-400">Chỉ chấp nhận giá trị <span class="text-cyan-400 font-bold">0</span> hoặc <span class="text-cyan-400 font-bold">1</span>. Hệ thống sẽ tự động đảo 2 vị trí ngẫu nhiên.</p>
+            <div class="text-center mb-6">
+                <h1 class="text-2xl sm:text-3xl font-extrabold mb-2 text-white">Nhập Mã Bit Ngẫu Nhiên</h1>
+                <p class="text-sm text-slate-400">Chọn độ dài chuỗi (4 - 10). Nhập <span class="text-cyan-400 font-bold">0</span> hoặc <span class="text-cyan-400 font-bold">1</span>, hệ thống sẽ tự động đảo ngẫu nhiên <span class="text-amber-400 font-bold">2 vị trí</span>.</p>
             </div>
 
-            <!-- Khung nhập liệu 5 ô -->
-            <div class="flex justify-center items-center gap-2 sm:gap-3 mb-8" id="otpContainer">
-                <!-- Input 1 -->
-                <input type="tel" inputmode="numeric" pattern="[0-1]*" maxlength="1" data-index="0"
-                       class="otp-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl sm:text-3xl font-bold rounded-2xl bg-slate-900/90 border-2 border-slate-700 text-cyan-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 select-none shadow-inner"
-                       autocomplete="off">
-                <!-- Input 2 -->
-                <input type="tel" inputmode="numeric" pattern="[0-1]*" maxlength="1" data-index="1"
-                       class="otp-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl sm:text-3xl font-bold rounded-2xl bg-slate-900/90 border-2 border-slate-700 text-cyan-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 select-none shadow-inner"
-                       autocomplete="off">
-                <!-- Input 3 -->
-                <input type="tel" inputmode="numeric" pattern="[0-1]*" maxlength="1" data-index="2"
-                       class="otp-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl sm:text-3xl font-bold rounded-2xl bg-slate-900/90 border-2 border-slate-700 text-cyan-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 select-none shadow-inner"
-                       autocomplete="off">
-                <!-- Input 4 -->
-                <input type="tel" inputmode="numeric" pattern="[0-1]*" maxlength="1" data-index="3"
-                       class="otp-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl sm:text-3xl font-bold rounded-2xl bg-slate-900/90 border-2 border-slate-700 text-cyan-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 select-none shadow-inner"
-                       autocomplete="off">
-                <!-- Input 5 -->
-                <input type="tel" inputmode="numeric" pattern="[0-1]*" maxlength="1" data-index="4"
-                       class="otp-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl sm:text-3xl font-bold rounded-2xl bg-slate-900/90 border-2 border-slate-700 text-cyan-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 select-none shadow-inner"
-                       autocomplete="off">
+            <!-- Bộ chọn số lượng ô (Pills) -->
+            <div class="mb-6">
+                <label class="block text-xs uppercase tracking-wider font-semibold text-slate-400 text-center mb-2">Chọn số lượng ô nhập</label>
+                <div class="flex justify-center items-center gap-1.5 sm:gap-2 flex-wrap" id="lengthSelector">
+                    <!-- Dynamic Pill Buttons 4..10 -->
+                </div>
+            </div>
+
+            <!-- Khung nhập liệu (Tự động render theo length) -->
+            <div class="flex justify-center items-center gap-1.5 sm:gap-2.5 mb-6 overflow-x-auto py-2 px-1" id="otpContainer">
+                <!-- Input elements generated via JavaScript -->
             </div>
 
             <!-- Khu vực hiển thị thông báo / trạng thái -->
@@ -120,41 +108,22 @@
 
             <!-- Khung Kết Quả (Ban đầu ẩn) -->
             <div id="resultBox" class="hidden opacity-0 transform translate-y-4 transition-all duration-500 bg-slate-900/60 rounded-2xl p-4 sm:p-5 border border-slate-700/80 mb-6">
-                <div class="flex items-center justify-between mb-3">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-2 mb-3">
                     <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Kết quả sau khi đảo 2 bit</span>
                     <span id="flippedIndicesBadge" class="text-xs px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30">
                         Đã đảo vị trí: -
                     </span>
                 </div>
 
-                <!-- Hiển thị 5 thẻ kết quả -->
-                <div class="flex justify-center items-center gap-2 sm:gap-3 my-4 perspective-1000">
-                    <div class="result-card w-12 h-14 sm:w-14 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-bold text-xl sm:text-2xl transition-all duration-300 border-2 border-slate-700 bg-slate-800 text-slate-300 relative">
-                        <span class="res-val text-2xl sm:text-3xl"></span>
-                        <span class="res-pos text-[9px] sm:text-[10px] text-slate-500 absolute bottom-1">Vị trí 1</span>
-                    </div>
-                    <div class="result-card w-12 h-14 sm:w-14 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-bold text-xl sm:text-2xl transition-all duration-300 border-2 border-slate-700 bg-slate-800 text-slate-300 relative">
-                        <span class="res-val text-2xl sm:text-3xl"></span>
-                        <span class="res-pos text-[9px] sm:text-[10px] text-slate-500 absolute bottom-1">Vị trí 2</span>
-                    </div>
-                    <div class="result-card w-12 h-14 sm:w-14 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-bold text-xl sm:text-2xl transition-all duration-300 border-2 border-slate-700 bg-slate-800 text-slate-300 relative">
-                        <span class="res-val text-2xl sm:text-3xl"></span>
-                        <span class="res-pos text-[9px] sm:text-[10px] text-slate-500 absolute bottom-1">Vị trí 3</span>
-                    </div>
-                    <div class="result-card w-12 h-14 sm:w-14 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-bold text-xl sm:text-2xl transition-all duration-300 border-2 border-slate-700 bg-slate-800 text-slate-300 relative">
-                        <span class="res-val text-2xl sm:text-3xl"></span>
-                        <span class="res-pos text-[9px] sm:text-[10px] text-slate-500 absolute bottom-1">Vị trí 4</span>
-                    </div>
-                    <div class="result-card w-12 h-14 sm:w-14 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-bold text-xl sm:text-2xl transition-all duration-300 border-2 border-slate-700 bg-slate-800 text-slate-300 relative">
-                        <span class="res-val text-2xl sm:text-3xl"></span>
-                        <span class="res-pos text-[9px] sm:text-[10px] text-slate-500 absolute bottom-1">Vị trí 5</span>
-                    </div>
+                <!-- Hiển thị các thẻ kết quả -->
+                <div class="flex justify-center items-center gap-1.5 sm:gap-2.5 my-4 perspective-1000 overflow-x-auto py-2" id="resultCardsContainer">
+                    <!-- Result cards generated via JavaScript -->
                 </div>
 
                 <!-- So sánh trước / sau -->
-                <div class="mt-4 pt-3 border-t border-slate-800 flex justify-around text-xs text-slate-400">
-                    <div>Mã gốc: <span id="originalCode" class="font-mono text-cyan-400 font-bold">-----</span></div>
-                    <div>Mã mới: <span id="newCode" class="font-mono text-emerald-400 font-bold">-----</span></div>
+                <div class="mt-4 pt-3 border-t border-slate-800 flex justify-around text-xs sm:text-sm text-slate-400">
+                    <div>Mã gốc: <span id="originalCode" class="font-mono text-cyan-400 font-bold tracking-wider">-----</span></div>
+                    <div>Mã mới: <span id="newCode" class="font-mono text-emerald-400 font-bold tracking-wider">-----</span></div>
                 </div>
             </div>
 
@@ -171,171 +140,252 @@
     </main>
 
     <!-- Footer -->
-    <footer class="w-full max-w-xl mx-auto p-4 text-center text-xs text-slate-500">
+    <footer class="w-full max-w-2xl mx-auto p-4 text-center text-xs text-slate-500">
         Ứng dụng mô phỏng xử lý Bit OTP - Trải nghiệm tương tác trực quan
     </footer>
 
     <!-- Logic JavaScript -->
     <script>
+        // App State
+        let currentLength = 5; // Mặc định 5 ô
+
         // DOM Elements
-        const inputs = document.querySelectorAll('.otp-input');
+        const lengthSelector = document.getElementById('lengthSelector');
+        const otpContainer = document.getElementById('otpContainer');
         const statusMessage = document.getElementById('statusMessage');
         const resultBox = document.getElementById('resultBox');
-        const resultCards = document.querySelectorAll('.result-card');
+        const resultCardsContainer = document.getElementById('resultCardsContainer');
         const flippedIndicesBadge = document.getElementById('flippedIndicesBadge');
         const originalCodeSpan = document.getElementById('originalCode');
         const newCodeSpan = document.getElementById('newCode');
-        const themeToggleBtn = document.getElementById('themeToggleBtn');
 
-        // Tự động focus vào ô đầu tiên khi mở ứng dụng
+        // Khởi tạo ứng dụng
         window.addEventListener('DOMContentLoaded', () => {
-            inputs[0].focus();
+            renderLengthSelector();
+            initInputs(currentLength);
         });
 
-        // Xử lý sự kiện trên 5 ô Input
-        inputs.forEach((input, index) => {
-            // Lắng nghe nhập liệu (Input Event)
-            input.addEventListener('input', (e) => {
-                const value = e.target.value;
+        // Tạo danh sách nút chọn độ dài 4..10
+        function renderLengthSelector() {
+            lengthSelector.innerHTML = '';
+            for (let l = 4; l <= 10; l++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = `${l} ô`;
+                btn.className = getSelectorBtnClass(l === currentLength);
+                btn.onclick = () => changeLength(l);
+                lengthSelector.appendChild(btn);
+            }
+        }
 
-                // Chỉ nhận ký tự '0' hoặc '1'
-                if (value !== '0' && value !== '1') {
-                    input.value = '';
-                    return;
-                }
+        function getSelectorBtnClass(isSelected) {
+            if (isSelected) {
+                return 'px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30 transition-all';
+            }
+            return 'px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white transition-all';
+        }
 
-                // Tự động chuyển focus tới ô tiếp theo
-                if (value.length === 1 && index < inputs.length - 1) {
-                    inputs[index + 1].focus();
-                }
+        // Thay đổi độ dài ô nhập
+        function changeLength(newLen) {
+            if (newLen === currentLength) return;
+            currentLength = newLen;
+            renderLengthSelector();
+            initInputs(currentLength);
+            hideResult();
+        }
 
-                updateStatus();
+        // Render các ô Input dựa vào số lượng length được chọn
+        function initInputs(length) {
+            otpContainer.innerHTML = '';
+            
+            // Tính toán kích thước ô dựa vào số lượng để không bị vỡ giao diện trên điện thoại
+            let sizeClass = 'w-10 h-12 sm:w-12 sm:h-14 text-xl sm:text-2xl';
+            if (length <= 5) {
+                sizeClass = 'w-12 h-14 sm:w-14 sm:h-16 text-2xl sm:text-3xl';
+            } else if (length >= 8) {
+                sizeClass = 'w-8 h-11 sm:w-11 sm:h-13 text-lg sm:text-xl';
+            }
 
-                // Kiểm tra nếu đã nhập đủ cả 5 ô
-                checkAndProcess();
-            });
+            for (let i = 0; i < length; i++) {
+                const input = document.createElement('input');
+                input.type = 'tel';
+                input.inputMode = 'numeric';
+                input.pattern = '[0-1]*';
+                input.maxLength = 1;
+                input.dataset.index = i;
+                input.autocomplete = 'off';
+                input.className = `otp-input ${sizeClass} text-center font-bold rounded-xl sm:rounded-2xl bg-slate-900/90 border-2 border-slate-700 text-cyan-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 select-none shadow-inner flex-shrink-0`;
 
-            // Lắng nghe phím nhấn (KeyDown Event) hỗ trợ Backspace & Phím điều hướng
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace') {
-                    if (input.value === '' && index > 0) {
-                        // Nếu ô hiện tại rỗng, quay về ô trước đó và xóa
-                        inputs[index - 1].focus();
-                        inputs[index - 1].value = '';
-                    } else {
-                        input.value = '';
-                    }
-                    hideResult();
-                    updateStatus();
-                } else if (e.key === 'ArrowLeft' && index > 0) {
+                // Sự kiện nhập liệu
+                input.addEventListener('input', (e) => handleInput(e, i));
+                // Sự kiện phím điều hướng & Backspace
+                input.addEventListener('keydown', (e) => handleKeyDown(e, i));
+                // Sự kiện dán (Paste)
+                input.addEventListener('paste', (e) => handlePaste(e));
+
+                otpContainer.appendChild(input);
+            }
+
+            updateStatus();
+            // Focus vào ô đầu tiên
+            setTimeout(() => {
+                const firstInput = otpContainer.querySelector('.otp-input');
+                if (firstInput) firstInput.focus();
+            }, 50);
+        }
+
+        // Xử lý khi người dùng nhập 0 hoặc 1
+        function handleInput(e, index) {
+            const inputs = getInputs();
+            const value = e.target.value;
+
+            // Chỉ nhận ký tự '0' hoặc '1'
+            if (value !== '0' && value !== '1') {
+                e.target.value = '';
+                return;
+            }
+
+            // Tự động chuyển focus tới ô tiếp theo
+            if (value.length === 1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+
+            hideResult();
+            updateStatus();
+            checkAndProcess();
+        }
+
+        // Xử lý phím nhấn (Backspace / Điều hướng)
+        function handleKeyDown(e, index) {
+            const inputs = getInputs();
+            if (e.key === 'Backspace') {
+                if (inputs[index].value === '' && index > 0) {
                     inputs[index - 1].focus();
-                } else if (e.key === 'ArrowRight' && index < inputs.length - 1) {
-                    inputs[index + 1].focus();
+                    inputs[index - 1].value = '';
+                } else {
+                    inputs[index].value = '';
                 }
-            });
+                hideResult();
+                updateStatus();
+            } else if (e.key === 'ArrowLeft' && index > 0) {
+                inputs[index - 1].focus();
+            } else if (e.key === 'ArrowRight' && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+        }
 
-            // Cho phép dán (Paste) chuỗi 5 số (ví dụ: 10101)
-            input.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const pastedData = (e.clipboardData || window.clipboardData).getData('text').trim();
-                
-                // Kiểm tra chuỗi dán vào có đúng 5 ký tự 0/1 không
-                if (/^[01]{5}$/.test(pastedData)) {
-                    pastedData.split('').forEach((char, i) => {
-                        inputs[i].value = char;
-                    });
-                    inputs[4].focus();
-                    checkAndProcess();
-                }
-            });
-        });
+        // Xử lý Dán (Paste)
+        function handlePaste(e) {
+            e.preventDefault();
+            const inputs = getInputs();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text').trim();
+            const regex = new RegExp(`^[01]{${currentLength}}$`);
 
-        // Cập nhật dòng trạng thái hướng dẫn người dùng
+            if (regex.test(pastedData)) {
+                pastedData.split('').forEach((char, i) => {
+                    if (inputs[i]) inputs[i].value = char;
+                });
+                inputs[currentLength - 1].focus();
+                updateStatus();
+                checkAndProcess();
+            }
+        }
+
+        function getInputs() {
+            return Array.from(otpContainer.querySelectorAll('.otp-input'));
+        }
+
+        // Cập nhật trạng thái
         function updateStatus() {
-            const filledCount = Array.from(inputs).filter(inp => inp.value !== '').length;
+            const inputs = getInputs();
+            const filledCount = inputs.filter(inp => inp.value !== '').length;
             if (filledCount === 0) {
-                statusMessage.textContent = 'Hãy nhập chữ số đầu tiên...';
+                statusMessage.textContent = `Hãy nhập chữ số đầu tiên (Cần nhập ${currentLength} số)...`;
                 statusMessage.className = 'text-center min-h-[24px] mb-6 text-sm font-medium text-slate-400';
-            } else if (filledCount < 5) {
-                statusMessage.textContent = `Đã nhập ${filledCount}/5 chữ số. Tiếp tục nhập...`;
+            } else if (filledCount < currentLength) {
+                statusMessage.textContent = `Đã nhập ${filledCount}/${currentLength} chữ số. Tiếp tục nhập...`;
                 statusMessage.className = 'text-center min-h-[24px] mb-6 text-sm font-medium text-cyan-400';
             } else {
-                statusMessage.textContent = 'Đã nhận đủ 5 chữ số! Đang xử lý đảo vị trí...';
+                statusMessage.textContent = `Đã nhận đủ ${currentLength} chữ số! Đang xử lý đảo vị trí...`;
                 statusMessage.className = 'text-center min-h-[24px] mb-6 text-sm font-medium text-emerald-400';
             }
         }
 
-        // Kiểm tra xem đã nhập đủ 5 ô chưa và xử lý đảo giá trị
+        // Kiểm tra và khởi chạy xử lý
         function checkAndProcess() {
-            const values = Array.from(inputs).map(inp => inp.value);
+            const inputs = getInputs();
+            const values = inputs.map(inp => inp.value);
             const isComplete = values.every(val => val === '0' || val === '1');
 
-            if (isComplete && values.length === 5) {
-                // Làm mờ tạm thời bàn phím bằng cách bỏ focus
+            if (isComplete && values.length === currentLength) {
                 document.activeElement.blur();
-                
-                // Thực hiện xử lý đảo 2 bit ngẫu nhiên
                 processBitFlip(values);
             }
         }
 
-        // Hàm chính xử lý chọn 2 vị trí ngẫu nhiên và đảo giá trị
+        // Chọn 2 vị trí ngẫu nhiên và đảo giá trị
         function processBitFlip(originalArray) {
-            // 1. Chọn 2 vị trí ngẫu nhiên không trùng nhau trong khoảng [0, 1, 2, 3, 4]
-            const indices = [0, 1, 2, 3, 4];
+            const indices = Array.from({ length: currentLength }, (_, i) => i);
             const flippedIndices = [];
-            
+
             while (flippedIndices.length < 2) {
                 const randomIndex = Math.floor(Math.random() * indices.length);
                 const selected = indices.splice(randomIndex, 1)[0];
                 flippedIndices.push(selected);
             }
 
-            // Sắp xếp lại thứ tự vị trí hiển thị cho đẹp
             flippedIndices.sort((a, b) => a - b);
 
-            // 2. Tạo mảng mới sau khi đảo bit (0 -> 1, 1 -> 0)
             const modifiedArray = [...originalArray];
             flippedIndices.forEach(idx => {
                 modifiedArray[idx] = modifiedArray[idx] === '0' ? '1' : '0';
             });
 
-            // 3. Hiển thị UI kết quả
             renderResult(originalArray, modifiedArray, flippedIndices);
         }
 
         // Hiển thị kết quả với Animation
         function renderResult(originalArray, modifiedArray, flippedIndices) {
-            // Cập nhật chuỗi tổng quan
             originalCodeSpan.textContent = originalArray.join('');
             newCodeSpan.textContent = modifiedArray.join('');
             flippedIndicesBadge.textContent = `Đã đảo vị trí: ${flippedIndices.map(i => i + 1).join(' và ')}`;
 
-            // Reset thẻ kết quả về trạng thái ban đầu
-            resultCards.forEach((card, i) => {
-                const valSpan = card.querySelector('.res-val');
-                valSpan.textContent = originalArray[i];
+            // Render các thẻ kết quả theo độ dài currentLength
+            resultCardsContainer.innerHTML = '';
 
-                // Reset class styling
-                card.className = 'result-card w-12 h-14 sm:w-14 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-bold text-xl sm:text-2xl transition-all duration-300 border-2 border-slate-700 bg-slate-800 text-slate-300 relative';
+            let cardSizeClass = 'w-10 h-12 sm:w-12 sm:h-14 text-xl sm:text-2xl';
+            if (currentLength <= 5) {
+                cardSizeClass = 'w-12 h-14 sm:w-14 sm:h-16 text-2xl sm:text-3xl';
+            } else if (currentLength >= 8) {
+                cardSizeClass = 'w-8 h-11 sm:w-11 sm:h-13 text-lg sm:text-xl';
+            }
+
+            originalArray.forEach((val, i) => {
+                const card = document.createElement('div');
+                card.className = `result-card ${cardSizeClass} rounded-xl sm:rounded-2xl flex flex-col items-center justify-center font-bold transition-all duration-300 border-2 border-slate-700 bg-slate-800 text-slate-300 relative flex-shrink-0`;
+                
+                card.innerHTML = `
+                    <span class="res-val">${val}</span>
+                    <span class="res-pos text-[8px] sm:text-[9px] text-slate-500 absolute bottom-0.5">Vị trí ${i + 1}</span>
+                `;
+                resultCardsContainer.appendChild(card);
             });
 
-            // Hiện khung kết quả
             resultBox.classList.remove('hidden');
             setTimeout(() => {
                 resultBox.classList.remove('opacity-0', 'translate-y-4');
             }, 50);
 
-            // Thêm Animation lật và đổi màu cho 2 vị trí bị đảo ngẫu nhiên
+            // Trigger animation lật & highlight
+            const resultCards = resultCardsContainer.querySelectorAll('.result-card');
             setTimeout(() => {
                 flippedIndices.forEach(idx => {
                     const card = resultCards[idx];
+                    if (!card) return;
                     const valSpan = card.querySelector('.res-val');
 
-                    // Thêm hiệu ứng lật card
                     card.classList.add('animate-flip');
 
-                    // Giữa quá trình xoay thì thay đổi nội dung và highlight
                     setTimeout(() => {
                         valSpan.textContent = modifiedArray[idx];
                         card.classList.remove('bg-slate-800', 'border-slate-700', 'text-slate-300');
@@ -345,7 +395,6 @@
             }, 400);
         }
 
-        // Ẩn khối kết quả
         function hideResult() {
             resultBox.classList.add('opacity-0', 'translate-y-4');
             setTimeout(() => {
@@ -353,17 +402,18 @@
             }, 300);
         }
 
-        // Đặt lại toàn bộ ứng dụng (Nút "Nhập lại")
+        // Reset ứng dụng
         function resetApp() {
-            inputs.forEach(input => {
+            getInputs().forEach(input => {
                 input.value = '';
             });
             hideResult();
             updateStatus();
-            inputs[0].focus();
+            const inputs = getInputs();
+            if (inputs[0]) inputs[0].focus();
         }
 
-        // Chuyển đổi Giao diện Tối / Sáng (Dark / Light Mode)
+        // Chuyển đổi Dark / Light Mode
         function toggleTheme() {
             const html = document.documentElement;
             if (html.classList.contains('dark')) {
