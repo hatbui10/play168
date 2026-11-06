@@ -5217,7 +5217,7 @@
                 </script>
    
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4afc9be1be8e2fa',t:'MTc5MjA3NzQxOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-                <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a565498fad84786c',t:'MTc5Mzk4MDU3Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a565498fad84786c',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+                <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a565f90c0bf21059',t:'MTc5Mzk4Nzc2NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a565f90c0bf21059',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 
         <!-- 🎯 OVERLAY bộ đặt cược: đồng hồ nền đen · popup thắng/thua · màn đen giữ chạy -->
         <div id="betWaitOverlay" aria-live="polite" aria-hidden="true">
@@ -5617,7 +5617,13 @@
                             if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs) dur = endMs - startMs;
                             if (!dur && betRun.pending && betRun.pending.durationMs) dur = betRun.pending.durationMs;
                             if (!dur) dur = 28000;
-                            const remain = Number.isFinite(endMs) ? Math.max(0, endMs - (Number.isFinite(svcMs) ? svcMs : Date.now())) : dur;
+                            let remain = Number.isFinite(endMs) ? Math.max(0, endMs - (Number.isFinite(svcMs) ? svcMs : Date.now())) : dur;
+                            // 🛡 API trả thiếu endTime / kỳ đã hết giờ → dùng đồng hồ nội bộ (suy từ lịch sử 28s/kỳ)
+                            if (!(remain > 1500) && (dur > 5000)) {
+                                const lr = (typeof betLocalRemain === 'function') ? betLocalRemain() : null;
+                                if (Number.isFinite(lr) && lr > 0) remain = lr * 1000;
+                                else remain = dur;
+                            }
                             betPhase = {
                                 issue: issue, deadlineMs: Date.now() + remain, durationMs: dur,
                                 syncAt: Date.now(), ok: !!issue && remain > 0
@@ -6335,9 +6341,16 @@
                             // 🔒 Kỳ sắp đóng → KHÔNG đặt (đặt bây giờ là lệnh rơi sang kỳ sau) → chờ kỳ mới
                             if (betTooLate()) {
                                 betLog('⏳ Kỳ ' + String(issue).slice(-6) + ' còn ' + Math.max(0, Math.round(betSecondsLeft()))
-                                    + 's — quá sát giờ đóng, KHÔNG đặt để tránh lệnh rơi sang kỳ sau. Chờ kỳ mới…');
+                                    + 's — quá sát giờ đóng, KHÔNG đặt (lệnh sẽ rơi sang kỳ sau). Chờ kỳ mới…');
+                                betSetStatus('⏳ Bỏ kỳ ' + String(issue).slice(-6) + ' (sát giờ đóng) → sẽ đặt kỳ kế tiếp', '');
+                                // ghi lại để người dùng thấy app có nhảy qua kỳ
+                                betRun.skipped = (betRun.skipped || 0) + 1;
+                                if (betRun.skipped === 2 || betRun.skipped % 5 === 0) {
+                                    betLog('ℹ️ Đã bỏ qua ' + betRun.skipped + ' kỳ liên tiếp vì sát giờ đóng. Nếu con số này tăng mãi: đồng hồ kỳ của app lệch so với máy chủ (bấm 🧪 Thử API để đồng bộ) hoặc mạng chậm.');
+                                }
                                 return betPollNextIssue(issue);
                             }
+                            betRun.skipped = 0;
                             const slot = betRun.slot;
                             let bit = betCtx.pattern[slot];
                             let side = bit ? 'L' : 'N';
@@ -6364,6 +6377,26 @@
                             if (amount === undefined || !(Number(amount) > 0)) {
                                 betStop('chưa đặt mức cược cho ô ' + (slot + 1));
                                 return;
+                            }
+                            // 💰 KIỂM TRA SỐ DƯ trước khi đặt: thiếu tiền thì DỪNG, không gửi lệnh (tránh lệnh bị từ chối / mất tiền oan)
+                            {
+                                let bal = betBalance.val;
+                                if (!Number.isFinite(bal) || (Date.now() - (betBalance.at || 0) > 4000)) {
+                                    try { bal = await betFetchBalance(true); } catch (e) {}
+                                }
+                                const need = Math.round(Number(amount) * 1000);
+                                if (Number.isFinite(bal) && bal >= 0 && bal + 0.01 < need) {
+                                    const balTxt = bal.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+                                    betLog('⛔ DỪNG: số dư ' + balTxt + 'đ < mức cần đặt ' + need.toLocaleString('vi-VN') + 'đ (ô ' + (slot + 1) + ' · ' + betLevelLabel(slot) + ').');
+                                    betLog('   · App KHÔNG gửi lệnh để tránh bị máy chủ từ chối / thua oan. Nạp thêm tiền hoặc 🔐 Sửa lại mức cược cho vừa số dư rồi bấm ▶ chạy lại.');
+                                    betSetStatus('⛔ Số dư ' + balTxt + 'đ không đủ cho mức ' + betLevelLabel(slot) + ' (' + need.toLocaleString('vi-VN') + 'đ) → đã DỪNG', 'err');
+                                    betStop('thiếu tiền cho mức ' + betLevelLabel(slot));
+                                    return;
+                                }
+                                if (Number.isFinite(bal) && bal + 0.01 < Math.round(Number(BET_LEVELS[BET_LEVELS.length - 1]) * 1000)) {
+                                    betLog('⚠️ Số dư ' + bal.toLocaleString('vi-VN') + 'đ chưa đủ cho MỨC CUỐI ' + betLevelLabel(BET_LEVELS.length - 1)
+                                        + ' — nếu thua leo tới mức đó app sẽ phải dừng.');
+                                }
                             }
                             const r = await betPlace(side, amount, issue, slot);
                             if (!r.ok) {
@@ -6509,6 +6542,18 @@
                             if (!betTakePattern()) { betStop('chưa lấy được dãy 6 số'); return; }
                         }
                         betRequestWakeLock();
+                        // 💰 cảnh báo sớm nếu số dư không đủ cho mức đầu
+                        (async function () {
+                            try {
+                                const bal = await betFetchBalance(true);
+                                const need0 = Math.round(Number(BET_LEVELS[0]) * 1000);
+                                if (Number.isFinite(bal) && bal + 0.01 < need0) {
+                                    betLog('⛔ Số dư ' + bal.toLocaleString('vi-VN') + 'đ < mức đầu ' + betLevelLabel(0) + ' (' + need0.toLocaleString('vi-VN') + 'đ) → sẽ không đặt được.');
+                                    betSetStatus('⛔ Số dư không đủ cho mức đầu ' + betLevelLabel(0) + ' — nạp thêm hoặc 🔐 sửa mức cược', 'err');
+                                    betStop('thiếu tiền cho mức đầu');
+                                }
+                            } catch (e) {}
+                        })();
                         betRunOne();
                     }
                     function betStop(why) {
