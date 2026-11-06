@@ -5057,7 +5057,7 @@
                 </script>
    
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4afc9be1be8e2fa',t:'MTc5MjA3NzQxOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-                <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a564c8b549012907',t:'MTc5Mzk3NTI5OQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a564c8b549012907',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+                <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a564d80c4918dd8d',t:'MTc5Mzk3NTkyNw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a564d80c4918dd8d',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 
         <!-- 🎯 OVERLAY bộ đặt cược: đồng hồ nền đen · popup thắng/thua · màn đen giữ chạy -->
         <!-- 💵 POPUP NỔI ĐỔI MỨC CƯỢC: mật khẩu → 5 ô nhập, tự nhảy ô sau 1,5 giây -->
@@ -5142,7 +5142,7 @@
                     let BET_MONEY_UNIT = 'K';
                     const BET_SLOTS = 5;                      // số phía sau N số nhập (khung 9 số → 5 số) = 5 mức cược
                     const BET_TAKE = 5;                       // đánh tối đa 5 lệnh, khớp 5 mức cược
-                    const BET_COIN = 1000;                    // 1K = 1.000đ (đơn vị tiền của API)
+                    const BET_COIN = 1;                       // API: amount = 1 đồng/lần, betCount = số đồng cược (giống file gốc)
                     const BET_CLOSE_SEC = 5;                  // đóng cược trước khi hết kỳ (giây)
                     const BET_LS_CFG = 'vn168_betauto_v1';    // cấu hình đặt cược
                     const BET_API = 'https://vn168api.com/api/webapi/';
@@ -5711,7 +5711,7 @@
                         const payload = {
                             typeId: CFG.payload.typeId,
                             issuenumber: issue,          // API dùng chữ thường 'issuenumber'
-                            amount: BET_COIN,
+                            amount: BET_COIN,   // = 1 (giống file gốc: amount 1 · betCount = số tiền cược thật)
                             betCount: (BET_MONEY_UNIT === 'd') ? Math.max(1, Math.round(Number(amountK))) : Math.round(Number(amountK) * 1000),
                             gameType: 2,                 // 2 = WinGo (như file gốc)
                             selectType: side === 'L' ? 13 : 14   // 13 = LỚN · 14 = NHỎ (đúng API)
@@ -5735,6 +5735,8 @@
                             break;
                         }
                         const data = betApiData(res);
+                        const sentBack = Number((data && (data.betCount !== undefined ? data.betCount
+                            : (data.amount !== undefined ? data.amount : NaN))));
                         if (Number.isFinite(code) && code !== 0 && code !== 1) {
                             betSetStatus('❌ Đặt thất bại' + (code ? ' (mã ' + code + ')' : '') + ': ' + msg, 'err');
                             betLog('❌ ' + side + ' ' + amountK + 'K kỳ ' + issue + ' → mã ' + code + ' ' + msg);
@@ -5746,10 +5748,12 @@
                             placedAt: Date.now(), slot: slot, state: 'placed', oid: oid || '',
                             durationMs: betPhase.durationMs
                         };
-                        betLog('💸 ĐÃ ĐẶT ' + (side === 'L' ? 'LỚN' : 'NHỎ') + ' ' + amountK + 'K · kỳ ' + issue + ' (ô ' + (slot + 1) + '/' + BET_TAKE + ')');
+                        const realCoin = (BET_MONEY_UNIT === 'd') ? Math.max(1, Math.round(Number(amountK))) : Math.round(Number(amountK) * 1000);
+                        betLog('💸 ĐÃ ĐẶT ' + (side === 'L' ? 'LỚN' : 'NHỎ') + ' ' + betMoneyShort(amountK)
+                            + ' (= ' + realCoin.toLocaleString('vi-VN') + 'đ) · kỳ ' + issue + ' (ô ' + (slot + 1) + '/' + BET_TAKE + ')');
                         betSetStatus('💸 Đã đặt ' + (side === 'L' ? 'LỚN' : 'NHỎ') + ' ' + betMoney(amountK) + ' · kỳ ' + issue, 'ok');
                         setTimeout(function () { try { betFetchBalance(true); } catch (e) {} }, 900);
-                        return { ok: true, data: data, oid: oid };
+                        return { ok: true, data: data, oid: oid, sent: sentBack };
                     }
 
                     /* ---------- 5. CHỜ KẾT QUẢ ---------- */
@@ -5901,10 +5905,17 @@
                                 betAutoStuck(r.msg || 'đặt cược lỗi');
                                 return;
                             }
-                            betRun.pending = { issue: issue, slot: slot, bit: bit, amount: amount, placedAt: Date.now(), durationMs: betPhase.durationMs, session: betRun.sessionId };
+                            const sentCoin = (BET_MONEY_UNIT === 'd') ? Math.max(1, Math.round(Number(amount))) : Math.round(Number(amount) * 1000);
+                        if (r.sent !== undefined && Number(r.sent) !== sentCoin) {
+                            betLog('⚠️ API nhận ' + Number(r.sent).toLocaleString('vi-VN') + 'đ, khác mức gửi ' + sentCoin.toLocaleString('vi-VN') + 'đ — kiểm tra lại mức cược/đơn vị');
+                        }
+                        betRun.pending = { issue: issue, slot: slot, bit: bit, amount: amount, sent: sentCoin, placedAt: Date.now(), durationMs: betPhase.durationMs, session: betRun.sessionId };
                             betRenderGuide();
                             betOverlayClockShow(issue, amount, bit ? 'LỚN' : 'NHỎ');
                             // sau khi đặt → lấy lại kỳ mới để đồng hồ đếm đúng (không kẹt ở 0 giây)
+                            try { betFetchBalance(true); } catch (e) {}
+                            setTimeout(function () { try { betFetchBalance(true); } catch (e) {} }, 1200);
+                            setTimeout(function () { try { betFetchBalance(true); } catch (e) {} }, 3500);
                             betSyncPhaseAfterBet().then(function (iss) {
                                 // GIỮ NGUYÊN pending.issue (đó là kỳ đã cược, dùng để tra kết quả),
                                 // chỉ cập nhật đồng hồ + dòng chữ cho đúng kỳ mới đang chạy
