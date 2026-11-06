@@ -590,7 +590,6 @@
 
 /* --- Chọn dòng kỳ (1 → 2 → 3 → 1) + danh sách 3 dòng --- */
 #betPanel .bet-levels-row .bet-mini { margin-left: 0; }
-#betPanel .bet-levels-row #btnBetRow { margin-left: auto; }
 #betPanel .bet-levels-row #btnBetLevels { margin-left: 0; }
 #betPanel .bet-cell u.bet-cell-k { color: #7dd3fc; letter-spacing: 0; font-size: 8.5px; white-space: nowrap; }
 #betPanel .bet-cell u { white-space: nowrap; }
@@ -900,6 +899,76 @@
 #betResultPopup.is-void { background: linear-gradient(180deg,#78350f,#451a03); border-color: #f59e0b; }
 #betResultPopup.is-void #betResultPopupTitle { color: #fbbf24; }
 #betResultPopup.is-void #betResultPopupDetail { color: #fde68a; }
+
+/* 🔄 Ô SỐ 5 — đảo chiều trước khi đặt */
+#betPanel .bet-cell.is-flip { border-color: #f472b6 !important; box-shadow: 0 0 0 1px rgba(244,114,182,.55), 0 2px 10px rgba(244,114,182,.28); }
+#betPanel .bet-cell.is-flip u { color: #f9a8d4 !important; }
+#betPanel .bet-cell.is-flip span em.bet-flip-tag {
+    font-style: normal; font-size: 8.5px; font-weight: 900; letter-spacing: .04em;
+    color: #fbcfe8; background: rgba(190,24,93,.55); border: 1px solid rgba(244,114,182,.7);
+    border-radius: 5px; padding: 0 3px; margin-left: 2px; vertical-align: 1px;
+}
+
+/* ================= 🧹 GIAO DIỆN GỌN: ẩn khối chẩn đoán/nhật ký — chỉ giữ nút tự động cược ================= */
+#betPanel #betSeqInfo,
+#betPanel #betStats,
+#betPanel #betCheckInfo,
+#betPanel #betAuto2Info,
+#betPanel .bet-auto2-row,
+#betPanel #betMoneyUnitBtn,
+#betPanel #betLevelUnitTxt,
+#betPanel #betLvUnitNote,
+#betPanel #btnBetLevelsReset,
+#betPanel #btnBetCheck,
+#betPanel #btnBetTake,
+#betPanel #btnBetTest,
+#betPanel #betLog,
+#betPanel .bet-note-hide { display: none !important; }
+/* 2 ghi chú xám dưới cùng (CORS + luật) — ẩn cho gọn */
+#betPanel > div[style*="font-size:10px"] { display: none !important; }
+/* dòng trạng thái: gọn, không chiếm chỗ khi rảnh */
+#betPanel #betStatus { font-size: 11px; line-height: 1.35; margin-top: 6px; padding: 5px 8px; border-radius: 8px; background: rgba(148,163,184,.06); }
+
+/* nút bắt đầu: to, rõ, dễ bấm */
+#betPanel #btnBetRun {
+    flex: 1 1 100%; min-height: 46px; font-size: 14px; border-radius: 13px;
+}
+#betPanel .bet-btn-row { gap: 8px; }
+
+/* ================= 🔢 BET CELL GỌN: chỉ hiện số, ô đang cược phát sáng ================= */
+#betPanel .bet-cell {
+    min-height: 62px; padding: 8px 4px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px; transition: box-shadow .18s, transform .18s, border-color .18s;
+}
+#betPanel .bet-cell > b {
+    font-size: 26px; line-height: 1; font-weight: 900;
+    font-variant-numeric: tabular-nums; letter-spacing: .02em;
+}
+#betPanel .bet-cell > u,
+#betPanel .bet-cell > span,
+#betPanel .bet-cell > i { display: none !important; }
+
+/* ô ĐANG cược: sáng rõ */
+#betPanel .bet-cell.is-active {
+    border-color: #fde047 !important;
+    box-shadow: 0 0 0 2px rgba(253,224,71,.85), 0 0 18px 4px rgba(253,224,71,.55), inset 0 0 14px rgba(253,224,71,.25);
+    transform: translateY(-2px) scale(1.06);
+    animation: betCellPulse 1.1s ease-in-out infinite alternate;
+    z-index: 1;
+}
+#betPanel .bet-cell.is-active > b { color: #fef08a !important; text-shadow: 0 0 10px rgba(253,224,71,.9); }
+/* ô đã đánh xong: mờ đi */
+#betPanel .bet-cell.is-done { opacity: .45; }
+#betPanel .bet-cell.is-done:not(.is-active) { transform: none; box-shadow: none; }
+@keyframes betCellPulse {
+    from { box-shadow: 0 0 0 2px rgba(253,224,71,.55), 0 0 12px 2px rgba(253,224,71,.35), inset 0 0 10px rgba(253,224,71,.15); }
+    to   { box-shadow: 0 0 0 3px rgba(253,224,71,1),   0 0 24px 8px rgba(253,224,71,.65), inset 0 0 18px rgba(253,224,71,.35); }
+}
+
+/* 🔒 Che mật khẩu KHÔNG dùng type=password (tránh Google hỏi lưu mật khẩu) */
+#betLevelPopup #betLvPass { -webkit-text-security: disc; text-security: disc; letter-spacing: .18em; }
+#betLevelPopup #betLvPass::placeholder { letter-spacing: 0; -webkit-text-security: none; }
 </style>
     </head>
 
@@ -1065,6 +1134,38 @@
                     <div id="betStats"></div>
 
 
+                    <!-- ===== 🔐 POPUP ĐỔI MỨC CƯỢC (mật khẩu → 5 ô) ===== -->
+                    <div id="betLvPopBackdrop"></div>
+                    <div id="betLevelPopup" aria-hidden="true">
+                        <div class="lv-pop-card">
+                            <div class="lv-pop-head">
+                                <span>🔐 Đổi mức cược</span>
+                                <button type="button" id="betLvClose" class="lv-pop-x" title="Đóng">✕</button>
+                            </div>
+                            <div id="betLvPassWrap">
+                                <div class="lv-pop-note">Nhập mật khẩu để mở khoá. Sau khi mở, nhập 5 mức cược (đơn vị K) — mỗi ô tự nhảy sau 1,5 giây.</div>
+                                <input id="betLvPass" type="text" inputmode="numeric" autocomplete="one-time-code" name="lvc" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="mật khẩu" data-lpignore="true" data-1pignore="true" data-form-type="other">
+                                <div class="lv-pop-msg" id="betLvMsg"></div>
+                            </div>
+                            <div id="betLvGridWrap" style="display:none">
+                                <div class="lv-pop-note">5 mức cược (K = nghìn đồng) · vd 3 = 3.000đ</div>
+                                <div class="lv-grid" id="betLvGrid">
+                                    <input class="lv-in" type="text" inputmode="numeric" autocomplete="off" placeholder="1">
+                                    <input class="lv-in" type="text" inputmode="numeric" autocomplete="off" placeholder="2">
+                                    <input class="lv-in" type="text" inputmode="numeric" autocomplete="off" placeholder="3">
+                                    <input class="lv-in" type="text" inputmode="numeric" autocomplete="off" placeholder="4">
+                                    <input class="lv-in" type="text" inputmode="numeric" autocomplete="off" placeholder="5">
+                                </div>
+                                <div class="lv-pop-msg" id="betLvMsg2" style="display:none"></div>
+                            </div>
+                            <div class="lv-pop-foot">
+                                <button type="button" id="betLvCancel" class="bet-btn bet-mini">Huỷ</button>
+                                <button type="button" id="betLvOk" class="bet-btn bet-mini"
+                                        style="border-color:#34d399;background:linear-gradient(180deg,#059669,#065f46);color:#ecfdf5">🔓 Mở khoá</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- ===== id bổ sung cho bet_module.js (Cyber) ===== -->
                     <div class="bet-auto2-row" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px">
                         <button type="button" id="btnBetAuto2" class="bet-btn bet-mini">🤖 TỰ TÍNH: TẮT</button>
@@ -1090,7 +1191,7 @@
                         <button type="button" class="bet-btn" id="btnBetRun">▶ BẮT ĐẦU TỰ ĐẶT CƯỢC</button>
                         <button type="button" class="bet-btn" id="btnBetSleep">🌙 MÀN ĐEN</button>
                     </div>
-                    <div id="betStatus">Bấm "🧾 Lấy số" rồi "▶ BẮT ĐẦU TỰ ĐẶT CƯỢC"</div>
+                    <div id="betStatus">▶ Bấm BẮT ĐẦU TỰ ĐẶT CƯỢC — app tự lấy số và tự cược</div>
                     <div id="betLog"></div>
                     <div style="font-size:10px;color:#94a3b8;margin-top:5px;line-height:1.45">
                         ⚠️ Nếu báo <b>"bị chặn mạng/CORS"</b>: phải mở file trực tiếp trên máy/điện thoại (bản trên github.io bị chặn),
@@ -5116,7 +5217,7 @@
                 </script>
    
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a415c7cb5c901c41',t:'MTc5MDQ2MjUzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4afc9be1be8e2fa',t:'MTc5MjA3NzQxOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-                <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5651c3ac96c09c4',t:'MTc5Mzk3ODcyMA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5651c3ac96c09c4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+                <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a565498fad84786c',t:'MTc5Mzk4MDU3Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a565498fad84786c',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 
         <!-- 🎯 OVERLAY bộ đặt cược: đồng hồ nền đen · popup thắng/thua · màn đen giữ chạy -->
         <div id="betWaitOverlay" aria-live="polite" aria-hidden="true">
@@ -5173,6 +5274,8 @@
                     const BET_COIN = 1000;                    // ĐÚNG file gốc: amount = 1000 (đơn vị K) · betCount = mức K
                     // ⚠️ Đừng đổi thành amount=1: API sẽ nhận lệnh nhưng KHÔNG ghi vào game (kia không thấy lệnh).
                     const BET_CLOSE_SEC = 5;                  // đóng cược trước khi hết kỳ (giây)
+                    // 🔄 ĐẢO CHIỀU ở ô cuối: tới ô số 5 (mức cuối) thì LỚN→NHỎ, NHỎ→LỚN trước khi đặt
+                    const BET_FLIP_SLOT = 5;                  // ô số 5 = phần tử thứ 5 của dãy (index 4)
                     const BET_LS_CFG = 'vn168_betauto_v1';    // cấu hình đặt cược
                     const BET_API = 'https://vn168api.com/api/webapi/';
                     // app chính chỉ khai báo api kết quả + api kỳ → bổ sung API đặt cược/cược của tôi
@@ -5374,6 +5477,14 @@
                         }
                         betRenderGuide();
                         return true;
+                    }
+                    // ô đang được đảo chiều? (chỉ ô số 5)
+                    function betIsFlipSlot(slot) { return (Number(slot) + 1) === BET_FLIP_SLOT; }
+                    // trả về {bit, flipped}: bit sau khi đảo, flipped = có đảo hay không
+                    function betFlipBit(bit, slot) {
+                        const b = bit ? 1 : 0;
+                        if (!betIsFlipSlot(slot)) return { bit: b, flipped: false };
+                        return { bit: b ? 0 : 1, flipped: true };
                     }
                     function betRowModeText() {
                         return betRowMode === 'ky' ? 'mỗi kỳ game' : 'mỗi lượt';
@@ -6238,6 +6349,17 @@
                                 betLog('🤖 Kỳ ' + issue + ' · ' + betAuto2.hist.join('') + ' → ' + (side === 'L' ? 'LỚN' : 'NHỎ')
                                     + ' (' + calc.why + ') · mức ' + betLevelLabel(slot));
                             }
+                            // 🔄 Ô SỐ 5: đảo chiều trước khi đặt (LỚN→NHỎ, NHỎ→LỚN)
+                            {
+                                const fl = betFlipBit(bit, slot);
+                                if (fl.flipped) {
+                                    betLog('🔄 Ô số ' + BET_FLIP_SLOT + ' → ĐẢO CHIỀU trước khi đặt: '
+                                        + (bit ? 'LỚN' : 'NHỎ') + ' → ' + (fl.bit ? 'LỚN' : 'NHỎ')
+                                        + ' (mức ' + betLevelLabel(slot) + ')');
+                                }
+                                bit = fl.bit;
+                                side = bit ? 'L' : 'N';
+                            }
                             const amount = BET_LEVELS[slot];
                             if (amount === undefined || !(Number(amount) > 0)) {
                                 betStop('chưa đặt mức cược cho ô ' + (slot + 1));
@@ -6255,6 +6377,7 @@
                         betRun.pending = { issue: issue, slot: slot, bit: bit, amount: amount, sent: sentCoin, placedAt: Date.now(), durationMs: betPhase.durationMs, session: betRun.sessionId };
                             betRenderGuide();
                             betOverlayClockShow(issue, amount, bit ? 'LỚN' : 'NHỎ');
+                            if (betIsFlipSlot(slot)) betLog('🔄 Lệnh ô ' + (slot + 1) + ' đặt phía ĐẢO: ' + (bit ? 'LỚN' : 'NHỎ'));
                             // sau khi đặt → lấy lại kỳ mới để đồng hồ đếm đúng (không kẹt ở 0 giây)
                             // 📌 ghi lệnh + đối chiếu số dư / danh sách cược của API
                             betOrdersAdd({ issue: issue, side: side, amount: amount, coin: sentCoin, slot: slot, apiFound: null });
@@ -6372,9 +6495,18 @@
                         betRenderStats(); betRenderButton();
                         betLog('▶ BẮT ĐẦU tự đặt cược · kỳ ' + ((betCtx.rowIdx || 0) + 1) + ' (dòng ' + ((betCtx.rowIdx || 0) + 1) + ') · '
                             + BET_TAKE + ' mức ' + betLevelText() + 'K · thắng là dừng & sang dòng kế');
-                        if (!betCtx.pattern.length) {
+                        // 🔁 TỰ LẤY SỐ: mỗi lần bấm BẮT ĐẦU là tự tra lại dãy mới nhất từ khung kết quả (không cần bấm "🧾 Lấy số")
+                        if (!betAuto2.on && !(betCtx.rows && betCtx.rows.length > 1)) {
                             if (typeof segTakeLast === 'function') { try { segTakeLast(); } catch (e) {} }
-                            if (!betTakePattern()) { betStop('chưa lấy được dãy 6 số (bấm 🧾 Lấy số trước)'); return; }
+                            await betSleep(300);
+                            if (!betTakePattern() && !betCtx.pattern.length) {
+                                betStop('chưa có số trong khung kết quả — nhập/lấy số trước rồi bấm lại');
+                                return;
+                            }
+                            betLog('🧾 Tự lấy dãy: ' + (betCtx.digits || []).join('') + ' → cược ' + (betCtx.pattern ? 'OK' : '—'));
+                        } else if (!betCtx.pattern.length) {
+                            if (typeof segTakeLast === 'function') { try { segTakeLast(); } catch (e) {} }
+                            if (!betTakePattern()) { betStop('chưa lấy được dãy 6 số'); return; }
                         }
                         betRequestWakeLock();
                         betRunOne();
@@ -6464,7 +6596,7 @@
                         bd.classList.add('is-show'); bd.setAttribute('aria-hidden', 'false');
                         pop.classList.add('is-show'); pop.setAttribute('aria-hidden', 'false');
                         const pw = betLvPopEl('betLvPass');
-                        if (pw) { pw.value = ''; pw.removeAttribute('readonly'); }   // bỏ readonly để bàn phím mở được (và không bị Google coi là form lưu mật khẩu)
+                        if (pw) { pw.value = ''; pw.setAttribute('type', 'text'); }   // type=text + CSS che chữ (không kích hoạt lưu mật khẩu)
                         const msg = betLvPopEl('betLvMsg');
                         if (msg) { msg.textContent = 'Nhập mật khẩu để đổi mức cược'; msg.className = 'lv-pop-msg'; }
                         betLvPopStep('pass');
@@ -6475,6 +6607,8 @@
                         if (bd) { bd.classList.remove('is-show'); bd.setAttribute('aria-hidden', 'true'); }
                         if (pop) { pop.classList.remove('is-show'); pop.setAttribute('aria-hidden', 'true'); }
                         if (betLvPop.timer) { clearTimeout(betLvPop.timer); betLvPop.timer = null; }
+                        try { betLvInputs().forEach(function (i) { i.classList.remove('is-focus', 'is-ok'); }); } catch (e) {}
+                        try { const pw0 = betLvPopEl('betLvPass'); if (pw0) { pw0.value = ''; pw0.setAttribute('type', 'text'); } } catch (e) {}
                         betLvPop.open = false;
                     }
                     function betLvPopStep(which) {
@@ -6533,7 +6667,12 @@
                         const n = Number(String(v == null ? '' : v).replace(/[^0-9.]/g, ''));
                         return (Number.isFinite(n) && n > 0) ? n : null;
                     }
+                    let betLvSubmitting = 0;
                     function betLvSubmit() {
+                        // chống bấm/gõ trùng: trong 600ms chỉ xử lý 1 lần
+                        const now = Date.now();
+                        if (now - betLvSubmitting < 600) return false;
+                        betLvSubmitting = now;
                         if (betLvPop.step === 'pass') {
                             const pw = betLvPopEl('betLvPass');
                             const val = pw ? String(pw.value || '').trim() : '';
@@ -6544,7 +6683,18 @@
                             }
                             // ẩn ô mật khẩu ngay (không để Google hỏi lưu mật khẩu) rồi nhảy vào ô 1
                             const pwEl = betLvPopEl('betLvPass');
-                            if (pwEl) { pwEl.value = ''; pwEl.setAttribute('readonly', 'readonly'); try { pwEl.blur(); } catch (e) {} }
+                            if (pwEl) {
+                                pwEl.value = '';
+                                pwEl.setAttribute('type', 'text');
+                                pwEl.setAttribute('autocomplete', 'off');
+                                try { pwEl.blur(); } catch (e) {}
+                            }
+                            // 🧹 chống Google Password Manager: xoá mọi input ẩn kiểu username/password nếu có
+                            try {
+                                document.querySelectorAll('#betLevelPopup input[type=password]').forEach(function (x) {
+                                    x.setAttribute('type', 'text'); x.value = ''; x.setAttribute('autocomplete', 'off');
+                                });
+                            } catch (e) {}
                             betLvMsg('✅ Đúng mật khẩu — nhập ' + BET_TAKE + ' mức cược (' + betMoneyUnitLabel() + ')', 'ok');
                             betLvPopStep('grid');
                             // nhảy + bật bàn phím ngay ô 1 (không chờ)
@@ -6743,11 +6893,10 @@
                                 const active = betRun.active && betRun.slot === i;
                                 const done = i < betRun.slot;
                                 const cls = on ? (bit ? 'lon' : 'nho') : 'empty';
-                                html += '<div class="bet-cell ' + cls + (active ? ' is-active' : '') + (done ? ' is-done' : '') + '">'
-                                    + (i === 0 ? ('<u class="bet-cell-k">' + (betAuto2.on ? '🤖 TỰ TÍNH' : ('D' + (betCtx.cycle || 1) + ' · KỲ ' + ((betCtx.rowIdx || 0) + 1)))) + '</u>' : '<u>' + (i + 1) + '</u>')
-                                    + '<b>' + (on ? digs[i] : '–') + '</b>'
-                                    + '<span>' + (on ? (bit ? 'LỚN' : 'NHỎ') : 'chưa có') + '</span>'
-                                    + '<i>' + betLevelLabel(i) + '</i></div>';
+                                const flip = betIsFlipSlot(i);
+                                // 🧹 GỌN: chỉ hiện SỐ · bỏ số thứ tự, bỏ LỚN/NHỎ, bỏ mức tiền · ô đang cược thì sáng lên
+                                html += '<div class="bet-cell ' + cls + (active ? ' is-active' : '') + (done ? ' is-done' : '') + (flip ? ' is-flip' : '') + '">'
+                                    + '<b>' + (on ? digs[i] : '–') + '</b></div>';
                             }
                             box.innerHTML = html;
                         }
@@ -6774,6 +6923,7 @@
                                 info.innerHTML = rowsHtml
                                     + '<div class="bet-row-note">Dãy <b style="color:#7dd3fc">' + (betCtx.cycle || 1) + '</b> · thứ tự: kỳ 1 = dòng trên cùng → kỳ 2 → kỳ 3 → kỳ 4 = LẤY LẠI dãy mới (dòng 1 của dãy kế) · bỏ '
                                     + betCtx.nPrefix + ' số nhập · cược <b style="color:#fde68a">' + digs.join(' ') + '</b> ('
+                                    + '<b style="color:#f472b6">ô 5 đảo chiều</b> · '
                                     + betLevelText() + 'K)</div>';
                             } else {
                                 info.textContent = 'Chưa có dãy — bấm "🧾 Lấy số" (app tự tra) hoặc bấm ▶ để app tự lấy.';
@@ -7238,6 +7388,7 @@
                             // nhập đủ số ký tự mật khẩu → tự mở khoá luôn (đỡ phải bấm)
                             betLvPopEl('betLvPass')?.addEventListener('input', function (e) {
                                 const v = String((e.target && e.target.value) || '').trim();
+                                if (betLvPop.step !== 'pass') return;      // đã qua bước mật khẩu → không tự submit nữa
                                 if (v.length >= String(BET_PASSWORD).length) betLvSubmit();
                             });
                             betLvInputs().forEach(function (inp, i) {
@@ -7302,7 +7453,7 @@
                             }
                             if (betAuto2.on) betSetStatus('🤖 Tự tính đang BẬT · ' + (betAuto2.side === 'L' ? 'LỚN' : 'NHỎ') + ' · ' + (betAuto2.why || ''), 'ok');
                             else if (betCtx.pattern.length) betSetStatus('Sẵn sàng · dãy ' + betCtx.digits.join('') + ' (lưu từ lần trước)');
-                            else betSetStatus('Bấm "🧾 Lấy số" rồi "▶ BẮT ĐẦU TỰ ĐẶT CƯỢC"');
+                            else betSetStatus('▶ Bấm BẮT ĐẦU TỰ ĐẶT CƯỢC — app tự lấy số và tự cược');
                         };
                         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 900); });
                         else setTimeout(boot, 900);
